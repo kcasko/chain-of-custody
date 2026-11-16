@@ -1,0 +1,14 @@
+{
+  "projectRoot": "D:/Repos/chain-of-custody",
+  "mozaikLearningRoot": "D:/Repos/mozaik-learning",
+  "mozaikNetworkRoot": "D:/Repos/mozaik-network",
+  "claudeExecutable": "C:/Users/keith/.local/bin/claude.exe",
+  "codexEntrypoint": "C:/Users/keith/AppData/Roaming/npm/node_modules/@openai/codex/bin/codex.js",
+  "host": "127.0.0.1",
+  "port": 43127,
+  "maxTurns": 4,
+  "turnTimeoutMs": 180000,
+  "maxMessageBytes": 48000,
+  "mode": "review-only",
+  "billing": "existing-subscriptions-only"
+}
