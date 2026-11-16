@@ -1,7 +1,7 @@
 # Recovered planning source
 
 Source: ChatGPT chat `6afb47df-74b8-83ea-847f-f5646c803864`, Hackathon Overview, planning turn `6bbd9dee-1285-4194-8b5b-f856f1a8bbd4`, recovered November 16, 2026.
-The chat reader truncates each message at 20,000 characters. This is the recovered portion, not a complete export. Prior service and event claims are historical proposals, not verified current facts. Image directives and citation tokens below are preserved source text, not retrieved assets or usable citations.
+The chat reader truncates each message at 20,000 characters. This is the recovered portion, not a complete export. Trailing whitespace has been normalized. Prior service and event claims are historical proposals, not verified current facts. Image directives and citation tokens below are preserved source text, not retrieved assets or usable citations.
 
 +# Chain of Custody: The Blackwater Evidence
 
@@ -118,19 +118,19 @@ The remaining artifacts provide context and cross-references rather than artific
 ### Narrative structure
 
 1. **The Archive Opens**
-   
+
    Investigators discover a mismatch between physical inventory and digital records.
 2. **The Missing Hour**
-   
+
    Timestamps conflict. The agent must separate clock drift, transcoding, and potential record manipulation.
 3. **The Unlisted Sample**
-   
+
    A laboratory document references evidence without a documented collection history.
 4. **The Invisible Editor**
-   
+
    An unauthorized account attempts to rewrite the archived case history.
 5. **The Integrity Review**
-   
+
    The system produces an independently checkable package identifying verified evidence, unresolved problems, and blocked manipulation attempts.
 
 The story must remain interesting even if the AI never identifies who caused the fire. Our actual success condition is a defensible audit.
@@ -355,22 +355,22 @@ I haven't contacted Claude or obtained a review from it yet. The plan below is t
 ### How we should collaborate
 
 1. **Independent planning**
-   
+
    ChatGPT and Claude review the same charter and propose architecture, security assumptions, risks, and scope reductions.
 2. **Architecture reconciliation**
-   
+
    Compare proposals, explain disagreements, and record the chosen design in an architecture decision record.
 3. **Small, isolated implementation tasks**
-   
+
    Claude implements focused tickets. ChatGPT reviews diffs and test evidence. Avoid simultaneous edits to the same files.
 4. **Adversarial review**
-   
+
    Each reviewer is explicitly asked to find weaknesses in the other's assumptions instead of automatically approving the work.
 5. **Integration gates**
-   
+
    Merge only after tests, security checks, and functional verification.
 6. **Submission verification**
-   
+
    Both review the final project page, demo script, screenshots, and factual claims against the actual deployed system.
 
 Your existing Mozaik collaboration hub could eventually orchestrate this workflow, but I would not make the hackathon dependent on getting every AI provider connected first. We have a tight deadline. A shared Git repository and explicit review artifacts are enough.
