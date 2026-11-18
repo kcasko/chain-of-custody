@@ -4,7 +4,9 @@
 
 Build an evidence-integrity demonstration with a coherent fictional case and independently enforced agent permissions. Derived from the original Hackathon Overview planning chat; docs/source/ORIGINAL-BLUEPRINT.md preserves the recovered portion. Source concepts are preserved; implementation detail added here is a proposal.
 
-The prior plan named the AWS Builder Center event "Agents, Your Rules: Bedrock Managed Agents Build" and November 18 through December 2, 2026. Those event dates, rules, eligibility, and preview capabilities have not been verified in this setup. Treat them as planning assumptions. Do not claim submission readiness.
+Event verified November 18, 2026 (docs/research/2026-11-18-bma-feasibility.md): "Agents, your rules: Bedrock Managed Agents build", November 18 to December 2, 2026 11:59 PM PST. The brief asks for a BMA agent that stays inside rules you define even when prompts push it out. The Rules tab (submission format, judging criteria, eligibility) still says "coming soon". Do not claim submission readiness until it is published and checked.
+
+ADR 0003 (adopted November 18, 2026) sets the BMA integration, enforcement layers and a P0/P1/P2 cut that fits 14 days. Where it conflicts with the milestones below, ADR 0003 governs.
 
 ## Smallest complete product
 

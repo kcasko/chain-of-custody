@@ -13,6 +13,8 @@ Status: local planning repository and working Claude Code / Codex CLI collaborat
 - [Test strategy](docs/TEST-STRATEGY.md)
 - [Collaboration setup and commands](docs/COLLABORATION.md)
 - [Task board](docs/TASKS.md)
+- [BMA feasibility research (Nov 18)](docs/research/2026-11-18-bma-feasibility.md)
+- [ADR 0003: BMA integration and enforcement layers (adopted)](docs/adr/0003-bma-integration-and-enforcement-layers.md)
 - [Original planning source](docs/source/ORIGINAL-BLUEPRINT.md)
 
 Everything in the case is synthetic. Do not add actual evidence, personal information, or credentials. Do not deploy, publish, create paid resources, or enable pay-as-you-go model access.

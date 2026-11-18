@@ -11,5 +11,8 @@ All implementation tickets are proposed, not delegated permission to modify file
 | T04 | Codex | Ledger and independent verifier | Canonical hashes, concurrent head writes, edit/reorder/truncation detection |
 | T05 | Claude | Local API and minimal evidence explorer | Auth/session boundary, error contracts, legitimate workflows |
 | T06 | Codex | Adversarial integration suite | 10 attacks, 15 variations, 10 allowed controls with state assertions |
-| T07 | Joint review | Managed Agents feasibility documentation | Current official capabilities and event rules verified; no paid calls |
+| T07 | Claude (done Nov 18) | Managed Agents feasibility documentation | Done: docs/research/2026-11-18-bma-feasibility.md and ADR 0003 (adopted). Event rules still unpublished, see T07b |
+| T07b | Claude | Re-check event Rules tab | Submission format, judging criteria and eligibility recorded with date; ADR 0003 scope adjusted if needed |
 | T08 | Keith gate | Cloud work or publication | Explicit future authorization; absent now |
+| T09 | Claude, after T08 approval | Paid BMA spike (self-hosted exec-server, then Gateway + Cedar) | Answers Q1-Q6 in the feasibility doc with recorded session items; AWS Budget alarm exists first; every resource torn down or listed |
+| T10 | Claude | Cedar policy set and Gateway tool schemas (local only) | Five tools, no identity arguments, every forbid guarded with `has`; validated with the Cedar CLI against allow and deny fixtures |
