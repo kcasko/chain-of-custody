@@ -2,6 +2,8 @@
 
 A release blocker stops submission to the event. Do not mark the project submission-ready while any item below is open.
 
+**Primary release blocker: RB-1 (Bedrock Managed Agents access).** Everything else in the project can be finished without it; the submission cannot.
+
 | ID | Blocker | Status | Evidence | Owner | Unblocks |
 |---|---|---|---|---|---|
 | RB-1 | **AWS account not entitled to Bedrock Managed Agents (preview) or `openai.gpt-5.6-luna`.** `POST /openai/v1/agents/sessions` returns HTTP 401 "Bedrock Managed Agents is not available for this account." in us-east-1, us-west-2 and us-east-2; GPT-5.6 Luna returns 401 pointing to AWS Sales; `gpt-oss-20b` works with the same credentials. | **OPEN** since November 18, 2026 | docs/research/2026-11-18-t09-spike-report.md (G1) | Keith (access requests); Claude (integration once granted) | T11 (BMA client), spike questions Q2 BMA half, Q4, Q5, Q6, Stage C, the hackathon submission itself |

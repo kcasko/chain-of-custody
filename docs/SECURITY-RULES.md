@@ -39,7 +39,21 @@ For local collaboration: loopback-only Mozaik, unique ephemeral network, token-a
 | B8 | Undeclared tool arguments (`actor`, `approved`, `case_id`) pass the Gateway and Cedar and reach the target (observed live, Stage B) | Tool target rejects any argument outside the closed schema before acting | Stage B F-1 to F-3: rejected only by the Lambda |
 | B9 | Official exec-server example runs Codex with the operator's `AWS_PROFILE`, so agent commands inherit it (observed in the bundle) | Exec-server in a container with only the workspace, a read-only Codex binary and short-lived `CocBmaEnvRole` credentials | `harness/check-exec-env.sh`: 17 checks (gateway probe skipped when no gateway exists) |
 | B7 | Preview API changes during the event | Thin adapter, pinned client versions, re-run smoke test daily | Daily smoke run |
+## Ledger and evidence integrity: prevention, detection, recovery (November 18, 2026; ADRs 0007 and 0008)
 
-Residual risks stated plainly: R1 evidence exfiltration through the agent's network egress (synthetic data, accepted for MVP). R2 an account administrator can change bucket policies, IAM and the ledger; checkpoints detect ledger edits but do not prevent them. R3 BMA service-held session data cannot use a customer-managed KMS key in preview.
+Prevention stops a change from happening. Detection makes a change visible. Recovery restores the true record. Each control below is placed in exactly one column, with its verification status.
+
+| Threat | Prevention | Detection | Recovery |
+|---|---|---|---|
+| Agent or API user rewrites history | Core: create-only writes, closed schemas, no update or delete operations, deny by default (tested) | Audit log of every attempt (tested) | Not needed: nothing is written |
+| Overwrite of a ledger item with stolen application credentials | **Not possible in DynamoDB** (PutItem is required; no IAM condition covers the condition expression; confirmed live in T14b). Prevented for the archived original: write-once Object Lock archive only the archiver role can write (ADR 0008; tested locally, not yet on AWS) | `APPEND_ONLY_TAMPER` alarm from the table stream (stream behavior confirmed live in T14b; archiver tested locally). Hash chain plus signed checkpoints make the independent verifier report FAILED (confirmed live) | Archived original of every event; before and after images of the tamper; DynamoDB point-in-time recovery in non-test stacks |
+| Delete of a ledger item, update in place, batch write, table drop by the application role | IAM explicit deny (confirmed live in T14b) | Stream `REMOVE` alarm if it ever happened | Archive and point-in-time recovery |
+| Overwrite or delete of original evidence bytes | S3 `If-None-Match` plus bucket policy requiring it, delete and retention denies, Object Lock (all confirmed live in T14b) | Content SHA-256 in the ledger, re-checked on every read and by the verifier (tested) | Immutable object versions under Object Lock |
+| Corrupted upload | S3 checksum check (`BadDigest`, confirmed live) | Storage confirmation read-back before registration (tested) | Bytes never registered; key quarantined (tested) |
+| Stalled archiver | None | Iterator-age alarm before the 24-hour stream retention ends (planned in T12) | Point-in-time recovery |
+| Forged *append* with stolen application credentials | Not prevented (looks like a legitimate write) | Actor attribution in every event, audit log, human review | Corrections are appended, never edits |
+| Account administrator | Not prevented (R2) | CloudTrail; checkpoints held outside the account if anchored externally (not built) | Object Lock COMPLIANCE mode survives even an administrator, for retained data |
+
+Residual risks stated plainly: R1 evidence exfiltration through the agent's network egress (synthetic data, accepted for MVP). R2 an account administrator can change bucket policies, IAM and the ledger working copy; checkpoints and the stream alarm detect ledger edits but do not prevent them, and only COMPLIANCE-mode Object Lock survives an administrator. R4 stolen application credentials can overwrite the DynamoDB working copy; the archived original survives and the change raises an alarm (ADR 0008). R3 BMA service-held session data cannot use a customer-managed KMS key in preview.
 
 Future AWS controls must be validated with real authorization-denial tests before claims are made. Document residual administrator and credential-compromise risks; do not call local simulation immutable storage.
