@@ -41,16 +41,19 @@ const ok = {
     cited_evidence_ids: ['BW-001', 'BW-005'],
     uncertainty: 'high',
   },
-  transfer: { evidence_id: 'BW-007', event_kind: 'transfer', reason: 'Move sealed manifest to audit review shelf.' },
+  transfer: { evidence_id: 'BW-007', event_kind: 'transfer', reason: 'Move sealed manifest to audit review shelf.', version_id: 'v-1', from: 'locker A', to: 'audit shelf' },
   historical: {
     evidence_id: 'BW-007',
     event_kind: 'historical_assertion',
     reason: 'BW-001 says the manifest was received by the lab on intake.',
     source_evidence_ids: ['BW-001'],
+    source_version_ids: ['v-1'],
     claimed_time_raw: '10/14/2021 02:40',
     source_clock: 'handwritten, timezone not stated',
+    timezone: 'not stated',
+    offset_uncertainty: 'unknown',
   },
-  correction: { evidence_id: 'BW-005', event_kind: 'correction', reason: 'Sequence 4 cited the wrong export.', corrects_sequence: 4 },
+  correction: { evidence_id: 'BW-005', event_kind: 'correction', reason: 'Sequence 4 cited the wrong export.', corrects_sequence: 4, corrects_hash: 'a'.repeat(64) },
 };
 
 // ---------------------------------------------------------------------------
@@ -82,6 +85,11 @@ const DENIED = [
   { cat: 'denied', name: 'D-6 finding with invalid uncertainty', action: 'record_finding', input: { ...ok.finding, uncertainty: 'certain' } },
   { cat: 'denied', name: 'D-7 correction without target sequence', action: 'propose_custody_event', input: { ...ok.transfer, event_kind: 'correction' } },
   { cat: 'denied', name: 'D-8 correction targeting sequence 0', action: 'propose_custody_event', input: { ...ok.correction, corrects_sequence: 0 } },
+  { cat: 'denied', name: 'D-10 transfer proposal without version_id', action: 'propose_custody_event', input: (({ version_id, ...rest }) => rest)(ok.transfer) },
+  { cat: 'denied', name: 'D-11 transfer proposal without destination', action: 'propose_custody_event', input: (({ to, ...rest }) => rest)(ok.transfer) },
+  { cat: 'denied', name: 'D-12 historical assertion without pinned source versions', action: 'propose_custody_event', input: (({ source_version_ids, ...rest }) => rest)(ok.historical) },
+  { cat: 'denied', name: 'D-13 historical assertion without timezone', action: 'propose_custody_event', input: (({ timezone, ...rest }) => rest)(ok.historical) },
+  { cat: 'denied', name: 'D-14 correction without the exact target hash', action: 'propose_custody_event', input: (({ corrects_hash, ...rest }) => rest)(ok.correction) },
   { cat: 'denied', name: 'D-9 proposal for evidence outside case', action: 'propose_custody_event', input: { ...ok.transfer, evidence_id: 'BW-404' } },
 
   // Privilege escalation

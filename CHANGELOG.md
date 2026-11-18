@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-11-18 (agent tools on the core)
+
+- The five agent tools now run on the domain core (`core/src/agent-tools.ts`) behind a Gateway Lambda adapter (`core/src/gateway-handler.ts`). ADR 0006.
+- `propose_custody_event` schema extended so agent proposals can actually be promoted (transfer versions and parties, pinned historical sources with timezone and uncertainty, exact correction hashes). Cedar permits, Stage B stub and tests updated; five new deny cases. Live policy-engine revalidation pending.
+- New `record_finding` operation and append-only `findings` table; findings must cite registered evidence and may not conclude guilt, intent, blame or admissibility.
+- Clock provenance matched to registered versions by content hash (`core/src/provenance.ts`).
+- Tool-layer refusals are written to the security audit log.
+- All 24 Stage B scenarios replayed against the core alone: legitimate work succeeds, every attack refused. `npm test`: 280/280.
+
 ## 2026-11-18 (T00 to T04: domain core)
 
 - T00: spec `docs/specs/canonicalization-and-verification-v1.md` (RFC 8785 subset, purpose-separated SHA-256, Ed25519 checkpoints, verifier trust inputs and honest states). Golden vectors checked with `sha256sum` and OpenSSL.

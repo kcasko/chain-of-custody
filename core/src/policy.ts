@@ -21,6 +21,7 @@ export const HUMAN_MATRIX: Readonly<Record<Operation, readonly Role[]>> = {
   approve_request: ['supervisor'],
   // The service also requires: the requester themself, or a supervisor (ADR 0005 decision 7).
   revoke_approval: ALL,
+  record_finding: ALL,
   create_proposal: [], // proposals exist for the agent; humans act directly
   // Gate only: promotion then re-runs the proposed operation's own policy for this human.
   promote_proposal: ALL,
@@ -33,7 +34,7 @@ export const HUMAN_MATRIX: Readonly<Record<Operation, readonly Role[]>> = {
 export const FORBIDDEN: ReadonlySet<Operation> = new Set(['overwrite_original', 'delete_history', 'grant_role']);
 
 // The agent's capability set: strictly smaller than every human role.
-export const AGENT_CAPABILITIES: ReadonlySet<Operation> = new Set(['read_metadata', 'read_original', 'create_proposal']);
+export const AGENT_CAPABILITIES: ReadonlySet<Operation> = new Set(['read_metadata', 'read_original', 'record_finding', 'create_proposal']);
 
 // Port: who belongs to which case. Async so a real directory can back it.
 export interface MembershipDirectory {

@@ -55,10 +55,17 @@ namespace AgentCore {
         evidence_id: String,
         event_kind: String,
         reason: String,
+        version_id?: String,
+        from?: String,
+        to?: String,
         source_evidence_ids?: Set<String>,
+        source_version_ids?: Set<String>,
         claimed_time_raw?: String,
         source_clock?: String,
-        corrects_sequence?: Long
+        timezone?: String,
+        offset_uncertainty?: String,
+        corrects_sequence?: Long,
+        corrects_hash?: String
       }
     }
   };

@@ -13,7 +13,7 @@ export interface SecurityEvent {
   readonly requestId: string;
   readonly caseId: string;
   readonly principal: string; // "human:<id>" | "agent:<id>" | "anonymous"
-  readonly operation: Operation;
+  readonly operation: Operation | 'tool_call'; // tool_call: refused at the agent tool layer, before any domain operation
   readonly outcome: Outcome;
   readonly code: string | null;
   readonly at: string;

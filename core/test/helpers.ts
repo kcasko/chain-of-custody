@@ -15,6 +15,12 @@ import { ExportService } from '../src/export.ts';
 import { ProposalService } from '../src/proposals.ts';
 import { signingKeyFromSeed } from '../src/crypto.ts';
 import { loadManifest, readFixtureBytes } from '../src/fixtures.ts';
+import { FindingService } from '../src/findings.ts';
+import { ManifestProvenance } from '../src/provenance.ts';
+import { AgentToolService } from '../src/agent-tools.ts';
+import type { ToolDefinition } from '../src/tool-schema.ts';
+
+export const TOOL_DEFINITIONS = JSON.parse(readFileSync(new URL('../../policy/tools/evidence-tools.json', import.meta.url), 'utf8')) as ToolDefinition[];
 
 const caseScope = JSON.parse(readFileSync(new URL('../../policy/case-scope.json', import.meta.url), 'utf8')) as { caseId: string; evidenceIds: string[] };
 
@@ -94,7 +100,10 @@ export function makeWorld(options: { store?: TransactionalStore; objects?: Objec
   const checkpoints = new CheckpointAuthority(signingKey, store, ledger);
   const exports = new ExportService({ ...base, ledger, evidence, approvals, checkpoints });
   const trustedKey = { keyId: signingKey.keyId, publicKeyHex: signingKey.publicKeyRaw.toString('hex') };
-  return { store, directory, audit, ledger, objects, scope, custody, evidence, approvals, checkpoints, exports, proposals, signingKey, trustedKey };
+  const findings = new FindingService({ ...base, ledger });
+  const provenance = new ManifestProvenance(loadManifest());
+  const agentTools = new AgentToolService({ tools: TOOL_DEFINITIONS, evidence, findings, proposals, provenance, audit });
+  return { store, directory, audit, ledger, objects, scope, custody, evidence, approvals, checkpoints, exports, proposals, findings, provenance, agentTools, signingKey, trustedKey };
 }
 export type World = ReturnType<typeof makeWorld>;
 

@@ -14,9 +14,9 @@ const ROLE_USER: Record<Role, string> = { investigator: USERS.investigator, audi
 
 // The expected matrix, written out independently of policy.ts.
 const EXPECTED: Record<Role, Operation[]> = {
-  investigator: ['read_metadata', 'read_original', 'register_evidence', 'register_derivative', 'add_custody_event', 'record_historical_assertion', 'append_correction', 'request_export', 'revoke_approval', 'promote_proposal'],
-  auditor: ['read_metadata', 'read_original', 'record_historical_assertion', 'append_correction', 'request_export', 'revoke_approval', 'promote_proposal'],
-  supervisor: ['read_metadata', 'read_original', 'register_evidence', 'register_derivative', 'add_custody_event', 'record_historical_assertion', 'append_correction', 'request_export', 'approve_request', 'revoke_approval', 'promote_proposal'],
+  investigator: ['read_metadata', 'read_original', 'register_evidence', 'register_derivative', 'add_custody_event', 'record_historical_assertion', 'append_correction', 'record_finding', 'request_export', 'revoke_approval', 'promote_proposal'],
+  auditor: ['read_metadata', 'read_original', 'record_historical_assertion', 'append_correction', 'record_finding', 'request_export', 'revoke_approval', 'promote_proposal'],
+  supervisor: ['read_metadata', 'read_original', 'register_evidence', 'register_derivative', 'add_custody_event', 'record_historical_assertion', 'append_correction', 'record_finding', 'request_export', 'approve_request', 'revoke_approval', 'promote_proposal'],
 };
 
 test('every role x operation decision matches the written matrix', async () => {
@@ -43,7 +43,7 @@ test('the agent can only read and propose, only through the gateway, only for it
     const r = await authorize(dir, agent(), op, CASE);
     assert.equal(r.ok, AGENT_CAPABILITIES.has(op) && !FORBIDDEN.has(op), op);
   }
-  assert.deepEqual([...AGENT_CAPABILITIES].sort(), ['create_proposal', 'read_metadata', 'read_original']);
+  assert.deepEqual([...AGENT_CAPABILITIES].sort(), ['create_proposal', 'read_metadata', 'read_original', 'record_finding']);
   const viaApi = await authorize(dir, agent(AGENT, 'api'), 'read_metadata', CASE);
   assert.equal(!viaApi.ok && viaApi.code, 'DENIED_AGENT');
   const wrongCase = await authorize(dir, agent(AGENT), 'read_metadata', OTHER_CASE);

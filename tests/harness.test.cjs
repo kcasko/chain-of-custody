@@ -61,7 +61,7 @@ test('L3 returns evidence content as labeled untrusted data and computes real ha
 
 test('L3 never claims persistence or ledger changes for drafts', async () => {
   const { call } = harness();
-  const out = await call('propose_custody_event', { evidence_id: 'BW-007', event_kind: 'transfer', reason: 'r' });
+  const out = await call('propose_custody_event', { evidence_id: 'BW-007', event_kind: 'transfer', reason: 'r', version_id: 'syn-v1', from: 'a', to: 'b' });
   assert.equal(out.persisted, false);
   assert.equal(out.ledger_changed, false);
 });

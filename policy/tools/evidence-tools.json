@@ -15,10 +15,20 @@
     "inputSchema": {
       "type": "object",
       "properties": {
-        "evidence_id": { "type": "string", "pattern": "^BW-[0-9]{3}$" },
-        "version_id": { "type": "string", "minLength": 1, "maxLength": 1024 }
+        "evidence_id": {
+          "type": "string",
+          "pattern": "^BW-[0-9]{3}$"
+        },
+        "version_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
       },
-      "required": ["evidence_id", "version_id"],
+      "required": [
+        "evidence_id",
+        "version_id"
+      ],
       "additionalProperties": false
     }
   },
@@ -30,13 +40,18 @@
       "properties": {
         "evidence_ids": {
           "type": "array",
-          "items": { "type": "string", "pattern": "^BW-[0-9]{3}$" },
+          "items": {
+            "type": "string",
+            "pattern": "^BW-[0-9]{3}$"
+          },
           "minItems": 2,
           "maxItems": 4,
           "uniqueItems": true
         }
       },
-      "required": ["evidence_ids"],
+      "required": [
+        "evidence_ids"
+      ],
       "additionalProperties": false
     }
   },
@@ -48,43 +63,136 @@
       "properties": {
         "finding_type": {
           "type": "string",
-          "enum": ["discrepancy", "provenance_gap", "clock_uncertainty", "unresolved_question", "integrity_check_result"]
+          "enum": [
+            "discrepancy",
+            "provenance_gap",
+            "clock_uncertainty",
+            "unresolved_question",
+            "integrity_check_result"
+          ]
         },
-        "summary": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
         "cited_evidence_ids": {
           "type": "array",
-          "items": { "type": "string", "pattern": "^BW-[0-9]{3}$" },
+          "items": {
+            "type": "string",
+            "pattern": "^BW-[0-9]{3}$"
+          },
           "minItems": 1,
           "maxItems": 10,
           "uniqueItems": true
         },
-        "uncertainty": { "type": "string", "enum": ["low", "medium", "high"] }
+        "uncertainty": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        }
       },
-      "required": ["finding_type", "summary", "cited_evidence_ids", "uncertainty"],
+      "required": [
+        "finding_type",
+        "summary",
+        "cited_evidence_ids",
+        "uncertainty"
+      ],
       "additionalProperties": false
     }
   },
   {
     "name": "propose_custody_event",
-    "description": "Create a DRAFT custody event for human review. A draft never changes the custody ledger. Only an authenticated human can promote it, and promotion needs an independent approver. Use 'historical_assertion' for a past event claimed by a document (cite the source and keep its raw time and clock), 'correction' to reference an earlier ledger sequence, 'transfer' for a proposed handoff.",
+    "description": "Create a DRAFT custody event for human review. A draft never changes the custody ledger. Only an authenticated human can promote it, and promotion needs the same authorization as doing it directly. 'transfer' needs version_id, from and to. 'historical_assertion' records a past event a document claims: cite each source as parallel source_evidence_ids and source_version_ids (exact versions from list_evidence), and keep claimed_time_raw, source_clock, timezone and offset_uncertainty exactly as the source states them. 'correction' references an earlier ledger event by corrects_sequence and its exact corrects_hash.",
     "inputSchema": {
       "type": "object",
       "properties": {
-        "evidence_id": { "type": "string", "pattern": "^BW-[0-9]{3}$" },
-        "event_kind": { "type": "string", "enum": ["transfer", "historical_assertion", "correction"] },
-        "reason": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "evidence_id": {
+          "type": "string",
+          "pattern": "^BW-[0-9]{3}$"
+        },
+        "event_kind": {
+          "type": "string",
+          "enum": [
+            "transfer",
+            "historical_assertion",
+            "correction"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "version_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        },
+        "from": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "to": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
         "source_evidence_ids": {
           "type": "array",
-          "items": { "type": "string", "pattern": "^BW-[0-9]{3}$" },
+          "items": {
+            "type": "string",
+            "pattern": "^BW-[0-9]{3}$"
+          },
           "minItems": 1,
-          "maxItems": 10,
-          "uniqueItems": true
+          "maxItems": 10
         },
-        "claimed_time_raw": { "type": "string", "minLength": 1, "maxLength": 200 },
-        "source_clock": { "type": "string", "minLength": 1, "maxLength": 200 },
-        "corrects_sequence": { "type": "integer", "minimum": 1 }
+        "source_version_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._-]{1,128}$"
+          },
+          "minItems": 1,
+          "maxItems": 10
+        },
+        "claimed_time_raw": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "source_clock": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "timezone": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "offset_uncertainty": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "corrects_sequence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "corrects_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
       },
-      "required": ["evidence_id", "event_kind", "reason"],
+      "required": [
+        "evidence_id",
+        "event_kind",
+        "reason"
+      ],
       "additionalProperties": false
     }
   }

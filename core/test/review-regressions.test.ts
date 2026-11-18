@@ -346,7 +346,7 @@ test('N6: the promotion capability cannot write arbitrary proposal state', async
 // Finding 9 ----------------------------------------------------------------
 
 test('F9: the append-only table list lives in core and matches ADR 0005', () => {
-  assert.deepEqual([...APPEND_ONLY_TABLES].sort(), ['checkpoints', 'events', 'exports', 'idempotency', 'quarantine']);
+  assert.deepEqual([...APPEND_ONLY_TABLES].sort(), ['checkpoints', 'events', 'exports', 'findings', 'idempotency', 'quarantine']);
   for (const t of APPEND_ONLY_TABLES) assert.ok(Object.values(TABLES).includes(t as never), t);
   assert.ok(Object.isFrozen(APPEND_ONLY_TABLES));
 });

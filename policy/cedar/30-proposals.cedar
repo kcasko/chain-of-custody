@@ -16,6 +16,9 @@ permit (
 )
 when {
   context.input has reason &&
+  context.input has version_id &&
+  context.input has from &&
+  context.input has to &&
   context.input.event_kind == "transfer" &&
   {{EVIDENCE_ID_SET}}.contains(context.input.evidence_id)
 };
@@ -36,8 +39,11 @@ when {
   context.input has source_evidence_ids &&
   !context.input.source_evidence_ids.isEmpty() &&
   {{EVIDENCE_ID_SET}}.containsAll(context.input.source_evidence_ids) &&
+  context.input has source_version_ids &&
   context.input has claimed_time_raw &&
-  context.input has source_clock
+  context.input has source_clock &&
+  context.input has timezone &&
+  context.input has offset_uncertainty
 };
 
 // A correction references an earlier ledger sequence. It appends; it never edits.
@@ -52,7 +58,8 @@ when {
   context.input.event_kind == "correction" &&
   {{EVIDENCE_ID_SET}}.contains(context.input.evidence_id) &&
   context.input has corrects_sequence &&
-  context.input.corrects_sequence >= 1
+  context.input.corrects_sequence >= 1 &&
+  context.input has corrects_hash
 };
 
 // Defense in depth: hold even if a future permit is written too broadly.

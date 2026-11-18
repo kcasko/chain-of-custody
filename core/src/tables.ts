@@ -10,6 +10,7 @@ export const TABLES = {
   checkpoints: 'checkpoints',
   exports: 'exports',
   quarantine: 'quarantine',
+  findings: 'findings',
 } as const;
 
 export const APPEND_ONLY_TABLES: readonly string[] = Object.freeze([
@@ -18,4 +19,5 @@ export const APPEND_ONLY_TABLES: readonly string[] = Object.freeze([
   TABLES.checkpoints,
   TABLES.exports,
   TABLES.quarantine,
+  TABLES.findings,
 ]);

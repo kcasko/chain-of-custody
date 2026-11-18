@@ -85,10 +85,13 @@ function validateCall(spec, evidence, tool, args) {
     }
   }
   if (tool === 'propose_custody_event') {
-    if (args.event_kind === 'historical_assertion' && !(args.source_evidence_ids && args.claimed_time_raw && args.source_clock)) {
+    if (args.event_kind === 'transfer' && !(args.version_id && args.from && args.to)) {
+      return { ok: false, code: 'MISSING_TRANSFER_FIELDS', detail: 'transfers need version_id, from and to' };
+    }
+    if (args.event_kind === 'historical_assertion' && !(args.source_evidence_ids && args.source_version_ids && args.source_evidence_ids.length === args.source_version_ids.length && args.claimed_time_raw && args.source_clock && args.timezone && args.offset_uncertainty)) {
       return { ok: false, code: 'MISSING_PROVENANCE', detail: 'historical assertions need sources, raw time and source clock' };
     }
-    if (args.event_kind === 'correction' && args.corrects_sequence === undefined) {
+    if (args.event_kind === 'correction' && (args.corrects_sequence === undefined || args.corrects_hash === undefined)) {
       return { ok: false, code: 'MISSING_TARGET', detail: 'corrections must reference a ledger sequence' };
     }
   }
