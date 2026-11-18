@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-18 (ledger overwrite risk and T12 CDK)
+
+- Session token check: the T14b test-role token appears in no repository file, git object, temp file, AWS CLI cache or shell history. It appears only in the local Claude session transcript. CloudTrail shows the session used only between 19:45:22 and 19:45:39 UTC, before the role was deleted at 19:46:57.
+- ADR 0008: DynamoDB cannot prevent an overwrite by stolen application credentials. Adopted a stream-fed write-once ledger archive in an Object Lock bucket (`adapters/aws/src/ledger-archive.ts`, 6 tests) with `APPEND_ONLY_TAMPER` and `ARCHIVE_CONFLICT` alarms. SECURITY-RULES now separates prevention, detection and recovery per threat, with verification status. RB-1 marked as the primary release blocker.
+- T12: CDK app in `infra/` (aws-cdk-lib 2.275.0, CLI 2.1147.0, esbuild 0.28.2, exact pins). Storage stack (T14b table, buckets, policies, writer policy, archive, alarms) and gateway stack (Stage B engine, gateway, target, stub Lambda, 11 Cedar policies created one at a time, boundary forbids first). Cedar rendered by the existing injection-safe renderer and validated at synth. 12 template tests; mutation checks on policy order, create-only rule, ENFORCE mode, archiver retries and gateway scoping. **Synth only; nothing deployed.**
+- `npm test`: 354/354; typecheck covers core, app, adapters and infra.
+
 ## 2026-11-18 (T14b: adapters on real AWS)
 
 - Approved run in us-east-1 as a least-privilege role: 23/23 (port contract plus R2 to R12). Whole domain with a VERIFIED, FRESH export on DynamoDB plus S3; contiguous ledger under 20-way contention; SDK retry idempotency confirmed; every IAM and bucket-policy denial confirmed; S3 overwrite and bad-checksum uploads refused; real version IDs fit `VERSION_ID`.
