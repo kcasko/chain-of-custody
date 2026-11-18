@@ -22,6 +22,7 @@ Status: domain core (TypeScript, `core/`), Cedar tool policies (`policy/`) and a
 - [ADR 0004: Agent tools and Cedar policy](docs/adr/0004-agent-tools-and-cedar-policy.md) (`npm test` runs the policy suite)
 - [T09 spike plan](docs/plans/2026-11-19-t09-bma-spike.md) and [report: BMA blocked by account access; Stage B enforcement stack verified](docs/research/2026-11-18-t09-spike-report.md)
 - [ADR 0005: Domain core](docs/adr/0005-domain-core.md) and [verification spec v1](docs/specs/canonicalization-and-verification-v1.md)
+- [ADR 0007: DynamoDB and S3 adapters](docs/adr/0007-aws-storage-adapters.md) and [adapter test setup](adapters/aws/README.md)
 - [Release blockers](docs/RELEASE-BLOCKERS.md)
 - [Stage B harness](harness/README.md) and [BMA access request drafts](docs/plans/2026-11-18-bma-access-requests.md)
 - [Original planning source](docs/source/ORIGINAL-BLUEPRINT.md)

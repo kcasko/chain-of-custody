@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-11-18 (T14: AWS storage adapters)
+
+- `DynamoStore` and `S3ObjectStore` in `adapters/aws/` implement the core's storage ports. ADR 0007 records the table design, what storage can and cannot enforce, and the IAM and bucket settings T12 must apply.
+- Shared port contract (`adapters/aws/test/store-contract.ts`) runs against `MemoryStore` and DynamoDB Local 3.3.1. The full domain, including an approved export that verifies independently, runs on DynamoDB; concurrent ledger appends stay one contiguous chain; a raw table rewrite is not blocked by storage but the verifier reports `FAILED`.
+- S3 adapter tested with the real SDK client and a fake network layer: `If-None-Match: *`, SHA-256 checksums, version-pinned reads, refusal of unversioned or suspended-versioning buckets, fail-closed errors.
+- New dependencies `@aws-sdk/client-dynamodb` and `@aws-sdk/client-s3` 3.1161.0 (exact pins, 0 audit findings). `npm test`: 323/323; typecheck covers `adapters/aws`.
+- Nothing created in AWS. Real DynamoDB and S3 verification still needs approval.
+
 ## 2026-11-18 (T15: Integrity Challenge demo)
 
 - Local demo page (`app/`, `npm run demo`, http://127.0.0.1:4317). Runs 24 agent tool calls through the rendered Cedar policies and the gateway handler, plus four attacks from outside the agent (self-approval, swapped export version, overwritten original, rewritten ledger). 21/21 attacks refused, 7/7 legitimate calls executed, evidence bytes and ledger head unchanged.
