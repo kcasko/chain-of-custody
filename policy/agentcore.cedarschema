@@ -1,0 +1,65 @@
+// Local model of the Cedar schema that AgentCore Policy builds for our Gateway.
+// AgentCore derives `context.input` types from each tool's inputSchema
+// (policy/tools/evidence-tools.json). This file mirrors that by hand, and
+// tests/policy.test.cjs checks the two stay in sync.
+//
+// UNVERIFIED until spike T09: exact entity attribute names, whether JSON arrays
+// map to Set<String>, and whether integers map to Long in the real engine.
+
+namespace AgentCore {
+  // Caller authenticated with SigV4 (BMA uses the session role). id is the
+  // assumed-role ARN: arn:aws:sts::<account>:assumed-role/<role>/<session>.
+  entity IamEntity = { id: String };
+
+  // OAuth caller. Declared so tests can prove a JWT principal cannot use these tools.
+  entity OAuthUser = { id: String } tags String;
+
+  entity Gateway;
+
+  action "EvidenceTools___list_evidence" appliesTo {
+    principal: [IamEntity, OAuthUser],
+    resource: [Gateway],
+    context: { input: {} }
+  };
+
+  action "EvidenceTools___read_evidence_version" appliesTo {
+    principal: [IamEntity, OAuthUser],
+    resource: [Gateway],
+    context: { input: { evidence_id: String, version_id: String } }
+  };
+
+  action "EvidenceTools___compare_timestamps" appliesTo {
+    principal: [IamEntity, OAuthUser],
+    resource: [Gateway],
+    context: { input: { evidence_ids: Set<String> } }
+  };
+
+  action "EvidenceTools___record_finding" appliesTo {
+    principal: [IamEntity, OAuthUser],
+    resource: [Gateway],
+    context: {
+      input: {
+        finding_type: String,
+        summary: String,
+        cited_evidence_ids: Set<String>,
+        uncertainty: String
+      }
+    }
+  };
+
+  action "EvidenceTools___propose_custody_event" appliesTo {
+    principal: [IamEntity, OAuthUser],
+    resource: [Gateway],
+    context: {
+      input: {
+        evidence_id: String,
+        event_kind: String,
+        reason: String,
+        source_evidence_ids?: Set<String>,
+        claimed_time_raw?: String,
+        source_clock?: String,
+        corrects_sequence?: Long
+      }
+    }
+  };
+}

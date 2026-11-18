@@ -6,6 +6,9 @@
 - Added BMA feasibility research from official AWS docs, with open spike questions Q1-Q6.
 - Adopted ADR 0003 (approved by Keith): Gateway + Cedar + Lambda tool boundary, agent as its own case-bound principal (amends ADR 0002), hostile execution environment, storage-level append-only enforcement, 14-day P0/P1/P2 scope.
 - Added BMA-specific threats B1-B7 and residual risks R1-R3 to the security rules. Added tasks T07b, T09, T10.
+- T10: five agent tool definitions and Cedar policies (`policy/`), deny by default with session-role and gateway boundary forbids. 128 policy tests covering permitted, denied, escalation, prompt injection, approval bypass and missing-field cases, each run typed and untyped. ADR 0004 records decisions and what remains for the Lambda layer and T09. Added dev dependency `@cedar-policy/cedar-wasm` 4.14.0 (exact pin).
+- T09 plan prepared (not executed): staged spike with gates, exact resources, cost estimate (about $3 typical, about $12 worst case), $15 budget safeguards and same-day teardown. Found that GPT-5.6 Luna bills as AWS Marketplace usage, so service-filtered budgets must name it explicitly.
+- T09 run: stopped at gate G1. The account gets HTTP 401 "Bedrock Managed Agents is not available for this account" in all three preview regions, and GPT-5.6 Luna is not entitled (gpt-oss-20b works with the same credentials). Created two free budgets and two narrow IAM roles; nothing billable. Found that the official exec-server example passes the operator's AWS profile to the agent's shell. Report and access-request drafts in docs/research/2026-11-18-t09-spike-report.md.
 
 ## 2026-11-16
 

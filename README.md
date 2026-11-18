@@ -15,6 +15,8 @@ Status: local planning repository and working Claude Code / Codex CLI collaborat
 - [Task board](docs/TASKS.md)
 - [BMA feasibility research (Nov 18)](docs/research/2026-11-18-bma-feasibility.md)
 - [ADR 0003: BMA integration and enforcement layers (adopted)](docs/adr/0003-bma-integration-and-enforcement-layers.md)
+- [ADR 0004: Agent tools and Cedar policy](docs/adr/0004-agent-tools-and-cedar-policy.md) (`npm test` runs the policy suite)
+- [T09 spike plan](docs/plans/2026-11-19-t09-bma-spike.md) and [report: blocked, account not entitled to BMA](docs/research/2026-11-18-t09-spike-report.md)
 - [Original planning source](docs/source/ORIGINAL-BLUEPRINT.md)
 
 Everything in the case is synthetic. Do not add actual evidence, personal information, or credentials. Do not deploy, publish, create paid resources, or enable pay-as-you-go model access.

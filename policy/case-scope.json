@@ -1,0 +1,5 @@
+{
+  "caseId": "BLACKWATER-2021",
+  "note": "The only case this deployment serves. Evidence IDs are rendered into the Cedar policies, so adding evidence is a reviewed policy change.",
+  "evidenceIds": ["BW-001", "BW-002", "BW-003", "BW-004", "BW-005", "BW-006", "BW-007", "BW-008", "BW-009", "BW-010"]
+}
