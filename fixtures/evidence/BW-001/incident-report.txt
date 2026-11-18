@@ -1,0 +1,10 @@
+SYNTHETIC FIXTURE - fictional case, not a real record.
+BELLWETHER FIRE DEPARTMENT - INCIDENT REPORT (transcribed)
+Incident: Structure fire, Blackwater Applied Research, Bellwether MI
+Report author: Det. Owen Hale (as transcribed)
+Header field "Time of incident": 00:14
+Narrative: Units dispatched after the building alarm. Night staff
+stated the first alarm sounded "just before midnight". Fire crews
+on scene 00:27. Two fatalities. One survivor (L. Ortiz) transported.
+Note: header time and narrative time do not agree. Source clock for
+the header field is not stated.

@@ -1,0 +1,6 @@
+SYNTHETIC FIXTURE - fictional case, not a real record.
+BLACKWATER APPLIED RESEARCH - CHEMICAL ANALYSIS SUMMARY
+Lab: Ward lab, Bellwether
+Samples analyzed: S-11, S-12, S-14, S-17
+S-17: residue consistent with lithium battery electrolyte decomposition.
+Analyst note: S-17 chain-of-custody form not attached to this summary.

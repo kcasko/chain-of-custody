@@ -1,0 +1,4 @@
+SYNTHETIC FIXTURE - fictional case, not a real record.
+Facilities note, dated 2021-11-02: alarm controller RTC compared with
+a reference clock and found to run about 14 minutes slow. The note does
+not say whether the drift existed on 2021-10-13 or how it was measured.

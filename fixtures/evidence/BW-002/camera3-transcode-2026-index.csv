@@ -1,0 +1,8 @@
+#SYNTHETIC FIXTURE - fictional case. Camera 3 index, 2026 migration transcode.
+#derived_from=camera3-original-index.csv; transformation=container transcode, timestamps re-rendered to UTC by migration tool
+frame,utc_time,event
+000120,2021-10-14T03:51:04Z,motion: east corridor
+000188,2021-10-14T03:57:40Z,smoke visible: lab B door
+000201,2021-10-14T03:58:55Z,light flicker
+000214,2021-10-14T04:00:02Z,recording gap begins
+000215,2021-10-14T04:41:17Z,recording resumes

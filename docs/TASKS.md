@@ -4,11 +4,11 @@ All implementation tickets are proposed, not delegated permission to modify file
 
 | ID | Proposed owner | Task | Acceptance |
 |---|---|---|---|
-| T00 | Codex, Claude reviews | Verifier trust and canonicalization contract | One per-case chain, correction references, purpose-separated golden vectors, external key/checkpoint inputs, honest freshness states; spec and synthetic tests only |
-| T01 | Claude | Synthetic artifact fixtures and manifest | Ten IDs, real byte hashes, explicit clock uncertainties and evaluator truth separation |
-| T02 | Codex | Domain policy and approval core | Matrix, cross-case denial, self-approval denial, atomic replay/race tests |
-| T03 | Claude | Version-pinned storage adapter | No latest-original reads, derivative lineage and failure cleanup tests |
-| T04 | Codex | Ledger and independent verifier | Canonical hashes, concurrent head writes, edit/reorder/truncation detection |
+| T00 | Claude (done Nov 18: spec v1, OpenSSL/sha256sum vectors, `core/src/canonical.ts`, `crypto.ts`) | Verifier trust and canonicalization contract | One per-case chain, correction references, purpose-separated golden vectors, external key/checkpoint inputs, honest freshness states; spec and synthetic tests only |
+| T01 | Claude (done Nov 18: `fixtures/`, byte-derived manifest, evaluator truth separated) | Synthetic artifact fixtures and manifest | Ten IDs, real byte hashes, explicit clock uncertainties and evaluator truth separation |
+| T02 | Claude (done Nov 18: `core/src/policy.ts`, `audit.ts`, `approvals.ts`) | Domain policy and approval core | Matrix, cross-case denial, self-approval denial, atomic replay/race tests |
+| T03 | Claude (done Nov 18: `core/src/evidence.ts`) | Version-pinned storage adapter | No latest-original reads, derivative lineage and failure cleanup tests |
+| T04 | Claude (done Nov 18: `core/src/ledger.ts`, `custody.ts`, `proposals.ts`, `checkpoint.ts`, `export.ts`, `verifier.ts`) | Ledger and independent verifier | Canonical hashes, concurrent head writes, edit/reorder/truncation detection |
 | T05 | Claude | Local API and minimal evidence explorer | Auth/session boundary, error contracts, legitimate workflows |
 | T06 | Codex | Adversarial integration suite | 10 attacks, 15 variations, 10 allowed controls with state assertions |
 | T07 | Claude (done Nov 18) | Managed Agents feasibility documentation | Done: docs/research/2026-11-18-bma-feasibility.md and ADR 0003 (adopted). Event rules still unpublished, see T07b |

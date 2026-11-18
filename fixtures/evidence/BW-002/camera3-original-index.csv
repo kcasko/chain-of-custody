@@ -1,0 +1,8 @@
+#SYNTHETIC FIXTURE - fictional case. Camera 3 export index, original container.
+#source_clock=DVR internal clock; timezone=not recorded
+frame,dvr_time,event
+000120,2021-10-13 23:51:04,motion: east corridor
+000188,2021-10-13 23:57:40,smoke visible: lab B door
+000201,2021-10-13 23:58:55,light flicker
+000214,2021-10-14 00:00:02,recording gap begins
+000215,2021-10-14 00:41:17,recording resumes

@@ -8,6 +8,10 @@ Event verified November 18, 2026 (docs/research/2026-11-18-bma-feasibility.md): 
 
 ADR 0003 (adopted November 18, 2026) sets the BMA integration, enforcement layers and a P0/P1/P2 cut that fits 14 days. Where it conflicts with the milestones below, ADR 0003 governs.
 
+## Release blocker
+
+RB-1 (open): the AWS account is not entitled to Bedrock Managed Agents. No submission readiness claim until it closes. Tracking, evidence and decision date (November 24): docs/RELEASE-BLOCKERS.md.
+
 ## Smallest complete product
 
 Four screens: Case Overview, Evidence Explorer, Custody Timeline, Integrity Challenge. Use investigative records, tables, archival labels, legible timestamps and restrained colors. Inspect live design references before UI work. Avoid generic slogan heroes and glowing dashboard cards.

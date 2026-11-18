@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-11-18 (T00 to T04: domain core)
+
+- T00: spec `docs/specs/canonicalization-and-verification-v1.md` (RFC 8785 subset, purpose-separated SHA-256, Ed25519 checkpoints, verifier trust inputs and honest states). Golden vectors checked with `sha256sum` and OpenSSL.
+- T01: ten synthetic fixtures (six deep), byte-derived manifest (`npm run fixtures:check`), evaluator truth in `tests/fixtures/expected-findings.json`. `fixtures/evidence/**` marked binary so Git never alters hashed bytes. A test caught and removed a reference to the truth file from the agent-visible manifest.
+- T02 to T04: TypeScript domain core in `core/` (no runtime dependencies, independent of AWS and BMA): transactional store port with append-only tables, deny-by-default policy matrix, fail-closed audit guard, digest-bound single-use approvals, write-once version-pinned evidence storage with quarantine, per-case hash-chained ledger with corrections and idempotency, agent proposals with human promotion, checkpoint authority, approval-gated export and an independent verifier.
+- Dev dependencies: `typescript` 7.0.2, `@types/node` 24.19.2 (exact pins). Scripts: `npm run typecheck`, `npm run fixtures:check`; `npm test` now includes `core/test`.
+- Independent security review (read-only, separate reviewer): ten findings, two high. Fixed all ten: no public extra transactional writes (an investigator could forge their own export approval), verifier rejects duplicate and unanchored evidence registrations, registration idempotency checked before storing bytes, export reads everything before consuming the approval, audited lookup misses and promotions, `revoke_approval` and `promote_proposal` policy rows, guarded quarantine view, validated trusted references and idempotency keys, append-only table list in core. Regression tests in `core/test/review-regressions.test.ts`.
+- Follow-up review by a fresh reviewer: eight fixes hold, two partial; six new findings fixed (verifier binds files to entries and rejects unlisted files, export reads the checkpoint before events, ID lookups no longer reveal existence and audit store failures, case IDs validated, narrower promotion capability).
+- `npm test`: 262/262 (150 existing + 112 core). Manual mutation checks: eight core safeguards, six first-review fixes and six follow-up fixes, all caught. ADR 0005 records decisions and the review; `docs/RELEASE-BLOCKERS.md` tracks RB-1 (BMA access) and RB-2 (event rules).
+
 ## 2026-11-18
 
 - T07: verified event window and brief from the official event page (rules still unpublished).

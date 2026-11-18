@@ -1,0 +1,51 @@
+{
+  "note": "Golden vectors for spec v1. 'canonical' strings are written by hand from the spec. Hashes are computed with sha256sum over printf '%s\\0%s' purpose canonical; the signature is verified with OpenSSL. Do not regenerate these from the code under test.",
+  "canonical": [
+    { "name": "key order", "input": { "b": 2, "a": 1 }, "canonical": "{\"a\":1,\"b\":2}" },
+    { "name": "empty containers", "input": { "o": {}, "a": [] }, "canonical": "{\"a\":[],\"o\":{}}" },
+    {
+      "name": "nesting, arrays keep order, non-ASCII keys sort by UTF-16 code unit",
+      "input": { "z": [3, "é", null, true], "A": { "y": "x", "x": "y" }, "é": "ü" },
+      "canonical": "{\"A\":{\"x\":\"y\",\"y\":\"x\"},\"z\":[3,\"é\",null,true],\"é\":\"ü\"}"
+    },
+    {
+      "name": "string escapes match JSON.stringify",
+      "input": { "q": "line\nbreak \"quoted\" \u0001 tab\t/" },
+      "canonical": "{\"q\":\"line\\nbreak \\\"quoted\\\" \\u0001 tab\\t/\"}"
+    },
+    { "name": "integers and booleans", "input": { "n": -42, "big": 9007199254740991, "t": true, "f": false, "z": 0 }, "canonical": "{\"big\":9007199254740991,\"f\":false,\"n\":-42,\"t\":true,\"z\":0}" },
+    {
+      "name": "custody event body",
+      "input": {
+        "schema": "coc/custody-event/v1",
+        "caseId": "BLACKWATER-2021",
+        "sequence": 1,
+        "prevHash": "0000000000000000000000000000000000000000000000000000000000000000",
+        "recordedAt": "2026-11-18T15:00:00.000Z",
+        "actor": { "type": "human", "userId": "mara.voss", "role": "investigator" },
+        "kind": "evidence_registered",
+        "body": { "evidenceId": "BW-001", "versionId": "v-0001", "sha256": "1111111111111111111111111111111111111111111111111111111111111111", "size": 120, "mediaType": "text/plain", "derivedFrom": null }
+      },
+      "canonical": "{\"actor\":{\"role\":\"investigator\",\"type\":\"human\",\"userId\":\"mara.voss\"},\"body\":{\"derivedFrom\":null,\"evidenceId\":\"BW-001\",\"mediaType\":\"text/plain\",\"sha256\":\"1111111111111111111111111111111111111111111111111111111111111111\",\"size\":120,\"versionId\":\"v-0001\"},\"caseId\":\"BLACKWATER-2021\",\"kind\":\"evidence_registered\",\"prevHash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"recordedAt\":\"2026-11-18T15:00:00.000Z\",\"schema\":\"coc/custody-event/v1\",\"sequence\":1}"
+    }
+  ],
+  "rejected": [
+    { "name": "float", "input": 1.5 },
+    { "name": "unsafe integer", "input": 9007199254740992 },
+    { "name": "non-NFC string (e + combining acute)", "input": "é" }
+  ],
+  "hashes": [
+    { "canonicalIndex": 0, "purpose": "coc/v1/custody-event", "sha256": "902e056b681ad610b734489984fc9c64bcbc4d09d747d9f7974dd5ded1c03bd1" },
+    { "canonicalIndex": 0, "purpose": "coc/v1/approval-operation", "sha256": "ddee21655ef872362d413b5b6ba1d967b7f4c549cbba07f6dc835e51eb7637c5" },
+    { "canonicalIndex": 5, "purpose": "coc/v1/custody-event", "sha256": "531a14a843458db545f1d829df147087b99f09aac2df8e398c55b03e579eaf0f" },
+    { "canonicalIndex": 5, "purpose": "coc/v1/approval-operation", "sha256": "616bc88c9ef5ce3cb0ad042a970aed4c1e55fdc680f338cade3ec08c849969a4" }
+  ],
+  "signature": {
+    "note": "Public key derived from the seed by OpenSSL 3.0.13; keyId by sha256sum; signature verified by OpenSSL pkeyutl, which also rejected a one-byte-tampered message.",
+    "seedHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+    "publicKeyHex": "03a107bff3ce10be1d70dd18e74bc09967e4d6309ba50d5f1ddc8664125531b8",
+    "keyId": "56475aa75463474c0285df5dbf2bcab73da651358839e9b77481b2eab107708c",
+    "body": { "schema": "coc/checkpoint/v1", "caseId": "BLACKWATER-2021", "sequence": 3, "headHash": "2222222222222222222222222222222222222222222222222222222222222222", "issuedAt": "2026-11-18T15:30:00.000Z", "keyId": "56475aa75463474c0285df5dbf2bcab73da651358839e9b77481b2eab107708c" },
+    "signatureHex": "6839247c2e8e0ac8f3807198d2068625432e25e9ff41ad7a2765910399316754eeb6d2c1d55d47b5857fc1fa7d96f5875746262b2f983df28a8258a6407d2405"
+  }
+}

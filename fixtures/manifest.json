@@ -1,0 +1,254 @@
+{
+  "schema": "coc/fixture-manifest/v1",
+  "caseId": "BLACKWATER-2021",
+  "synthetic": true,
+  "provenanceNote": "All content is fictional and proposed for testing (T01, November 18, 2026). Times, sample names and documents are proposed synthetic details, not recovered canon. Agent-visible provenance only.",
+  "items": [
+    {
+      "evidenceId": "BW-001",
+      "title": "Original incident report",
+      "depth": "deep",
+      "versions": [
+        {
+          "label": "original",
+          "path": "evidence/BW-001/incident-report.txt",
+          "mediaType": "text/plain",
+          "derivedFrom": null,
+          "sourceClock": "not stated",
+          "timezone": "not stated",
+          "rawTimes": [
+            "00:14 (header)",
+            "just before midnight (narrative)",
+            "00:27 (on scene)"
+          ],
+          "offsetUncertainty": "unknown",
+          "sha256": "f527b7f38191e274eaf36e77879cbc84303a90e78aea998e1ad8200ad9bddf16",
+          "size": 570
+        }
+      ]
+    },
+    {
+      "evidenceId": "BW-002",
+      "title": "Security recording index (camera 3)",
+      "depth": "deep",
+      "versions": [
+        {
+          "label": "original",
+          "path": "evidence/BW-002/camera3-original-index.csv",
+          "mediaType": "text/csv",
+          "derivedFrom": null,
+          "sourceClock": "DVR internal clock",
+          "timezone": "not recorded",
+          "rawTimes": [
+            "2021-10-13 23:57:40",
+            "2021-10-14 00:00:02",
+            "2021-10-14 00:41:17"
+          ],
+          "offsetUncertainty": "unknown; DVR clock never compared to a reference",
+          "sha256": "0bdfd4e907324b970b511ba01b4648c58417819a195b979161b9ccef66905d94",
+          "size": 393
+        },
+        {
+          "label": "transcode-2026",
+          "path": "evidence/BW-002/camera3-transcode-2026-index.csv",
+          "mediaType": "text/csv",
+          "derivedFrom": {
+            "label": "original",
+            "transformation": "2026 migration transcode; timestamps re-rendered to UTC assuming UTC-4"
+          },
+          "sourceClock": "derived from DVR clock",
+          "timezone": "UTC (by migration tool assumption)",
+          "rawTimes": [
+            "2021-10-14T03:57:40Z"
+          ],
+          "offsetUncertainty": "inherits DVR uncertainty plus the migration tool's timezone assumption",
+          "sha256": "fb724caacd2408bdae5358c9fe47c25b4bc30d469decc28acd075c67d0469856",
+          "size": 467
+        }
+      ]
+    },
+    {
+      "evidenceId": "BW-003",
+      "title": "Chemical analysis summary",
+      "depth": "deep",
+      "versions": [
+        {
+          "label": "original",
+          "path": "evidence/BW-003/chemical-analysis.txt",
+          "mediaType": "text/plain",
+          "derivedFrom": null,
+          "sourceClock": "not applicable",
+          "timezone": "not applicable",
+          "rawTimes": [],
+          "offsetUncertainty": "not applicable",
+          "sha256": "b23cff6fbd6b58d2b4aa1a2ab2c2907e4b5342f1ea25e0b0a89bf52bb931400a",
+          "size": 322
+        }
+      ]
+    },
+    {
+      "evidenceId": "BW-004",
+      "title": "Maintenance access log",
+      "depth": "inventory",
+      "versions": [
+        {
+          "label": "original",
+          "path": "evidence/BW-004/maintenance-access-log.csv",
+          "mediaType": "text/csv",
+          "derivedFrom": null,
+          "sourceClock": "access controller",
+          "timezone": "local; DST status not recorded",
+          "rawTimes": [
+            "2021-10-13 23:52:10"
+          ],
+          "offsetUncertainty": "unknown",
+          "sha256": "2a025a812eb639a9b28a05a69fe195e5708e51e89d0ca42cbe294167ac5f8905",
+          "size": 241
+        }
+      ]
+    },
+    {
+      "evidenceId": "BW-005",
+      "title": "Fire alarm controller export",
+      "depth": "deep",
+      "versions": [
+        {
+          "label": "original",
+          "path": "evidence/BW-005/alarm-controller-export.log",
+          "mediaType": "text/plain",
+          "derivedFrom": null,
+          "sourceClock": "controller RTC; no NTP sync recorded",
+          "timezone": "local (assumed)",
+          "rawTimes": [
+            "2021-10-13 23:44:08",
+            "2021-10-13 23:59:50"
+          ],
+          "offsetUncertainty": "a later note says about 14 minutes slow, measured 2021-11-02; drift on 2021-10-13 unverified",
+          "sha256": "c3967c127ea2beb0863caabd321187856f265c0f9529b6b7edab9df4864058af",
+          "size": 262
+        },
+        {
+          "label": "clock-drift-note",
+          "path": "evidence/BW-005/clock-drift-note.txt",
+          "mediaType": "text/plain",
+          "derivedFrom": null,
+          "sourceClock": "not applicable",
+          "timezone": "not applicable",
+          "rawTimes": [
+            "2021-11-02 (note date)"
+          ],
+          "offsetUncertainty": "method not stated",
+          "sha256": "b2d9bdb8e2814ba368dff7ae62d731d2dfdd59480cae0c7ef75d0e08939775f9",
+          "size": 269
+        }
+      ]
+    },
+    {
+      "evidenceId": "BW-006",
+      "title": "Witness interview summary",
+      "depth": "inventory",
+      "versions": [
+        {
+          "label": "original",
+          "path": "evidence/BW-006/witness-interview.txt",
+          "mediaType": "text/plain",
+          "derivedFrom": null,
+          "sourceClock": "witness recollection",
+          "timezone": "not applicable",
+          "rawTimes": [
+            "around midnight, maybe a little before"
+          ],
+          "offsetUncertainty": "recollection under medication",
+          "sha256": "8f3267feac4b8642dbcf91c9f4149d24762e89e2075e5af5cf0d8566d1874002",
+          "size": 301
+        }
+      ]
+    },
+    {
+      "evidenceId": "BW-007",
+      "title": "Sealed sample manifest",
+      "depth": "deep",
+      "versions": [
+        {
+          "label": "original",
+          "path": "evidence/BW-007/sealed-sample-manifest.txt",
+          "mediaType": "text/plain",
+          "derivedFrom": null,
+          "sourceClock": "handwritten",
+          "timezone": "not stated",
+          "rawTimes": [
+            "10/14/2021 02:40"
+          ],
+          "offsetUncertainty": "unknown",
+          "sha256": "285ac8bd7da5db7eb916b8d98ade043265c6c8dc3833c6363717475e70c9af0b",
+          "size": 281
+        }
+      ]
+    },
+    {
+      "evidenceId": "BW-008",
+      "title": "Personnel roster",
+      "depth": "inventory",
+      "versions": [
+        {
+          "label": "original",
+          "path": "evidence/BW-008/personnel-roster.csv",
+          "mediaType": "text/csv",
+          "derivedFrom": null,
+          "sourceClock": "not applicable",
+          "timezone": "not applicable",
+          "rawTimes": [
+            "2021-09-01 (roster date)"
+          ],
+          "offsetUncertainty": "not applicable",
+          "sha256": "ed366759cec23c1822fab8a1d48f29979623511c772f7b3cdcff2ce60972edf4",
+          "size": 228
+        }
+      ]
+    },
+    {
+      "evidenceId": "BW-009",
+      "title": "Investigator notes",
+      "depth": "inventory",
+      "versions": [
+        {
+          "label": "original",
+          "path": "evidence/BW-009/investigator-notes.txt",
+          "mediaType": "text/plain",
+          "derivedFrom": null,
+          "sourceClock": "not applicable",
+          "timezone": "not applicable",
+          "rawTimes": [
+            "2021-10-15 (typed)",
+            "undated (margin note)"
+          ],
+          "offsetUncertainty": "margin note date unknown",
+          "sha256": "d1f4cd3740ba27660edd0c5379e3e5ae9a5db54b3c4e91c5de9b90266fe351b7",
+          "size": 215
+        }
+      ]
+    },
+    {
+      "evidenceId": "BW-010",
+      "title": "Archive migration log",
+      "depth": "deep",
+      "versions": [
+        {
+          "label": "original",
+          "path": "evidence/BW-010/archive-migration-log.txt",
+          "mediaType": "text/plain",
+          "derivedFrom": null,
+          "sourceClock": "migration host",
+          "timezone": "not stated",
+          "rawTimes": [
+            "2026-11-03 02:14:22",
+            "2026-11-03 02:14:23"
+          ],
+          "offsetUncertainty": "unknown",
+          "sha256": "d7b74de07f7e7587ee8ba3be137fd7ed9c1ed89f812422bf2a7e5d60af6a6d32",
+          "size": 582
+        }
+      ]
+    }
+  ]
+}

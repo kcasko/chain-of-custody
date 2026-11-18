@@ -1,0 +1,5 @@
+#SYNTHETIC FIXTURE - fictional case. Badge access export.
+#source_clock=access controller; timezone=local, DST status not recorded
+badge,door,time,result
+M-204,Lab B,2021-10-13 23:52:10,granted
+M-118,Loading dock,2021-10-13 22:05:44,granted
