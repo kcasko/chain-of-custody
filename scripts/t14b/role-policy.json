@@ -1,0 +1,23 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "TableReadAndConditionalWrites",
+      "Effect": "Allow",
+      "Action": ["dynamodb:GetItem", "dynamodb:Query", "dynamodb:PutItem", "dynamodb:ConditionCheckItem"],
+      "Resource": "arn:aws:dynamodb:us-east-1:${ACCOUNT_ID}:table/coc-t14-adapter-test"
+    },
+    {
+      "Sid": "NeverDeleteOrRewriteInPlace",
+      "Effect": "Deny",
+      "Action": ["dynamodb:DeleteItem", "dynamodb:UpdateItem", "dynamodb:BatchWriteItem", "dynamodb:DeleteTable", "dynamodb:UpdateTable", "dynamodb:PartiQLUpdate", "dynamodb:PartiQLDelete"],
+      "Resource": "arn:aws:dynamodb:us-east-1:${ACCOUNT_ID}:table/coc-t14-adapter-test"
+    },
+    {
+      "Sid": "EvidenceObjectsWriteOnceReadVersion",
+      "Effect": "Allow",
+      "Action": ["s3:PutObject", "s3:GetObject", "s3:GetObjectVersion"],
+      "Resource": "arn:aws:s3:::${BUCKET}/*"
+    }
+  ]
+}

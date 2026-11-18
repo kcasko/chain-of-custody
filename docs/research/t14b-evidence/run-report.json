@@ -1,0 +1,112 @@
+{
+  "runId": "run-2026-11-18T19-45-27-188Z-f6fab9",
+  "startedAt": "2026-11-18T19:45:27.189Z",
+  "region": "us-east-1",
+  "R2": {
+    "status": "VERIFIED",
+    "freshness": "FRESH",
+    "validThrough": 13,
+    "evidenceVerified": 3,
+    "findings": []
+  },
+  "R3": {
+    "rounds": [
+      {
+        "committed": 2,
+        "codes": {
+          "LEDGER_CONFLICT": 18
+        },
+        "ms": 369
+      },
+      {
+        "committed": 1,
+        "codes": {
+          "LEDGER_CONFLICT": 19
+        },
+        "ms": 237
+      },
+      {
+        "committed": 1,
+        "codes": {
+          "LEDGER_CONFLICT": 19
+        },
+        "ms": 242
+      },
+      {
+        "committed": 1,
+        "codes": {
+          "LEDGER_CONFLICT": 19
+        },
+        "ms": 237
+      },
+      {
+        "committed": 1,
+        "codes": {
+          "LEDGER_CONFLICT": 19
+        },
+        "ms": 239
+      }
+    ],
+    "totalEvents": 18
+  },
+  "R4": {
+    "result": {
+      "ok": true
+    },
+    "attempts": 2,
+    "dropped": true
+  },
+  "R5": {
+    "DeleteItem": "AccessDeniedException",
+    "UpdateItem": "AccessDeniedException",
+    "BatchWriteItem": "AccessDeniedException",
+    "DeleteTable": "AccessDeniedException"
+  },
+  "R6": {
+    "rawOverwrite": "ALLOWED",
+    "streamKeyToCheck": {
+      "pk": "run-2026-11-18T19-45-27-188Z-f6fab9/r6/events",
+      "sk": "BLACKWATER-2021#000000000004"
+    },
+    "verifierStatus": "FAILED",
+    "findings": [
+      "EVENT_HASH_MISMATCH",
+      "PREV_HASH_MISMATCH",
+      "FRESHNESS_UNKNOWN",
+      "EVIDENCE_UNANCHORED"
+    ]
+  },
+  "R7": {
+    "second": "ObjectExistsError",
+    "firstVersionStillReads": "original"
+  },
+  "R8": {
+    "PutObject without If-None-Match": "AccessDenied",
+    "DeleteObject (delete marker)": "AccessDenied",
+    "DeleteObject with VersionId": "AccessDenied",
+    "PutObjectRetention": "AccessDenied",
+    "PutBucketVersioning": "AccessDenied"
+  },
+  "R9": {
+    "badChecksumPut": "BadDigest",
+    "laterCreateSucceeded": true
+  },
+  "R11": {
+    "ok": 1,
+    "ObjectExistsError": 19
+  },
+  "R12": {
+    "pairs": 200,
+    "mismatches": 0
+  },
+  "finishedAt": "2026-11-18T19:46:09.801Z",
+  "versionIds": {
+    "count": 80,
+    "allMatchPattern": true,
+    "lengths": [
+      32
+    ],
+    "characters": ".0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz",
+    "nonMatching": []
+  }
+}

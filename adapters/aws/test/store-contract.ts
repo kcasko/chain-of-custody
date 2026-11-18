@@ -8,7 +8,10 @@ import { AppendOnlyViolation, type TransactionalStore } from '../../../core/src/
 
 export const CONTRACT_APPEND_ONLY = ['events', 'findings'];
 
-export function storeContract(makeStore: () => Promise<TransactionalStore>): void {
+// atMostOne: real DynamoDB may cancel every racer (TransactionConflict), so a
+// real-table run accepts zero winners; local stores must produce exactly one.
+export function storeContract(makeStore: () => Promise<TransactionalStore>, options: { atMostOne?: boolean } = {}): void {
+  const checkWinners = (n: number) => (options.atMostOne ? assert.ok(n <= 1, `${n} winners`) : assert.equal(n, 1));
   test('missing items read as undefined; empty prefixes list nothing', async () => {
     const s = await makeStore();
     assert.equal(await s.get('heads', 'nope'), undefined);
@@ -116,15 +119,17 @@ export function storeContract(makeStore: () => Promise<TransactionalStore>): voi
   test('concurrent creates of one key: exactly one wins', async () => {
     const s = await makeStore();
     const results = await Promise.all(Array.from({ length: 8 }, (_, i) => s.transact([{ table: 'events', key: 'race#1', value: i, expectVersion: null }])));
-    assert.equal(results.filter((r) => r.ok).length, 1);
-    assert.equal((await s.get('events', 'race#1'))?.version, 1);
+    const winners = results.filter((r) => r.ok).length;
+    checkWinners(winners);
+    assert.equal((await s.get('events', 'race#1'))?.version, winners === 1 ? 1 : undefined);
   });
 
   test('concurrent updates from one version: exactly one wins', async () => {
     const s = await makeStore();
     await s.transact([{ table: 'heads', key: 'race', value: 0, expectVersion: null }]);
     const results = await Promise.all(Array.from({ length: 8 }, (_, i) => s.transact([{ table: 'heads', key: 'race', value: i + 1, expectVersion: 1 }])));
-    assert.equal(results.filter((r) => r.ok).length, 1);
-    assert.equal((await s.get('heads', 'race'))?.version, 2);
+    const winners = results.filter((r) => r.ok).length;
+    checkWinners(winners);
+    assert.equal((await s.get('heads', 'race'))?.version, winners === 1 ? 2 : 1);
   });
 }

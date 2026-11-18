@@ -62,8 +62,12 @@ A separate read-only reviewer examined commit 27646df. I checked each finding ag
 | DynamoDB Local launcher could leave Java running; setup trusted a same-CDN checksum of an unpinned "latest" archive | Low | Child killed on exit, SIGINT and SIGTERM. README records the hash verified on November 18 |
 | Value fidelity untested on some write paths; read-checksum corruption untested | Info | `MemoryStore` now enforces the JSON rule, so every core write path is checked; read corruption is caught by the domain's own SHA-256 |
 
+## Real AWS run (T14b, November 18)
+
+Approved and run as a least-privilege role; 23/23 passed and everything was torn down the same day (`docs/research/2026-11-18-t14b-real-aws-report.md`). Confirmed on real services: the port contract, the whole domain with a VERIFIED export, contiguous chains under 20-way contention, SDK retry idempotency with the automatic token, the least-privilege DynamoDB set, every bucket-policy denial, `If-None-Match` and checksum refusal, the version ID format (32 characters, `A-Z a-z 0-9 . _`), and that an app-credential raw overwrite succeeds but is caught by the verifier and by the table stream with no false alarms.
+
 ## Not verified
 
-- Real DynamoDB: consistent reads under replication lag, throttling, SDK retries with the automatic token, and `TransactionConflict` under real contention. Needs a test table (cents; approval required).
-- Real S3: `If-None-Match` enforcement, checksum rejection, Object Lock, the version-ID format, and 409 `ConditionalRequestConflict` under concurrent puts. Needs a test bucket (approval required).
+- Behavior under replication lag or throttling; Object Lock COMPLIANCE mode; customer managed KMS keys; production-scale load.
+- 409 `ConditionalRequestConflict` was not observed (20 concurrent puts gave 1 success and 19 x 412); the adapter still treats it as a thrown error.
 - An `OUTCOME_UNKNOWN` append can still commit later if the request was in flight when the slot was read. A retry with the same idempotency key resolves it; without one, the client must list before re-uploading. The error message says so.

@@ -1,0 +1,8 @@
+{
+  "BudgetName": "coc-t14-storage",
+  "BudgetType": "COST",
+  "TimeUnit": "MONTHLY",
+  "BudgetLimit": { "Amount": "3", "Unit": "USD" },
+  "CostFilters": { "Service": ["Amazon DynamoDB", "Amazon Simple Storage Service"] },
+  "Notifications": "ACTUAL 50%, ACTUAL 100%, FORECASTED 100% to the existing alert address (not stored in the repo)"
+}

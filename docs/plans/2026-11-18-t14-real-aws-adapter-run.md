@@ -1,6 +1,6 @@
-# T14b: Real AWS run for the storage adapters (plan, not approved)
+# T14b: Real AWS run for the storage adapters (plan, executed)
 
-Status: **plan only, nothing created.** Prepared November 18, 2026 at Keith's request. Every AWS step below needs his approval first. Expected cost: about 2 cents; worst case about $1.25.
+Status: **approved by Keith and executed November 18, 2026** (Object Lock: GOVERNANCE). 23/23 passed, torn down the same day. Results: `docs/research/2026-11-18-t14b-real-aws-report.md`. Expected cost: about 2 cents; worst case about $1.25.
 
 ## Goal
 

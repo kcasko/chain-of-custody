@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-18 (T14b: adapters on real AWS)
+
+- Approved run in us-east-1 as a least-privilege role: 23/23 (port contract plus R2 to R12). Whole domain with a VERIFIED, FRESH export on DynamoDB plus S3; contiguous ledger under 20-way contention; SDK retry idempotency confirmed; every IAM and bucket-policy denial confirmed; S3 overwrite and bad-checksum uploads refused; real version IDs fit `VERSION_ID`.
+- Confirmed the documented risk: the app role can overwrite a ledger item with raw PutItem. The verifier reports FAILED and the table stream shows exactly one append-only MODIFY (no false alarms in the run).
+- Opt-in test `adapters/aws/test/real-aws.test.ts` (skipped unless `COC_REAL_AWS=1`), policy templates in `scripts/t14b/`, contract race tests accept "at most one" for real tables.
+- Created and deleted the same day: table, Object Lock bucket (GOVERNANCE, 1 day), test role. Kept: budget `coc-t14-storage` ($3) until December 31. Report: `docs/research/2026-11-18-t14b-real-aws-report.md`.
+
 ## 2026-11-18 (T14 review fixes)
 
 - Independent read-only review of the AWS adapters: one high, two medium, four low findings. All checked against the code, fixed, and covered by regression tests that fail when the fix is undone. Dispositions in ADR 0007.
