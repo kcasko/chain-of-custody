@@ -98,6 +98,21 @@ export function storeContract(makeStore: () => Promise<TransactionalStore>): voi
     assert.throws(() => { (got!.value as { text: string }).text = 'x'; }, TypeError);
   });
 
+  test('an empty key cannot exist: reads return undefined, writes are refused', async () => {
+    const s = await makeStore();
+    assert.equal(await s.get('approvals', ''), undefined);
+    await assert.rejects(s.transact([{ table: 'approvals', key: '', value: 1, expectVersion: null }]), /non-empty/);
+  });
+
+  test('values that would not survive JSON are refused by every adapter', async () => {
+    const s = await makeStore();
+    await assert.rejects(s.transact([{ table: 'heads', key: 'x', value: { a: undefined }, expectVersion: null }]), TypeError);
+    assert.equal(await s.get('heads', 'x'), undefined);
+  });
+
+  // On real DynamoDB, TransactionConflict can cancel every racer, so the
+  // real-table run must assert "at most one". DynamoDB Local and MemoryStore
+  // serialize transactions, so exactly one wins here.
   test('concurrent creates of one key: exactly one wins', async () => {
     const s = await makeStore();
     const results = await Promise.all(Array.from({ length: 8 }, (_, i) => s.transact([{ table: 'events', key: 'race#1', value: i, expectVersion: null }])));

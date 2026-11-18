@@ -5,7 +5,7 @@
 import { TABLES } from './tables.ts';
 import { recordHash, PURPOSE, ZERO_HASH } from './crypto.ts';
 import { CanonicalizationError } from './canonical.ts';
-import { deepFreeze, type TransactionalStore, type Write } from './store.ts';
+import { deepFreeze, OutcomeUnknownError, type TransactionalStore, type Write } from './store.ts';
 import type { ActorRecord, CustodyEvent, EventDraft, Result } from './types.ts';
 import { ok, fail } from './types.ts';
 
@@ -104,7 +104,13 @@ export class Ledger {
       ];
       if (idem) writes.push({ table: IDEMPOTENCY_TABLE, key: idem.key, value: { requestDigest: idem.digest, sequence: event.sequence } satisfies IdempotencyValue, expectVersion: null });
       writes.push(...(options.extraWrites ?? []));
-      const r = await this.#store.transact(writes);
+      let r;
+      try {
+        r = await this.#store.transact(writes);
+      } catch (err) {
+        if (err instanceof OutcomeUnknownError) return this.#reconcile(caseId, event);
+        throw err;
+      }
       if (!r.ok) {
         if (idem) {
           const replay = await this.#replay(caseId, idem);
@@ -117,6 +123,23 @@ export class Ledger {
       if (err instanceof CanonicalizationError) return fail('INVALID_REQUEST', err.message);
       throw err;
     }
+  }
+
+  // The store could not say whether our append committed. The event key is
+  // create-only and the event, head, idempotency record and any linked writes
+  // commit together, so the event slot answers it: our hash there means it
+  // committed; another event there means ours never can; an empty slot means
+  // the outcome is still unknown and the caller is told so.
+  async #reconcile(caseId: string, event: CustodyEvent): Promise<Result<CustodyEvent>> {
+    let found: CustodyEvent | null;
+    try {
+      found = await this.eventAt(caseId, event.sequence);
+    } catch {
+      found = null;
+    }
+    if (found && found.eventHash === event.eventHash) return ok(deepFreeze(structuredClone(found)));
+    if (found) return fail('LEDGER_CONFLICT', 'the ledger changed concurrently; nothing was written');
+    return fail('OUTCOME_UNKNOWN', 'the append may or may not have been recorded; read the ledger or retry with the same idempotency key');
   }
 
   async #replay(caseId: string, idem: { key: string; digest: string }): Promise<Result<CustodyEvent> | null> {

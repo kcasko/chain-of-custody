@@ -71,6 +71,11 @@ export async function startLocalDynamo(): Promise<LocalDynamoResult> {
     const port = await freePort();
     child = spawn(java, ['-Djava.library.path=./DynamoDBLocal_lib', '-jar', 'DynamoDBLocal.jar', '-inMemory', '-port', String(port), '-disableTelemetry', '-cors', 'http://dynamodb-local.invalid'], { cwd: JAR_DIR, stdio: 'ignore' });
     endpoint = `http://127.0.0.1:${port}`;
+    // Never leave a Java process behind if the run crashes or is interrupted.
+    const proc = child;
+    const killChild = () => { if (proc.exitCode == null) proc.kill(); };
+    process.once('exit', killChild);
+    for (const signal of ['SIGINT', 'SIGTERM'] as const) process.once(signal, () => { killChild(); process.exit(130); });
   }
   const client = clientFor(endpoint);
   const deadline = Date.now() + 30000;

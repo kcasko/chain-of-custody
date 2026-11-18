@@ -67,7 +67,7 @@ export class S3ObjectStore implements ObjectStore {
         VersionId: versionId,
         ChecksumMode: 'ENABLED',
       }));
-      if (r.VersionId !== undefined && r.VersionId !== versionId) throw new Error('S3 returned a different version than requested');
+      if (r.VersionId !== versionId) throw new Error('S3 did not confirm the requested version');
       if (!r.Body) throw new Error('S3 returned no body');
       return await r.Body.transformToByteArray();
     } catch (err) {

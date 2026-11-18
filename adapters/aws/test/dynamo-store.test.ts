@@ -6,11 +6,11 @@ import { after, describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { GetItemCommand, PutItemCommand } from '@aws-sdk/client-dynamodb';
-import { MemoryStore } from '../../../core/src/store.ts';
+import { encodeJsonValue, MemoryStore, OutcomeUnknownError } from '../../../core/src/store.ts';
 import { APPEND_ONLY_TABLES } from '../../../core/src/tables.ts';
 import { verifyExport } from '../../../core/src/verifier.ts';
 import { CASE, USERS, human, makeWorld, registerFixtures } from '../../../core/test/helpers.ts';
-import { DynamoStore, encodeValue, MAX_TRANSACTION_ITEMS } from '../src/dynamo-store.ts';
+import { DynamoStore, MAX_TRANSACTION_ITEMS } from '../src/dynamo-store.ts';
 import { startLocalDynamo } from './dynamodb-local.ts';
 import { CONTRACT_APPEND_ONLY, storeContract } from './store-contract.ts';
 
@@ -18,11 +18,30 @@ describe('MemoryStore (reference for the contract)', () => {
   storeContract(async () => new MemoryStore({ appendOnlyTables: CONTRACT_APPEND_ONLY }));
 });
 
-test('encodeValue refuses values that would not survive JSON', () => {
+test('encodeJsonValue refuses values that would not survive JSON', () => {
   for (const bad of [{ a: undefined }, [undefined], new Date(0), new Uint8Array(2), Number.NaN, { n: Infinity }, { z: -0 }, () => 1, 10n]) {
-    assert.throws(() => encodeValue(bad), TypeError, String(bad));
+    assert.throws(() => encodeJsonValue(bad), TypeError, String(bad));
   }
-  assert.equal(encodeValue({ a: [1, 'x', null] }), '{"a":[1,"x",null]}');
+  assert.equal(encodeJsonValue({ a: [1, 'x', null] }), '{"a":[1,"x",null]}');
+});
+
+test('DynamoDB errors: cancellations are CONFLICT, 4xx are definite failures, everything else is OUTCOME_UNKNOWN', async () => {
+  const withStatus = (name: string, status?: number) => Object.assign(new Error(name), { name, $metadata: status === undefined ? {} : { httpStatusCode: status } });
+  let next: Error = new Error('unset');
+  const store = new DynamoStore({ client: { send: async () => { throw next; } } as never, tableName: 't', appendOnlyTables: [] });
+  const write = [{ table: 'heads', key: 'k', value: 1, expectVersion: null }];
+  next = Object.assign(withStatus('TransactionCanceledException', 400), { CancellationReasons: [{ Code: 'ConditionalCheckFailed' }] });
+  assert.deepEqual(await store.transact(write), { ok: false, reason: 'CONFLICT', index: 0 });
+  next = Object.assign(withStatus('TransactionCanceledException', 400), { CancellationReasons: [{ Code: 'ValidationError' }] });
+  await assert.rejects(store.transact(write), (e: Error) => e.name === 'TransactionCanceledException');
+  for (const definite of [withStatus('ValidationException', 400), withStatus('ThrottlingException', 400), withStatus('AccessDeniedException', 400)]) {
+    next = definite;
+    await assert.rejects(store.transact(write), (e: Error) => e === definite);
+  }
+  for (const ambiguous of [withStatus('InternalServerError', 500), withStatus('ServiceUnavailable', 503), withStatus('TimeoutError'), new Error('socket hang up')]) {
+    next = ambiguous;
+    await assert.rejects(store.transact(write), (e: Error) => e instanceof OutcomeUnknownError && e.cause === ambiguous);
+  }
 });
 
 const local = await startLocalDynamo();

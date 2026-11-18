@@ -12,12 +12,13 @@
 
 import { TABLES } from './tables.ts';
 import { Buffer } from 'node:buffer';
+import { isDeepStrictEqual } from 'node:util';
 import { guarded, type GuardDeps } from './audit.ts';
 import { validateExportPayload, type ApprovalService } from './approvals.ts';
 import type { CheckpointAuthority } from './checkpoint.ts';
 import type { EvidenceService } from './evidence.ts';
 import type { Ledger } from './ledger.ts';
-import type { TransactionalStore } from './store.ts';
+import { OutcomeUnknownError, type TransactionalStore } from './store.ts';
 import type { CustodyEvent, RequestContext, Result, SignedCheckpoint } from './types.ts';
 import { ok, fail } from './types.ts';
 
@@ -77,9 +78,20 @@ export class ExportService {
       const consume = await this.#deps.approvals.consumptionWrite(d.actor.userId, ctx.now, approvalId, caseId, p.value);
       if (!consume.ok) return consume;
       const record = { approvalId, caseId, evidence: p.value.evidence, destination: p.value.destination, createdBy: d.actor.userId, createdAt: ctx.now.toISOString() };
-      const t = await this.#deps.store.transact([consume.value, { table: EXPORTS_TABLE, key: approvalId, value: record, expectVersion: null }]);
+      const pkg: ExportPackage = { schema: 'coc/export/v1', caseId, events, checkpoint, evidence, files };
+      let t;
+      try {
+        t = await this.#deps.store.transact([consume.value, { table: EXPORTS_TABLE, key: approvalId, value: record, expectVersion: null }]);
+      } catch (err) {
+        if (!(err instanceof OutcomeUnknownError)) throw err;
+        // The consumption and the export record commit together. If our exact
+        // record is there, the approval was consumed for this package: deliver it.
+        const written = await this.#deps.store.get(EXPORTS_TABLE, approvalId).catch(() => undefined);
+        if (written && isDeepStrictEqual(written.value, record)) return ok(pkg);
+        return fail('OUTCOME_UNKNOWN', 'the export may or may not have been recorded; check the approval status before retrying');
+      }
       if (!t.ok) return fail('DENIED_APPROVAL_INVALID', 'approval was used concurrently');
-      return ok({ schema: 'coc/export/v1', caseId, events, checkpoint, evidence, files });
+      return ok(pkg);
     });
   }
 }

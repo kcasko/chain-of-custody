@@ -15,8 +15,6 @@
 // role DeleteItem and UpdateItem and keep the hash chain and signed
 // checkpoints as the detection layer. See ADR 0007.
 
-import { isDeepStrictEqual } from 'node:util';
-import { randomUUID } from 'node:crypto';
 import {
   GetItemCommand,
   QueryCommand,
@@ -26,7 +24,7 @@ import {
   type CreateTableCommandInput,
   type DynamoDBClient,
 } from '@aws-sdk/client-dynamodb';
-import { AppendOnlyViolation, deepFreeze, type Item, type TransactResult, type TransactionalStore, type Write } from '../../../core/src/store.ts';
+import { AppendOnlyViolation, checkKey, deepFreeze, encodeJsonValue, OutcomeUnknownError, type Item, type TransactResult, type TransactionalStore, type Write } from '../../../core/src/store.ts';
 
 export const MAX_TRANSACTION_ITEMS = 100; // DynamoDB TransactWriteItems limit
 
@@ -53,14 +51,8 @@ export function tableDefinition(tableName: string): CreateTableCommandInput {
   };
 }
 
-// Values must survive JSON exactly. Anything that would silently change
-// (undefined fields, Dates, typed arrays, NaN) is refused instead of stored.
-export function encodeValue(value: unknown): string {
-  const json = JSON.stringify(value);
-  if (json === undefined || !isDeepStrictEqual(JSON.parse(json), value)) {
-    throw new TypeError('store value is not plain JSON; refusing to write a value that would not round-trip');
-  }
-  return json;
+function httpStatus(err: unknown): number | undefined {
+  return (err as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode;
 }
 
 function decode<T>(raw: Record<string, AttributeValue>): Item<T> {
@@ -86,6 +78,7 @@ export class DynamoStore implements TransactionalStore {
   }
 
   async get<T = unknown>(table: string, key: string): Promise<Item<T> | undefined> {
+    if (key === '') return undefined; // DynamoDB cannot store it, so it cannot exist (same as MemoryStore)
     const r = await this.#client.send(new GetItemCommand({
       TableName: this.#table,
       Key: { pk: { S: table }, sk: { S: key } },
@@ -122,6 +115,7 @@ export class DynamoStore implements TransactionalStore {
     if (writes.length > MAX_TRANSACTION_ITEMS) throw new Error(`transaction has ${writes.length} writes; DynamoDB allows ${MAX_TRANSACTION_ITEMS}`);
     const seen = new Set<string>();
     const items = writes.map((w) => {
+      checkKey(w.key);
       const id = `${w.table}\u0000${w.key}`;
       if (seen.has(id)) throw new Error(`transaction writes ${w.table}/${w.key} twice`);
       seen.add(id);
@@ -130,7 +124,7 @@ export class DynamoStore implements TransactionalStore {
       return {
         Put: {
           TableName: this.#table,
-          Item: { pk: { S: w.table }, sk: { S: w.key }, v: { S: encodeValue(w.value) }, ver: { N: String(nextVersion) } },
+          Item: { pk: { S: w.table }, sk: { S: w.key }, v: { S: encodeJsonValue(w.value) }, ver: { N: String(nextVersion) } },
           ...(w.expectVersion === null
             ? { ConditionExpression: 'attribute_not_exists(pk)' }
             : { ConditionExpression: 'ver = :expect', ExpressionAttributeValues: { ':expect': { N: String(w.expectVersion) } } }),
@@ -138,10 +132,10 @@ export class DynamoStore implements TransactionalStore {
       };
     });
     try {
-      // The request token makes the SDK's automatic retries idempotent: if a
-      // first attempt committed but its response was lost, the retry returns
-      // success instead of a false CONFLICT for a write that did happen.
-      await this.#client.send(new TransactWriteItemsCommand({ TransactItems: items, ClientRequestToken: randomUUID() }));
+      // The SDK fills ClientRequestToken itself (an idempotency-token member)
+      // and reuses it across its retries, so a retry after a lost response
+      // returns success rather than a false CONFLICT.
+      await this.#client.send(new TransactWriteItemsCommand({ TransactItems: items }));
       return { ok: true };
     } catch (err) {
       if (err instanceof TransactionCanceledException || (err as { name?: string }).name === 'TransactionCanceledException') {
@@ -151,7 +145,12 @@ export class DynamoStore implements TransactionalStore {
         const index = reasons.findIndex((r) => r.Code === 'ConditionalCheckFailed' || r.Code === 'TransactionConflict');
         if (index >= 0) return { ok: false, reason: 'CONFLICT', index };
       }
-      throw err; // throttling, validation, network: fail closed, never report success
+      // A 4xx (validation, throttling, access denied) is a definite rejection:
+      // nothing was written. Anything else (5xx, timeout, lost connection after
+      // the SDK gave up) may have committed, and the caller must reconcile.
+      const status = httpStatus(err);
+      if (status !== undefined && status >= 400 && status < 500) throw err;
+      throw new OutcomeUnknownError(err);
     }
   }
 }

@@ -164,8 +164,13 @@ export class EvidenceService {
     let versionId: string;
     try {
       versionId = (await this.#deps.objects.putNew(objectKey, input.bytes)).versionId;
-    } catch {
-      return fail('STORAGE_UNAVAILABLE', 'could not store evidence bytes; nothing was registered');
+    } catch (err) {
+      // The bytes may have been stored even though putNew failed (a lost
+      // response retried into 412 on our own fresh key, or a post-write check).
+      // Nothing is registered either way; record the key so they are not orphaned.
+      const exists = err instanceof ObjectExistsError;
+      const recorded = await this.#recordQuarantine(ctx, caseId, input.evidenceId, objectKey, null, exists ? 'object store reported our new key already exists (likely a lost response); bytes stored, version unknown' : 'object store write failed; bytes may have been stored, version unknown');
+      return fail('STORAGE_UNAVAILABLE', `could not store evidence bytes; nothing was registered${recorded ? '; object key recorded for review' : ''}`);
     }
     // Storage confirmation: read the exact version back before registering it.
     let stored: Uint8Array | undefined;
@@ -184,6 +189,12 @@ export class EvidenceService {
     } catch {
       return this.#quarantine(ctx, caseId, input.evidenceId, objectKey, versionId, 'ledger unavailable');
     }
+    if (!appended.ok && appended.code === 'OUTCOME_UNKNOWN') {
+      // Do not report "not registered": it may be. Record the bytes for review
+      // and tell the caller to check before uploading again.
+      await this.#quarantine(ctx, caseId, input.evidenceId, objectKey, versionId, 'ledger outcome unknown: check the registrations before acting; this version may also be registered');
+      return fail('OUTCOME_UNKNOWN', 'the registration may or may not have been recorded; list the case evidence or retry with the same idempotency key before uploading again');
+    }
     if (!appended.ok) return this.#quarantine(ctx, caseId, input.evidenceId, objectKey, versionId, `ledger append failed: ${appended.code}`);
     // Two identical retries raced: the other one registered first and this call
     // replayed its event. Our extra copy of the bytes is quarantined, not exposed.
@@ -195,14 +206,17 @@ export class EvidenceService {
 
   // Bytes that were stored but never registered. Kept (originals are never
   // deleted) and recorded so an operator can review them; readers never see them.
-  async #quarantine(ctx: RequestContext, caseId: string, evidenceId: string, objectKey: string, versionId: string, reason: string): Promise<Result<CustodyEvent>> {
-    let recorded = true;
+  async #recordQuarantine(ctx: RequestContext, caseId: string, evidenceId: string, objectKey: string, versionId: string | null, reason: string): Promise<boolean> {
     try {
       const r = await this.#deps.store.transact([{ table: QUARANTINE_TABLE, key: `${caseId}#${objectKey}`, value: { caseId, evidenceId, objectKey, versionId, reason, at: ctx.now.toISOString() }, expectVersion: null }]);
-      recorded = r.ok;
+      return r.ok;
     } catch {
-      recorded = false;
+      return false;
     }
+  }
+
+  async #quarantine(ctx: RequestContext, caseId: string, evidenceId: string, objectKey: string, versionId: string | null, reason: string): Promise<Result<CustodyEvent>> {
+    const recorded = await this.#recordQuarantine(ctx, caseId, evidenceId, objectKey, versionId, reason);
     return fail('REGISTRATION_FAILED', `${reason}; evidence not registered${recorded ? '; staged bytes quarantined' : '; quarantine record could not be written'}`);
   }
 }

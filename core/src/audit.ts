@@ -6,6 +6,7 @@ import type { MembershipDirectory, Decision } from './policy.ts';
 import { authorize } from './policy.ts';
 import type { ErrorCode, Operation, RequestContext, Result } from './types.ts';
 import { fail } from './types.ts';
+import { OutcomeUnknownError } from './store.ts';
 
 export type Outcome = 'attempted' | 'denied' | 'completed' | 'failed';
 
@@ -117,8 +118,10 @@ export async function guarded<T>(
   let result: Result<T>;
   try {
     result = await run(decision.value);
-  } catch {
-    result = fail('STORAGE_UNAVAILABLE', 'operation failed unexpectedly');
+  } catch (err) {
+    result = err instanceof OutcomeUnknownError
+      ? fail('OUTCOME_UNKNOWN', 'the change may or may not have been applied; read the current state before retrying')
+      : fail('STORAGE_UNAVAILABLE', 'operation failed unexpectedly');
   }
   await record(result.ok ? 'completed' : 'failed', result.ok ? null : result.code);
   return result;

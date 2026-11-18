@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-11-18 (T14 review fixes)
+
+- Independent read-only review of the AWS adapters: one high, two medium, four low findings. All checked against the code, fixed, and covered by regression tests that fail when the fix is undone. Dispositions in ADR 0007.
+- High: a write that committed but lost its answer was reported as "nothing written" (evidence registered and quarantined at once; export burned the approval with no package). New `OutcomeUnknownError` in the store port and `OUTCOME_UNKNOWN` error code; ledger, evidence and export reconcile by reading. `core/test/outcome-unknown.test.ts`.
+- Medium: bytes stored by a failed or retried S3 put are now quarantined by key instead of orphaned (error code still `STORAGE_UNAVAILABLE`). ADR 0007 corrected: the SDK sets `ClientRequestToken` itself; stolen application credentials can overwrite DynamoDB items; SSE-KMS permissions; Streams alarm.
+- `MemoryStore` now enforces the same JSON and non-empty-key rules as DynamoDB, so every core test runs under them. DynamoDB errors are classified (4xx thrown, everything else outcome-unknown). S3 reads must confirm the version. DynamoDB Local is killed on exit or interrupt; README records the verified archive hash.
+- `npm test`: 336/336; typecheck clean. Nothing created in AWS.
+
 ## 2026-11-18 (T14: AWS storage adapters)
 
 - `DynamoStore` and `S3ObjectStore` in `adapters/aws/` implement the core's storage ports. ADR 0007 records the table design, what storage can and cannot enforce, and the IAM and bucket settings T12 must apply.

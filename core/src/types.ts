@@ -52,7 +52,8 @@ export type ErrorCode =
   | 'LEDGER_CONFLICT'
   | 'IDEMPOTENCY_KEY_REUSED'
   | 'STORAGE_UNAVAILABLE'
-  | 'REGISTRATION_FAILED';
+  | 'REGISTRATION_FAILED'
+  | 'OUTCOME_UNKNOWN';
 
 export type Result<T> =
   | { readonly ok: true; readonly value: T }

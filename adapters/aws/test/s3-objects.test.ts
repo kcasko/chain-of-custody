@@ -37,6 +37,7 @@ class FakeBucket {
   requests: Req[] = [];
   nextVersionId: (() => string) | undefined;
   failWith: { status: number; code: string } | undefined;
+  omitVersionHeaderOnGet = false;
   #n = 0;
 
   async handle(r: Req) {
@@ -62,7 +63,8 @@ class FakeBucket {
       if (!versionId) return xmlError(400, 'TestRejectsLatestRead');
       const bytes = versions.get(versionId);
       if (!bytes) return xmlError(404, 'NoSuchVersion');
-      return { statusCode: 200, headers: { 'x-amz-version-id': versionId, 'content-length': String(bytes.length), 'x-amz-checksum-sha256': createHash('sha256').update(bytes).digest('base64') }, body: Readable.from([bytes]) };
+      const versionHeader: Record<string, string> = this.omitVersionHeaderOnGet ? {} : { 'x-amz-version-id': versionId };
+      return { statusCode: 200, headers: { ...versionHeader, 'content-length': String(bytes.length), 'x-amz-checksum-sha256': createHash('sha256').update(bytes).digest('base64') }, body: Readable.from([bytes]) };
     }
     return xmlError(405, 'MethodNotAllowed');
   }
@@ -129,6 +131,13 @@ test('reads always name a version; unknown keys and versions read as undefined',
   const gets = bucket.requests.filter((r) => r.method === 'GET');
   assert.ok(gets.every((g) => typeof g.query.versionId === 'string' && g.query.versionId.length > 0));
   assert.ok(gets.every((g) => g.headers['x-amz-checksum-mode'] === 'ENABLED'));
+});
+
+test('a read whose response does not confirm the requested version is refused', async () => {
+  const { bucket, store } = setup();
+  const { versionId } = await store.putNew('k', Buffer.from('x'));
+  bucket.omitVersionHeaderOnGet = true;
+  await assert.rejects(store.getVersion('k', versionId), /did not confirm the requested version/);
 });
 
 test('a malformed version ID is never sent to S3 (no fallback to the latest object)', async () => {
