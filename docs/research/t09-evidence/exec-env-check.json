@@ -1,0 +1,98 @@
+{
+  "ranAt": "2026-11-18T14:25:47Z",
+  "note": "Exec-server container and CocBmaEnvRole credential checks. The exec-server itself was not attached (no BMA access).",
+  "checks": [
+    {
+      "name": "container: only the env-role profile variables, no key variables",
+      "pass": true,
+      "detail": "AWS_CONFIG_FILE AWS_PROFILE AWS_SHARED_CREDENTIALS_FILE "
+    },
+    {
+      "name": "container: only the coc-env profile is present",
+      "pass": true,
+      "detail": "[profile coc-env] [coc-env] "
+    },
+    {
+      "name": "container: no SSO cache and no admin profile reference",
+      "pass": true,
+      "detail": "sso=0 adminRefs=0"
+    },
+    {
+      "name": "container: operator home, Windows drives and root .aws not mounted",
+      "pass": true,
+      "detail": "found=''"
+    },
+    {
+      "name": "container: no docker socket",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "container: non-root user and read-only Codex binary",
+      "pass": true,
+      "detail": "uid=1000 codex=readonly"
+    },
+    {
+      "name": "container: no instance metadata credentials reachable",
+      "pass": true,
+      "detail": "bytes=0"
+    },
+    {
+      "name": "credentials: identity is CocBmaEnvRole",
+      "pass": true,
+      "detail": "arn:aws:sts::<acct>:assumed-role/CocBmaEnvRole/coc-exec-env-check"
+    },
+    {
+      "name": "credentials: s3 list buckets denied",
+      "pass": true,
+      "detail": "AccessDenied"
+    },
+    {
+      "name": "credentials: iam list roles denied",
+      "pass": true,
+      "detail": "AccessDenied"
+    },
+    {
+      "name": "credentials: lambda invoke stub denied",
+      "pass": true,
+      "detail": "AccessDeniedException"
+    },
+    {
+      "name": "credentials: logs read stub logs denied",
+      "pass": true,
+      "detail": "AccessDeniedException"
+    },
+    {
+      "name": "credentials: assume harness role denied",
+      "pass": true,
+      "detail": "AccessDenied"
+    },
+    {
+      "name": "credentials: assume BMA session role denied",
+      "pass": true,
+      "detail": "AccessDenied"
+    },
+    {
+      "name": "credentials: bedrock model listing denied",
+      "pass": true,
+      "detail": "AccessDeniedException"
+    },
+    {
+      "name": "credentials: agentcore list gateways denied",
+      "pass": true,
+      "detail": "AccessDeniedException"
+    }
+  ],
+  "skipped": [
+    {
+      "name": "credentials: invoke the tool gateway denied",
+      "skipped": true,
+      "detail": "http=404: gateway deleted"
+    }
+  ],
+  "summary": {
+    "passed": 16,
+    "total": 16,
+    "skipped": 1
+  }
+}

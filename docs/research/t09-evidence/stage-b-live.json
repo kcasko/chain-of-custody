@@ -1,0 +1,499 @@
+{
+  "ranAt": "2026-11-18T14:19:29.355Z",
+  "gatewayHost": "<gateway-id>.gateway.bedrock-agentcore.us-east-1.amazonaws.com",
+  "checks": [
+    {
+      "name": "unsigned request is rejected",
+      "pass": true,
+      "detail": {
+        "httpStatus": 401
+      }
+    },
+    {
+      "name": "harness initialize succeeds",
+      "pass": true,
+      "detail": {
+        "httpStatus": 200
+      }
+    },
+    {
+      "name": "harness sees exactly the five tools (preflight B3)",
+      "pass": true,
+      "detail": {
+        "tools": [
+          "EvidenceTools___compare_timestamps",
+          "EvidenceTools___list_evidence",
+          "EvidenceTools___propose_custody_event",
+          "EvidenceTools___read_evidence_version",
+          "EvidenceTools___record_finding"
+        ]
+      }
+    },
+    {
+      "name": "Lambda executed exactly the legitimate scenarios (no leaks)",
+      "pass": true,
+      "detail": {
+        "totalExecuted": 7,
+        "expectedExecuted": 7,
+        "totalLogLines": 13
+      }
+    },
+    {
+      "name": "other principal: denied by the session-role boundary, nothing executed",
+      "pass": true,
+      "detail": {
+        "toolsListed": [],
+        "lambdaLines": 0,
+        "deniedBy": [
+          "boundary-session-role-only"
+        ]
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "L-1",
+      "tool": "list_evidence",
+      "expect": "executed",
+      "pass": true,
+      "stoppedBy": null,
+      "httpStatus": 200,
+      "isError": false,
+      "rpcError": null,
+      "gatewayText": null,
+      "lambda": [
+        {
+          "outcome": "executed",
+          "code": null,
+          "argKeys": [],
+          "propagatedHeaderNames": []
+        }
+      ]
+    },
+    {
+      "id": "L-2",
+      "tool": "read_evidence_version",
+      "expect": "executed",
+      "pass": true,
+      "stoppedBy": null,
+      "httpStatus": 200,
+      "isError": false,
+      "rpcError": null,
+      "gatewayText": null,
+      "lambda": [
+        {
+          "outcome": "executed",
+          "code": null,
+          "argKeys": [
+            "evidence_id",
+            "version_id"
+          ],
+          "propagatedHeaderNames": []
+        }
+      ]
+    },
+    {
+      "id": "L-3",
+      "tool": "compare_timestamps",
+      "expect": "executed",
+      "pass": true,
+      "stoppedBy": null,
+      "httpStatus": 200,
+      "isError": false,
+      "rpcError": null,
+      "gatewayText": null,
+      "lambda": [
+        {
+          "outcome": "executed",
+          "code": null,
+          "argKeys": [
+            "evidence_ids"
+          ],
+          "propagatedHeaderNames": []
+        }
+      ]
+    },
+    {
+      "id": "L-4",
+      "tool": "record_finding",
+      "expect": "executed",
+      "pass": true,
+      "stoppedBy": null,
+      "httpStatus": 200,
+      "isError": false,
+      "rpcError": null,
+      "gatewayText": null,
+      "lambda": [
+        {
+          "outcome": "executed",
+          "code": null,
+          "argKeys": [
+            "cited_evidence_ids",
+            "finding_type",
+            "summary",
+            "uncertainty"
+          ],
+          "propagatedHeaderNames": []
+        }
+      ]
+    },
+    {
+      "id": "L-5",
+      "tool": "propose_custody_event",
+      "expect": "executed",
+      "pass": true,
+      "stoppedBy": null,
+      "httpStatus": 200,
+      "isError": false,
+      "rpcError": null,
+      "gatewayText": null,
+      "lambda": [
+        {
+          "outcome": "executed",
+          "code": null,
+          "argKeys": [
+            "event_kind",
+            "evidence_id",
+            "reason"
+          ],
+          "propagatedHeaderNames": []
+        }
+      ]
+    },
+    {
+      "id": "L-6",
+      "tool": "propose_custody_event",
+      "expect": "executed",
+      "pass": true,
+      "stoppedBy": null,
+      "httpStatus": 200,
+      "isError": false,
+      "rpcError": null,
+      "gatewayText": null,
+      "lambda": [
+        {
+          "outcome": "executed",
+          "code": null,
+          "argKeys": [
+            "claimed_time_raw",
+            "event_kind",
+            "evidence_id",
+            "reason",
+            "source_clock",
+            "source_evidence_ids"
+          ],
+          "propagatedHeaderNames": []
+        }
+      ]
+    },
+    {
+      "id": "L-7",
+      "tool": "read_evidence_version",
+      "expect": "executed",
+      "pass": true,
+      "stoppedBy": null,
+      "httpStatus": 200,
+      "isError": false,
+      "rpcError": null,
+      "gatewayText": null,
+      "lambda": [
+        {
+          "outcome": "executed",
+          "code": null,
+          "argKeys": [
+            "evidence_id",
+            "version_id"
+          ],
+          "propagatedHeaderNames": []
+        }
+      ]
+    },
+    {
+      "id": "D-1",
+      "tool": "read_evidence_version",
+      "expect": "cedar-deny",
+      "pass": true,
+      "stoppedBy": "cedar:default-deny",
+      "httpStatus": 200,
+      "isError": true,
+      "rpcError": "-32002: Tool Execution Denied: Tool call not allowed due to policy enforcement [No policy applies to the request (denied by default).]",
+      "gatewayText": "",
+      "lambda": []
+    },
+    {
+      "id": "D-5",
+      "tool": "record_finding",
+      "expect": "cedar-deny",
+      "pass": true,
+      "stoppedBy": "cedar:default-deny",
+      "httpStatus": 200,
+      "isError": true,
+      "rpcError": "-32002: Tool Execution Denied: Tool call not allowed due to policy enforcement [No policy applies to the request (denied by default).]",
+      "gatewayText": "",
+      "lambda": []
+    },
+    {
+      "id": "E-7",
+      "tool": "read_evidence_version",
+      "expect": "cedar-deny",
+      "pass": true,
+      "stoppedBy": "cedar:default-deny",
+      "httpStatus": 200,
+      "isError": true,
+      "rpcError": "-32002: Tool Execution Denied: Tool call not allowed due to policy enforcement [No policy applies to the request (denied by default).]",
+      "gatewayText": "",
+      "lambda": []
+    },
+    {
+      "id": "E-9",
+      "tool": "read_evidence_version",
+      "expect": "cedar-deny",
+      "pass": true,
+      "stoppedBy": "cedar:default-deny",
+      "httpStatus": 200,
+      "isError": true,
+      "rpcError": "-32002: Tool Execution Denied: Tool call not allowed due to policy enforcement [No policy applies to the request (denied by default).]",
+      "gatewayText": "",
+      "lambda": []
+    },
+    {
+      "id": "E-10",
+      "tool": "record_finding",
+      "expect": "cedar-deny",
+      "pass": true,
+      "stoppedBy": "cedar:default-deny",
+      "httpStatus": 200,
+      "isError": true,
+      "rpcError": "-32002: Tool Execution Denied: Tool call not allowed due to policy enforcement [No policy applies to the request (denied by default).]",
+      "gatewayText": "",
+      "lambda": []
+    },
+    {
+      "id": "I-1",
+      "tool": "propose_custody_event",
+      "expect": "cedar-deny",
+      "pass": true,
+      "stoppedBy": "cedar:default-deny",
+      "httpStatus": 200,
+      "isError": true,
+      "rpcError": "-32002: Tool Execution Denied: Tool call not allowed due to policy enforcement [No policy applies to the request (denied by default).]",
+      "gatewayText": "",
+      "lambda": []
+    },
+    {
+      "id": "I-5",
+      "tool": "propose_custody_event",
+      "expect": "cedar-deny",
+      "pass": true,
+      "stoppedBy": "cedar:forbid-historical-assertion-without-provenance",
+      "httpStatus": 200,
+      "isError": true,
+      "rpcError": "-32002: Tool Execution Denied: Tool call not allowed due to policy enforcement [Policy evaluation denied due to coc_t09_04-g7dh020xo1]",
+      "gatewayText": "",
+      "lambda": []
+    },
+    {
+      "id": "A-4",
+      "tool": "propose_custody_event",
+      "expect": "cedar-deny",
+      "pass": true,
+      "stoppedBy": "cedar:default-deny",
+      "httpStatus": 200,
+      "isError": true,
+      "rpcError": "-32002: Tool Execution Denied: Tool call not allowed due to policy enforcement [No policy applies to the request (denied by default).]",
+      "gatewayText": "",
+      "lambda": []
+    },
+    {
+      "id": "D-8",
+      "tool": "propose_custody_event",
+      "expect": "cedar-deny",
+      "pass": true,
+      "stoppedBy": "cedar:default-deny",
+      "httpStatus": 200,
+      "isError": true,
+      "rpcError": "-32002: Tool Execution Denied: Tool call not allowed due to policy enforcement [No policy applies to the request (denied by default).]",
+      "gatewayText": "",
+      "lambda": []
+    },
+    {
+      "id": "A-1",
+      "tool": "approve_proposal",
+      "expect": "not-executed",
+      "pass": true,
+      "stoppedBy": "gateway",
+      "httpStatus": 200,
+      "isError": true,
+      "rpcError": "-32602: Unknown tool: EvidenceTools___approve_proposal",
+      "gatewayText": "",
+      "lambda": []
+    },
+    {
+      "id": "I-3",
+      "tool": "delete_evidence",
+      "expect": "not-executed",
+      "pass": true,
+      "stoppedBy": "gateway",
+      "httpStatus": 200,
+      "isError": true,
+      "rpcError": "-32602: Unknown tool: EvidenceTools___delete_evidence",
+      "gatewayText": "",
+      "lambda": []
+    },
+    {
+      "id": "V-1",
+      "tool": "read_evidence_version",
+      "expect": "l3-reject",
+      "pass": true,
+      "stoppedBy": "lambda-l3",
+      "httpStatus": 200,
+      "isError": false,
+      "rpcError": null,
+      "gatewayText": null,
+      "lambda": [
+        {
+          "outcome": "rejected",
+          "code": "VERSION_NOT_REGISTERED",
+          "argKeys": [
+            "evidence_id",
+            "version_id"
+          ],
+          "propagatedHeaderNames": []
+        }
+      ]
+    },
+    {
+      "id": "V-2",
+      "tool": "compare_timestamps",
+      "expect": "l3-reject",
+      "pass": true,
+      "stoppedBy": "lambda-l3",
+      "httpStatus": 200,
+      "isError": false,
+      "rpcError": null,
+      "gatewayText": null,
+      "lambda": [
+        {
+          "outcome": "rejected",
+          "code": "INVALID_ARGUMENTS",
+          "argKeys": [
+            "evidence_ids"
+          ],
+          "propagatedHeaderNames": []
+        }
+      ]
+    },
+    {
+      "id": "V-3",
+      "tool": "record_finding",
+      "expect": "l3-reject",
+      "pass": true,
+      "stoppedBy": "lambda-l3",
+      "httpStatus": 200,
+      "isError": false,
+      "rpcError": null,
+      "gatewayText": null,
+      "lambda": [
+        {
+          "outcome": "rejected",
+          "code": "INVALID_ARGUMENTS",
+          "argKeys": [
+            "cited_evidence_ids",
+            "finding_type",
+            "summary",
+            "uncertainty"
+          ],
+          "propagatedHeaderNames": []
+        }
+      ]
+    },
+    {
+      "id": "F-1",
+      "tool": "propose_custody_event",
+      "expect": "not-executed",
+      "pass": true,
+      "stoppedBy": "lambda-l3:INVALID_ARGUMENTS",
+      "httpStatus": 200,
+      "isError": false,
+      "rpcError": null,
+      "gatewayText": null,
+      "lambda": [
+        {
+          "outcome": "rejected",
+          "code": "INVALID_ARGUMENTS",
+          "argKeys": [
+            "actor",
+            "event_kind",
+            "evidence_id",
+            "reason"
+          ],
+          "propagatedHeaderNames": []
+        }
+      ]
+    },
+    {
+      "id": "F-2",
+      "tool": "propose_custody_event",
+      "expect": "not-executed",
+      "pass": true,
+      "stoppedBy": "lambda-l3:INVALID_ARGUMENTS",
+      "httpStatus": 200,
+      "isError": false,
+      "rpcError": null,
+      "gatewayText": null,
+      "lambda": [
+        {
+          "outcome": "rejected",
+          "code": "INVALID_ARGUMENTS",
+          "argKeys": [
+            "approval_id",
+            "approved",
+            "event_kind",
+            "evidence_id",
+            "reason"
+          ],
+          "propagatedHeaderNames": []
+        }
+      ]
+    },
+    {
+      "id": "F-3",
+      "tool": "read_evidence_version",
+      "expect": "not-executed",
+      "pass": true,
+      "stoppedBy": "lambda-l3:INVALID_ARGUMENTS",
+      "httpStatus": 200,
+      "isError": false,
+      "rpcError": null,
+      "gatewayText": null,
+      "lambda": [
+        {
+          "outcome": "rejected",
+          "code": "INVALID_ARGUMENTS",
+          "argKeys": [
+            "case_id",
+            "evidence_id",
+            "version_id"
+          ],
+          "propagatedHeaderNames": []
+        }
+      ]
+    }
+  ],
+  "otherPrincipal": {
+    "initStatus": 200,
+    "toolsListed": [],
+    "call": {
+      "httpStatus": 200,
+      "rpcError": "-32002: Tool Execution Denied: Tool call not allowed due to policy enforcement [Policy evaluation denied due to coc_t09_01-8y67pi69kr]",
+      "isError": true,
+      "payload": null,
+      "text": ""
+    }
+  },
+  "summary": {
+    "passed": 29,
+    "failed": 0,
+    "total": 29
+  }
+}

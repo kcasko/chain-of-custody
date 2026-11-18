@@ -23,7 +23,7 @@ const POLICIES = p.renderPolicies(VALUES);
 const MODES = [true, false];
 
 const iam = (arn) => ({ type: 'IamEntity', id: 'caller', arn });
-const AGENT = iam(`arn:aws:sts::${ACCOUNT}:assumed-role/${ROLE}/bma-session-0001`);
+const AGENT = iam(`arn:aws:sts::${ACCOUNT}:assumed-role/${ROLE}`);
 
 function decide(c, validateRequest) {
   return p.authorize(
@@ -85,14 +85,16 @@ const DENIED = [
   { cat: 'denied', name: 'D-9 proposal for evidence outside case', action: 'propose_custody_event', input: { ...ok.transfer, evidence_id: 'BW-404' } },
 
   // Privilege escalation
-  { cat: 'escalation', name: 'E-1 different IAM role (deploy/admin) calls a tool', principal: iam(`arn:aws:sts::${ACCOUNT}:assumed-role/Admin/keith`), action: 'list_evidence', input: {}, expect: 'boundary-session-role-only' },
-  { cat: 'escalation', name: 'E-2 role-name prefix trick', principal: iam(`arn:aws:sts::${ACCOUNT}:assumed-role/${ROLE}Admin/x`), action: 'list_evidence', input: {}, expect: 'boundary-session-role-only' },
-  { cat: 'escalation', name: 'E-3 same role name in another account', principal: iam(`arn:aws:sts::999988887777:assumed-role/${ROLE}/x`), action: 'list_evidence', input: {}, expect: 'boundary-session-role-only' },
+  { cat: 'escalation', name: 'E-1 different IAM role (deploy/admin) calls a tool', principal: iam(`arn:aws:sts::${ACCOUNT}:assumed-role/Admin`), action: 'list_evidence', input: {}, expect: 'boundary-session-role-only' },
+  { cat: 'escalation', name: 'E-2 role-name prefix trick', principal: iam(`arn:aws:sts::${ACCOUNT}:assumed-role/${ROLE}Admin`), action: 'list_evidence', input: {}, expect: 'boundary-session-role-only' },
+  { cat: 'escalation', name: 'E-2b session-suffixed ARN (a format AgentCore never presents) does not match', principal: iam(`arn:aws:sts::${ACCOUNT}:assumed-role/${ROLE}/session-1`), action: 'list_evidence', input: {}, expect: 'boundary-session-role-only' },
+  { cat: 'escalation', name: 'E-2c wildcard characters in a role ARN are not patterns', principal: iam(`arn:aws:sts::${ACCOUNT}:assumed-role/*`), action: 'list_evidence', input: {}, expect: 'boundary-session-role-only' },
+  { cat: 'escalation', name: 'E-3 same role name in another account', principal: iam(`arn:aws:sts::999988887777:assumed-role/${ROLE}`), action: 'list_evidence', input: {}, expect: 'boundary-session-role-only' },
   { cat: 'escalation', name: 'E-4 IAM user instead of assumed role', principal: iam(`arn:aws:iam::${ACCOUNT}:user/${ROLE}`), action: 'list_evidence', input: {}, expect: 'boundary-session-role-only' },
   {
     cat: 'escalation',
     name: 'E-5 OAuth user claiming supervisor role',
-    principal: { type: 'OAuthUser', id: 'mara', arn: `arn:aws:sts::${ACCOUNT}:assumed-role/${ROLE}/spoof`, tags: { role: 'supervisor', scope: 'evidence:admin' } },
+    principal: { type: 'OAuthUser', id: 'mara', arn: `arn:aws:sts::${ACCOUNT}:assumed-role/${ROLE}`, tags: { role: 'supervisor', scope: 'evidence:admin' } },
     action: 'list_evidence',
     input: {},
     expect: 'boundary-session-role-only',
@@ -141,7 +143,7 @@ const DENIED = [
   { cat: 'approval', name: 'A-3 call consume_approval tool', action: 'EvidenceTools___consume_approval', input: { approval_id: 'ap-1' } },
   { cat: 'approval', name: 'A-4 proposal with event_kind "approval"', action: 'propose_custody_event', input: { ...ok.transfer, event_kind: 'approval' } },
   { cat: 'approval', name: 'A-5 proposal with event_kind "promote"', action: 'propose_custody_event', input: { ...ok.transfer, event_kind: 'promote' } },
-  { cat: 'approval', name: 'A-6 human approver role calls the agent tool directly', principal: iam(`arn:aws:sts::${ACCOUNT}:assumed-role/CocSupervisorApprover/elena`), action: 'propose_custody_event', input: ok.transfer, expect: 'boundary-session-role-only' },
+  { cat: 'approval', name: 'A-6 human approver role calls the agent tool directly', principal: iam(`arn:aws:sts::${ACCOUNT}:assumed-role/CocSupervisorApprover`), action: 'propose_custody_event', input: ok.transfer, expect: 'boundary-session-role-only' },
 ];
 
 // B4: every required field omitted, one at a time, must deny (never "skipped forbid = allow").
@@ -263,7 +265,7 @@ test('the boundary forbid overrides an over-broad permit', () => {
   const policies = { ...p.policiesById(POLICIES) };
   policies['mistaken-allow-all'] = broad;
   const r = p.authorize(
-    { principal: iam(`arn:aws:sts::${ACCOUNT}:assumed-role/Admin/x`), action: 'list_evidence', resource: GATEWAY, input: {} },
+    { principal: iam(`arn:aws:sts::${ACCOUNT}:assumed-role/Admin`), action: 'list_evidence', resource: GATEWAY, input: {} },
     { policies, validateRequest: false },
   );
   assert.equal(r.decision, 'deny');
@@ -336,6 +338,20 @@ test('Cedar schema matches tool schemas (same actions, fields, required-ness and
       const required = tool.inputSchema.required.includes(field);
       assert.equal(input[field].required !== false, required, `${tool.name}.${field} required-ness`);
       assert.equal(shownType(input[field]), cedarType(prop), `${tool.name}.${field} type`);
+    }
+  }
+});
+
+// Learned from the real AgentCore engine (T09 Stage B, Nov 18). CreatePolicy rejects:
+//  1. an unconstrained `resource` in the head ("wildcard resource was detected");
+//  2. a tool-specific policy (action == ...) whose resource is only the Gateway
+//     type ("constrain the resource to a specific AgentCore::Gateway resource").
+test('every policy head satisfies the AgentCore CreatePolicy resource rules', () => {
+  for (const [id, text] of Object.entries(p.policiesById(POLICIES))) {
+    const head = /(?:permit|forbid)\s*\(([\s\S]*?)\)\s*(?:when|unless|;)/.exec(text)[1];
+    assert.match(head, /resource\s*(==\s*AgentCore::Gateway::"|is\s+AgentCore::Gateway)/, `${id}: unconstrained resource`);
+    if (/action\s*==/.test(head)) {
+      assert.match(head, /resource\s*==\s*AgentCore::Gateway::"/, `${id}: tool-specific policy must name the specific gateway`);
     }
   }
 });

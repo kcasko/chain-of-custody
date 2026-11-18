@@ -60,7 +60,24 @@ No tool takes a case, actor, role, scope, token or approval argument (enforced b
 
 Mutation check (run by hand, not automated): seven deliberate policy breakages, including removing the role boundary, the gateway boundary, a finding-type allowlist, provenance requirements, an `isEmpty` check, a `has` guard and a source-scope check. Each one made at least one test fail. Two early survivors exposed missing tests, which were added.
 
-## Unverified until T09 (the real engine)
+## Stage B update (November 18, 2026): tested against the real engine
+
+Results and evidence: docs/research/2026-11-18-t09-spike-report.md (Stage B). Policy changes made because the real AgentCore engine required them; decisions are unchanged:
+
+| Change | Why |
+|---|---|
+| Forbid heads use `resource is AgentCore::Gateway` (boundary) or `resource == AgentCore::Gateway::"<arn>"` (tool-specific) | CreatePolicy rejects an unconstrained resource, and tool-specific policies must name the gateway |
+| Tool forbids use `principal is AgentCore::IamEntity` | Removes an analyzer finding for OAuth principals, which no permit admits anyway |
+| Session-role boundary is `principal.id == "arn:aws:sts::<acct>:assumed-role/<role>"` (exact) | AgentCore strips the session name from the principal ID. Exact equality is stricter than the old `like` pattern |
+| Boundary forbids load with `IGNORE_ALL_FINDINGS`; everything else with `FAIL_ON_ANY_FINDINGS` | The analyzer flags a deliberate boundary as "Overly Restrictive". Local strict validation still covers both |
+| Load order: boundary forbids, permits, tool forbids | The analyzer judges each policy against those already loaded |
+| Local test: every policy head satisfies the AgentCore resource rules | So the first two problems cannot come back |
+
+**Decision 4 is corrected.** Typed requests do *not* reject undeclared fields in the real engine: the Gateway passes them to the target and Cedar does not evaluate them. The local "typed" mode is stricter than production on this point. The Lambda's closed-schema validation is the only layer that rejects them, so it is mandatory in the real backend, not optional.
+
+Resolved unknowns: `IamEntity.id` exists; arrays are `Set<String>`; integers are `Long`; `@id` is accepted; `isEmpty()` is supported. Still open: the principal ARN that BMA itself presents, and any headers BMA sends.
+
+## Unverified until T09 (the real engine) [original list; see Stage B update above]
 
 - AgentCore's actual schema: entity attribute names (`IamEntity.id`), whether arrays map to `Set<String>` and integers to `Long`, and whether `@id` annotations are accepted.
 - Whether the Gateway rejects undeclared tool arguments before Cedar sees them.

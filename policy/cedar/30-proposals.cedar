@@ -61,9 +61,9 @@ when {
 // escape the forbid by omitting them.)
 @id("forbid-historical-assertion-without-provenance")
 forbid (
-  principal,
+  principal is AgentCore::IamEntity,
   action == AgentCore::Action::"EvidenceTools___propose_custody_event",
-  resource
+  resource == AgentCore::Gateway::"{{GATEWAY_ARN}}"
 )
 when {
   context.input has event_kind &&
@@ -75,9 +75,9 @@ when {
 
 @id("forbid-proposal-sources-outside-case")
 forbid (
-  principal,
+  principal is AgentCore::IamEntity,
   action == AgentCore::Action::"EvidenceTools___propose_custody_event",
-  resource
+  resource == AgentCore::Gateway::"{{GATEWAY_ARN}}"
 )
 when {
   context.input has source_evidence_ids &&

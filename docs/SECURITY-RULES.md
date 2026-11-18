@@ -36,6 +36,8 @@ For local collaboration: loopback-only Mozaik, unique ephemeral network, token-a
 | B4 | Cedar `forbid` reads a missing field, errors and is skipped (allowed) | Guard every optional field with `has`. Lambda re-checks the same rule | Calls with fields omitted |
 | B5 | Model-supplied case, actor or role | Tools have no such arguments. Case bound by target configuration | A02 and A03 through the Gateway |
 | B6 | Session role broader than needed (CDK L3 grants InvokeGateway on all gateways) | Narrow to one gateway ARN and one Runtime ARN | IAM policy review plus a denied call to a second gateway |
+| B8 | Undeclared tool arguments (`actor`, `approved`, `case_id`) pass the Gateway and Cedar and reach the target (observed live, Stage B) | Tool target rejects any argument outside the closed schema before acting | Stage B F-1 to F-3: rejected only by the Lambda |
+| B9 | Official exec-server example runs Codex with the operator's `AWS_PROFILE`, so agent commands inherit it (observed in the bundle) | Exec-server in a container with only the workspace, a read-only Codex binary and short-lived `CocBmaEnvRole` credentials | `harness/check-exec-env.sh`: 17 checks (gateway probe skipped when no gateway exists) |
 | B7 | Preview API changes during the event | Thin adapter, pinned client versions, re-run smoke test daily | Daily smoke run |
 
 Residual risks stated plainly: R1 evidence exfiltration through the agent's network egress (synthetic data, accepted for MVP). R2 an account administrator can change bucket policies, IAM and the ledger; checkpoints detect ledger edits but do not prevent them. R3 BMA service-held session data cannot use a customer-managed KMS key in preview.

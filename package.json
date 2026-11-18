@@ -6,7 +6,8 @@
   "scripts": {
     "test": "node --test tests/*.test.cjs",
     "collaborate": "node scripts/collaborate.cjs",
-    "verify:conversation": "node scripts/verify-conversation.cjs"
+    "verify:conversation": "node scripts/verify-conversation.cjs",
+    "harness:stage-b": "node harness/run-stage-b.cjs"
   },
   "devDependencies": {
     "@cedar-policy/cedar-wasm": "4.14.0"
