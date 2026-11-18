@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Integrity Challenge: Blackwater Evidence</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#docket">Skip to the challenge log</a>
+
+  <header class="masthead">
+    <p class="file-label">Case file <span id="case-id">BLACKWATER-2021</span> &middot; Synthetic record</p>
+    <h1>Integrity Challenge</h1>
+    <p class="lede">
+      Every attempt below was made against the evidence archive. Each one is checked twice:
+      first by the Gateway's Cedar rules, then by the domain core on its own.
+      An attack has to get past both to change anything. None did.
+    </p>
+  </header>
+
+  <main>
+    <section class="proof" aria-labelledby="proof-heading">
+      <h2 id="proof-heading">What the archive looked like, before and after</h2>
+      <div class="proof-grid">
+        <div>
+          <p class="proof-label">Ledger head</p>
+          <p class="hash"><span id="head-before">loading</span></p>
+          <p class="hash"><span id="head-after">loading</span></p>
+        </div>
+        <div>
+          <p class="proof-label">Evidence bytes</p>
+          <p id="evidence-summary">loading</p>
+        </div>
+        <div class="proof-verdict" aria-live="polite">
+          <span id="unchanged-stamp" class="stamp stamp--pending">Checking</span>
+        </div>
+      </div>
+      <dl class="tally" id="tally"></dl>
+    </section>
+
+    <section aria-labelledby="docket-heading">
+      <div class="docket-head">
+        <h2 id="docket-heading">Challenge log</h2>
+        <button type="button" id="rerun" class="rerun">Run the challenge again</button>
+      </div>
+      <p class="status" id="status" role="status">Running the challenge...</p>
+      <div class="table-wrap">
+        <table id="docket" class="docket">
+          <caption class="visually-hidden">Each attempt, how the Gateway and the core judged it, and the result</caption>
+          <thead>
+            <tr>
+              <th scope="col">Entry</th>
+              <th scope="col">Attempt</th>
+              <th scope="col">Gateway (Cedar)</th>
+              <th scope="col">Core</th>
+              <th scope="col">Result</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="notes" aria-labelledby="notes-heading">
+      <h2 id="notes-heading">What this run is, and is not</h2>
+      <ul id="notes"></ul>
+      <p class="ran-at">Run at <time id="ran-at"></time></p>
+    </section>
+  </main>
+</body>
+</html>

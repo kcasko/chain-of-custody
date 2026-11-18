@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-18 (T15: Integrity Challenge demo)
+
+- Local demo page (`app/`, `npm run demo`, http://127.0.0.1:4317). Runs 24 agent tool calls through the rendered Cedar policies and the gateway handler, plus four attacks from outside the agent (self-approval, swapped export version, overwritten original, rewritten ledger). 21/21 attacks refused, 7/7 legitimate calls executed, evidence bytes and ledger head unchanged.
+- F-1 to F-3 reproduce the live Stage B result: the Gateway allows injected fields and only the core refuses them.
+- Server binds to 127.0.0.1, serves a fixed file map, GET only, strict CSP and security headers. The page renders with `textContent` only. Muted text meets WCAG AA in both color schemes.
+- `core/src/local.ts` wires an in-memory domain with seeded fixtures. `npm test`: 286/286; `npm run typecheck` clean.
+
 ## 2026-11-18 (agent tools on the core)
 
 - The five agent tools now run on the domain core (`core/src/agent-tools.ts`) behind a Gateway Lambda adapter (`core/src/gateway-handler.ts`). ADR 0006.

@@ -1,0 +1,211 @@
+/* Integrity Challenge: an evidence docket, not a dashboard.
+   Paper, ink, one stamp red for refusals, one ink blue for legitimate work. */
+
+:root {
+  --paper: #f4efe4;
+  --paper-edge: #e6dfcf;
+  --ink: #1d1b17;
+  --ink-soft: #57524a;
+  --rule: #cfc6b3;
+  --refuse: #a3261b;
+  --allow: #1f4e79;
+  --muted: #655e51; /* 5.6:1 on paper, 4.8:1 on panel (WCAG AA) */
+  --focus: #b8860b;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, "Liberation Mono", monospace;
+  --sans: system-ui, "Segoe UI", Roboto, sans-serif;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #1c1a17;
+    --paper-edge: #262320;
+    --ink: #ece6da;
+    --ink-soft: #b9b1a2;
+    --rule: #3d3832;
+    --refuse: #ff7a6b;
+    --allow: #8fb8e6;
+    --muted: #9a9283; /* 5.6:1 on paper, 5.1:1 on panel */
+    --focus: #e0b84c;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.55 var(--sans);
+}
+
+.skip {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 0.5rem 0.75rem;
+}
+.skip:focus { left: 1rem; top: 1rem; }
+
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}
+
+.masthead, main { max-width: 72rem; margin: 0 auto; padding: 0 1.25rem; }
+
+.masthead { padding-top: 2.5rem; border-bottom: 3px double var(--ink); padding-bottom: 1.5rem; }
+
+.file-label {
+  font: 600 0.78rem/1.2 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 0 0.5rem;
+}
+
+h1 {
+  font: 600 clamp(2.2rem, 5vw, 3.4rem)/1.05 var(--serif);
+  margin: 0 0 0.75rem;
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  font: 600 1.35rem/1.2 var(--serif);
+  margin: 0;
+}
+
+.lede { max-width: 46rem; margin: 0; font-size: 1.08rem; color: var(--ink-soft); }
+
+section { margin: 2.25rem 0; }
+
+/* Before and after */
+.proof { border: 1px solid var(--rule); background: var(--paper-edge); padding: 1.25rem; }
+.proof-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
+  gap: 1.5rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+.proof-label {
+  font: 600 0.72rem/1 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 0.4rem;
+}
+.hash { font: 0.82rem/1.4 var(--mono); margin: 0.15rem 0; overflow-wrap: anywhere; }
+
+.tally {
+  display: flex; flex-wrap: wrap; gap: 0.5rem 2rem;
+  margin: 1.25rem 0 0; padding-top: 1rem; border-top: 1px dashed var(--rule);
+}
+.tally div { display: flex; gap: 0.5rem; align-items: baseline; }
+.tally dt { font-size: 0.85rem; color: var(--ink-soft); }
+.tally dd { margin: 0; font: 600 1.15rem/1 var(--mono); }
+
+/* Stamps */
+.stamp {
+  display: inline-block;
+  font: 700 0.78rem/1 var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.38rem 0.6rem;
+  border: 2px solid currentColor;
+  border-radius: 2px;
+  transform: rotate(-2deg);
+  white-space: nowrap;
+}
+.stamp--refused { color: var(--refuse); }
+.stamp--executed { color: var(--allow); transform: none; border-style: solid; border-width: 1px; }
+.stamp--unchanged { color: var(--allow); font-size: 1rem; padding: 0.55rem 0.8rem; border-width: 3px; border-style: double; }
+.stamp--changed { color: var(--refuse); font-size: 1rem; padding: 0.55rem 0.8rem; border-width: 3px; border-style: double; }
+.stamp--pending { color: var(--muted); transform: none; }
+
+/* The docket */
+.docket-head { display: flex; justify-content: space-between; align-items: end; gap: 1rem; flex-wrap: wrap; }
+
+.rerun {
+  font: 600 0.9rem/1 var(--sans);
+  background: var(--ink);
+  color: var(--paper);
+  border: 0;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+}
+.rerun:hover { background: var(--ink-soft); }
+.rerun:disabled { opacity: 0.6; cursor: progress; }
+
+.status { color: var(--ink-soft); font-size: 0.9rem; min-height: 1.4em; }
+
+.table-wrap { overflow-x: auto; }
+
+.docket { width: 100%; border-collapse: collapse; font-size: 0.93rem; }
+.docket thead th {
+  text-align: left;
+  font: 600 0.72rem/1.2 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  border-bottom: 2px solid var(--ink);
+  padding: 0.6rem 0.75rem;
+}
+.docket td { border-bottom: 1px solid var(--rule); padding: 0.85rem 0.75rem; vertical-align: top; }
+.docket tr.group td {
+  border-bottom: 1px solid var(--ink);
+  padding-top: 1.5rem;
+  font: 600 1rem/1.2 var(--serif);
+}
+
+.entry { font: 600 0.85rem/1.3 var(--mono); white-space: nowrap; }
+.attempt-title { margin: 0 0 0.3rem; }
+.actor { font: 600 0.68rem/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+
+.verdict { display: block; font-weight: 600; }
+.verdict--refused { color: var(--refuse); }
+.verdict--allowed { color: var(--allow); }
+.verdict--na { color: var(--muted); font-weight: 400; }
+.reason { display: block; color: var(--ink-soft); font-size: 0.82rem; overflow-wrap: anywhere; }
+
+details { margin-top: 0.35rem; }
+summary { cursor: pointer; color: var(--ink-soft); font-size: 0.82rem; }
+details code {
+  display: block; margin-top: 0.35rem; padding: 0.5rem;
+  background: var(--paper-edge); border-left: 3px solid var(--rule);
+  font: 0.78rem/1.45 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere;
+}
+
+.stopped { display: block; margin-top: 0.4rem; font-size: 0.78rem; color: var(--ink-soft); }
+
+.notes ul { padding-left: 1.2rem; color: var(--ink-soft); max-width: 52rem; }
+.notes li { margin: 0.35rem 0; }
+.ran-at { font: 0.8rem var(--mono); color: var(--muted); }
+
+/* Narrow screens: each row becomes a filed card, still in reading order. */
+@media (max-width: 760px) {
+  .proof-grid { grid-template-columns: 1fr; }
+  .docket thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .docket, .docket tbody, .docket tr, .docket td { display: block; width: 100%; }
+  .docket tr { border-bottom: 2px solid var(--ink); padding: 0.5rem 0; }
+  .docket tr.group { border-bottom: 0; }
+  .docket td { border: 0; padding: 0.35rem 0; }
+  .docket td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font: 600 0.68rem/1.2 var(--mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}

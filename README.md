@@ -6,6 +6,8 @@ A fictional forensic evidence audit project. An auditor investigates inconsisten
 
 Status: domain core (TypeScript, `core/`), Cedar tool policies (`policy/`) and a Stage B enforcement harness (`harness/`) are built and tested locally (`npm test`, `npm run typecheck`). Nothing is deployed. No remote is configured.
 
+**Local demo:** `npm run demo`, then open http://127.0.0.1:4317. The Integrity Challenge page runs 28 attempts (21 attacks, 7 legitimate) against the synthetic archive, shows which layer refused each attack, and re-hashes the evidence and ledger head before and after. Local only: no AWS calls, no model; not evidence of Bedrock Managed Agents behavior.
+
 **Release blocker RB-1:** the AWS account is not entitled to Bedrock Managed Agents or GPT-5.6 Luna. See [docs/RELEASE-BLOCKERS.md](docs/RELEASE-BLOCKERS.md).
 
 - [Project plan](docs/PROJECT-PLAN.md)
