@@ -50,7 +50,7 @@ export interface ChallengeReport {
 }
 
 // Stage B scenarios used fixed synthetic version IDs; bind them to real ones.
-function bind(args: Record<string, unknown>, versions: Map<string, string>): Record<string, unknown> {
+export function bind(args: Record<string, unknown>, versions: Map<string, string>): Record<string, unknown> {
   const real = (id: string) => versions.get(`${id}/original`) ?? 'v-not-registered';
   const out = { ...args };
   if (out.version_id === 'syn-v1' && typeof out.evidence_id === 'string') out.version_id = real(out.evidence_id);

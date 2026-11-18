@@ -1,0 +1,193 @@
+/* Investigation workspace: the case file. Builds on styles.css (paper, ink,
+   stamps). Folder tabs for the four areas; ruled entries, not cards. */
+
+.ws-masthead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 22rem);
+  gap: 2rem;
+  align-items: end;
+}
+
+.ws-desk {
+  border-left: 1px solid var(--rule);
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 0.6rem;
+}
+.ws-actor { display: grid; gap: 0.3rem; }
+.ws-actor select, .ws-form input, .ws-form select, .ws-form textarea {
+  font: 1rem/1.3 var(--sans);
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--ink-soft);
+  border-radius: 2px;
+  padding: 0.55rem 0.6rem;
+  min-height: 2.75rem;
+  width: 100%;
+}
+.ws-actor-note { margin: 0; font-size: 0.85rem; color: var(--ink-soft); }
+.ws-ledger { display: grid; gap: 0.15rem; justify-items: start; }
+.ws-ledger .hash { margin: 0; }
+.ws-checkpoint { margin: 0 0 0.35rem; font-size: 0.8rem; color: var(--muted); }
+.ws-links { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+.ws-links a { color: var(--allow); font-weight: 600; }
+
+.ws-quiet {
+  font: 600 0.85rem/1 var(--sans);
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--ink-soft);
+  padding: 0.55rem 0.8rem;
+  min-height: 2.5rem;
+  cursor: pointer;
+}
+.ws-quiet:hover { background: var(--paper-edge); }
+.ws-quiet:disabled, .rerun:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.ws-identity {
+  max-width: 72rem;
+  margin: 0.75rem auto 0;
+  padding: 0 1.25rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* Folder tabs */
+.ws-tabs {
+  display: flex;
+  gap: 0.25rem;
+  margin-top: 1.75rem;
+  border-bottom: 2px solid var(--ink);
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.ws-tabs [role='tab'] {
+  font: 600 0.95rem/1 var(--serif);
+  background: var(--paper-edge);
+  color: var(--ink-soft);
+  border: 1px solid var(--rule);
+  border-bottom: 0;
+  border-radius: 4px 4px 0 0;
+  padding: 0.75rem 1.1rem;
+  min-height: 2.75rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ws-tabs [role='tab'][aria-selected='true'] {
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--ink);
+  border-width: 2px 2px 0;
+  box-shadow: inset 0 -3px 0 var(--focus);
+}
+
+.ws-notice {
+  display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center;
+  min-height: 2.5rem;
+  margin: 1rem 0;
+  font-size: 0.92rem;
+}
+.ws-notice:empty { margin: 0.5rem 0; min-height: 0; }
+.ws-notice code { font: 600 0.82rem var(--mono); }
+.ws-notice--refused { color: var(--refuse); }
+
+.ws-panel { padding: 0.5rem 0 3rem; }
+.ws-panel h2 { margin: 1.25rem 0 0.4rem; }
+.ws-hint { margin: 0 0 0.9rem; color: var(--ink-soft); font-size: 0.9rem; max-width: 46rem; }
+
+.ws-split { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 2rem; align-items: start; }
+.ws-split--even { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.ws-split:has(> .ws-reader[hidden]) { grid-template-columns: minmax(0, 1fr); }
+.ws-evidence .entry { display: block; }
+
+.ws-evidence td .reason { margin-top: 0.15rem; }
+.ws-evidence td.hash { font-size: 0.78rem; }
+
+/* Reader: an evidence sheet pinned beside the list */
+.ws-reader {
+  position: sticky; top: 1rem;
+  border: 1px solid var(--rule);
+  background: var(--paper-edge);
+  padding: 1rem 1.15rem 1.25rem;
+}
+.ws-reader h2 { margin-top: 0; }
+.ws-meta { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 0.3rem 0.9rem; margin: 0.5rem 0 1rem; font-size: 0.86rem; }
+.ws-meta dt { color: var(--muted); }
+.ws-meta dd { margin: 0; overflow-wrap: anywhere; }
+.ws-meta--compact { font-size: 0.82rem; margin: 0.4rem 0; }
+.ws-untrusted {
+  margin: 0 0 0.4rem;
+  font-size: 0.8rem;
+  color: var(--refuse);
+  border-left: 3px solid var(--refuse);
+  padding-left: 0.6rem;
+}
+.ws-text {
+  margin: 0;
+  max-height: 22rem;
+  overflow: auto;
+  padding: 0.75rem;
+  background: var(--paper);
+  border: 1px dashed var(--rule);
+  font: 0.8rem/1.5 var(--mono);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Forms */
+.ws-form { display: grid; gap: 0.7rem; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px dashed var(--rule); }
+.ws-form h3 { margin: 0; font: 600 1.02rem/1.2 var(--serif); }
+.ws-form label { display: grid; gap: 0.3rem; font-size: 0.88rem; color: var(--ink-soft); }
+.ws-form fieldset { border: 1px solid var(--rule); padding: 0.6rem 0.75rem; margin: 0; }
+.ws-form legend { font-size: 0.88rem; color: var(--ink-soft); padding: 0 0.3rem; }
+.ws-form .rerun { justify-self: start; min-height: 2.75rem; }
+.ws-form--inline { margin-top: 0.5rem; border-top: 0; padding-top: 0; }
+.ws-checks { display: flex; flex-wrap: wrap; gap: 0.35rem 1rem; }
+.ws-checks--wide { display: grid; grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); }
+.ws-checks label { display: flex; gap: 0.45rem; align-items: center; font: 0.85rem var(--mono); color: var(--ink); min-height: 2rem; }
+.ws-checks input { width: 1.1rem; height: 1.1rem; min-height: 0; accent-color: var(--allow); }
+
+/* Ledger timeline: one ruled line per entry, numbered like a docket */
+.ws-chain { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin: 0.5rem 0 1rem; font-size: 0.9rem; }
+.ws-chain--broken { color: var(--refuse); }
+.ws-timeline { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--ink); }
+.ws-event { padding: 0.85rem 0 0.85rem 1rem; border-bottom: 1px solid var(--rule); border-left: 3px solid var(--rule); }
+.ws-event--custody_transfer { border-left-color: var(--allow); }
+.ws-event--correction { border-left-color: var(--focus); }
+.ws-event--historical_assertion { border-left-color: var(--ink-soft); }
+.ws-event-head { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; align-items: baseline; }
+.ws-kind { font: 600 0.78rem/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; }
+.ws-event-head time { font-size: 0.82rem; color: var(--ink-soft); }
+.ws-event-body { margin: 0.35rem 0 0.2rem; max-width: 52rem; overflow-wrap: anywhere; }
+.ws-event-hash { font-size: 0.74rem; color: var(--muted); margin: 0.2rem 0; }
+.ws-corrected { margin: 0.2rem 0; font-size: 0.85rem; color: var(--focus); font-weight: 600; }
+
+/* Agent pass, findings, drafts, approvals: ruled entries */
+.ws-agent { display: flex; gap: 1.5rem; justify-content: space-between; align-items: end; flex-wrap: wrap; border-bottom: 1px solid var(--rule); padding-bottom: 1rem; }
+.ws-agent > div { max-width: 46rem; }
+.ws-calls { list-style: none; padding: 0; margin: 0.75rem 0 0; display: grid; gap: 0.25rem; font-size: 0.85rem; }
+.ws-calls li { display: flex; gap: 1rem; }
+.ws-entries { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--ink); }
+.ws-entry { padding: 0.8rem 0; border-bottom: 1px solid var(--rule); }
+.ws-entry p { margin: 0.25rem 0; overflow-wrap: anywhere; }
+.ws-entry-head { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+.ws-entry .rerun { margin-top: 0.4rem; min-height: 2.5rem; }
+.ws-empty { padding: 0.8rem 0; color: var(--muted); }
+.ws-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.4rem; }
+
+.ws-verify { margin-top: 2rem; border: 1px solid var(--rule); background: var(--paper-edge); padding: 1rem 1.15rem; }
+.ws-verify h2 { margin-top: 0; }
+.ws-verify-head { display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; }
+.ws-verify ul { font-size: 0.86rem; color: var(--ink-soft); }
+
+@media (max-width: 760px) {
+  .ws-masthead { grid-template-columns: 1fr; gap: 1rem; }
+  .ws-desk { border-left: 0; padding-left: 0; border-top: 1px solid var(--rule); padding-top: 1rem; }
+  .ws-split, .ws-split--even { grid-template-columns: 1fr; }
+  .ws-reader { position: static; }
+  .ws-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; border-bottom: 0; overflow: visible; }
+  .ws-tabs [role='tab'] { padding: 0.7rem 0.6rem; font-size: 0.88rem; border: 1px solid var(--rule); border-radius: 2px; white-space: normal; }
+  .ws-tabs [role='tab'][aria-selected='true'] { border-width: 2px; }
+  .ws-meta { grid-template-columns: 1fr; }
+  .ws-meta dt { margin-top: 0.3rem; }
+}

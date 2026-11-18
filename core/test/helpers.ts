@@ -12,6 +12,7 @@ import { EvidenceService, MemoryObjectStore, StaticCaseScope, type ObjectStore }
 import { ApprovalService } from '../src/approvals.ts';
 import { CheckpointAuthority } from '../src/checkpoint.ts';
 import { ExportService } from '../src/export.ts';
+import { CaseReadService } from '../src/case-read.ts';
 import { ProposalService } from '../src/proposals.ts';
 import { signingKeyFromSeed } from '../src/crypto.ts';
 import { loadManifest, readFixtureBytes } from '../src/fixtures.ts';
@@ -103,7 +104,8 @@ export function makeWorld(options: { store?: TransactionalStore; objects?: Objec
   const findings = new FindingService({ ...base, ledger });
   const provenance = new ManifestProvenance(loadManifest());
   const agentTools = new AgentToolService({ tools: TOOL_DEFINITIONS, evidence, findings, proposals, provenance, audit });
-  return { store, directory, audit, ledger, objects, scope, custody, evidence, approvals, checkpoints, exports, proposals, findings, provenance, agentTools, signingKey, trustedKey };
+  const caseRead = new CaseReadService({ ...base, ledger, checkpoints });
+  return { store, directory, audit, ledger, objects, scope, custody, evidence, approvals, checkpoints, exports, proposals, findings, provenance, agentTools, caseRead, signingKey, trustedKey };
 }
 export type World = ReturnType<typeof makeWorld>;
 

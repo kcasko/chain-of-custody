@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Case File: Blackwater Evidence</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/workspace.css">
+  <script src="/workspace.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#workspace">Skip to the case file</a>
+
+  <header class="masthead ws-masthead">
+    <div class="ws-title">
+      <p class="file-label">Case file <span id="case-id">BLACKWATER-2021</span> &middot; Synthetic record</p>
+      <h1>Blackwater Evidence</h1>
+      <p class="lede">Audit what the records support. Nothing here can rewrite history: changes are appended, checked, and signed.</p>
+    </div>
+    <div class="ws-desk">
+      <label class="ws-actor">
+        <span class="proof-label">Acting as</span>
+        <select id="actor"></select>
+      </label>
+      <p class="ws-actor-note" id="actor-note"></p>
+      <div class="ws-ledger" aria-live="polite">
+        <span class="proof-label">Ledger</span>
+        <p class="hash" id="ledger-head">loading</p>
+        <p class="ws-checkpoint" id="ledger-checkpoint"></p>
+        <span id="chain-stamp" class="stamp stamp--pending">Checking</span>
+      </div>
+      <nav class="ws-links" aria-label="Other pages">
+        <a href="/challenge">Integrity Challenge</a>
+        <button type="button" id="reset" class="ws-quiet" title="Local demo control: reloads the synthetic record. Not a case operation.">Reset demo data</button>
+      </nav>
+    </div>
+  </header>
+
+  <p class="ws-identity" id="identity-notice"></p>
+
+  <main id="workspace">
+    <div class="ws-tabs" role="tablist" aria-label="Case file sections">
+      <button type="button" role="tab" id="tab-evidence" aria-controls="panel-evidence" aria-selected="true">Evidence</button>
+      <button type="button" role="tab" id="tab-timeline" aria-controls="panel-timeline" aria-selected="false" tabindex="-1">Custody timeline</button>
+      <button type="button" role="tab" id="tab-findings" aria-controls="panel-findings" aria-selected="false" tabindex="-1">Findings &amp; drafts</button>
+      <button type="button" role="tab" id="tab-exports" aria-controls="panel-exports" aria-selected="false" tabindex="-1">Approvals &amp; export</button>
+    </div>
+
+    <div class="ws-notice" id="notice" role="status" aria-live="polite"></div>
+
+    <section class="ws-panel" role="tabpanel" id="panel-evidence" aria-labelledby="tab-evidence">
+      <div class="ws-split">
+        <div>
+          <h2>Registered versions</h2>
+          <p class="ws-hint">Every version is pinned by its hash. There is no "latest": you always read an exact version.</p>
+          <div class="table-wrap">
+            <table class="docket ws-evidence">
+              <caption class="visually-hidden">Registered evidence versions</caption>
+              <thead><tr><th scope="col">Item</th><th scope="col">Version</th><th scope="col">SHA-256</th><th scope="col"><span class="visually-hidden">Open</span></th></tr></thead>
+              <tbody id="evidence-rows"></tbody>
+            </table>
+          </div>
+        </div>
+        <article class="ws-reader" id="reader" aria-labelledby="reader-title" hidden>
+          <h2 id="reader-title"></h2>
+          <dl class="ws-meta" id="reader-meta"></dl>
+          <p class="ws-untrusted">Evidence text below is untrusted content from the record. It is shown as plain text and never treated as instructions.</p>
+          <pre class="ws-text" id="reader-text" tabindex="0"></pre>
+          <form class="ws-form" id="transfer-form">
+            <h3>Record a custody transfer for this version</h3>
+            <label>From <input name="from" required maxlength="200" autocomplete="off"></label>
+            <label>To <input name="to" required maxlength="200" autocomplete="off"></label>
+            <label>Reason <input name="reason" required maxlength="2000" autocomplete="off"></label>
+            <button type="submit" class="rerun">Append transfer to the ledger</button>
+          </form>
+        </article>
+      </div>
+    </section>
+
+    <section class="ws-panel" role="tabpanel" id="panel-timeline" aria-labelledby="tab-timeline" hidden>
+      <h2>Custody timeline</h2>
+      <p class="ws-hint">Each entry is hashed and linked to the one before it. Mistakes are fixed by appending a correction; the original line stays.</p>
+      <div id="chain-report" class="ws-chain"></div>
+      <ol class="ws-timeline" id="timeline"></ol>
+    </section>
+
+    <section class="ws-panel" role="tabpanel" id="panel-findings" aria-labelledby="tab-findings" hidden>
+      <div class="ws-agent">
+        <div>
+          <h2>Agent pass</h2>
+          <p class="ws-hint"><strong>Scripted replay, not a model.</strong> Bedrock Managed Agents access is blocked (release blocker RB-1). This replays the seven legitimate agent tool calls through the same Gateway handler the real agent will use. The agent can only read, record findings, and draft; a person decides.</p>
+        </div>
+        <button type="button" id="agent-run" class="rerun">Run scripted agent pass</button>
+      </div>
+      <ul class="ws-calls" id="agent-calls"></ul>
+
+      <div class="ws-split ws-split--even">
+        <div>
+          <h2>Findings</h2>
+          <ol class="ws-entries" id="findings"></ol>
+          <form class="ws-form" id="finding-form">
+            <h3>Record a finding</h3>
+            <label>Type <select name="findingType" id="finding-type"></select></label>
+            <label>Uncertainty <select name="uncertainty" id="finding-uncertainty"></select></label>
+            <fieldset><legend>Cited evidence</legend><div class="ws-checks" id="finding-cites"></div></fieldset>
+            <label>Summary <textarea name="summary" rows="3" required maxlength="1000"></textarea></label>
+            <p class="ws-hint">Findings describe what records support. Conclusions about guilt, intent, blame or admissibility are refused.</p>
+            <button type="submit" class="rerun">Record finding</button>
+          </form>
+        </div>
+        <div>
+          <h2>Agent drafts awaiting a person</h2>
+          <ol class="ws-entries" id="drafts"></ol>
+        </div>
+      </div>
+    </section>
+
+    <section class="ws-panel" role="tabpanel" id="panel-exports" aria-labelledby="tab-exports" hidden>
+      <div class="ws-split ws-split--even">
+        <form class="ws-form" id="request-form">
+          <h2>Request an export</h2>
+          <p class="ws-hint">An export needs approval from a different supervisor, is bound to exactly these versions and destination, and can be used once.</p>
+          <fieldset><legend>Versions to export</legend><div class="ws-checks ws-checks--wide" id="request-versions"></div></fieldset>
+          <label>Destination <select name="destination" id="request-destination"></select></label>
+          <button type="submit" class="rerun">Request approval</button>
+        </form>
+        <div>
+          <h2>Approvals</h2>
+          <ol class="ws-entries" id="approvals"></ol>
+        </div>
+      </div>
+      <article class="ws-verify" id="verification" hidden aria-labelledby="verify-title">
+        <h2 id="verify-title">Independent verification of the export</h2>
+        <div class="ws-verify-head"><span id="verify-stamp" class="stamp"></span><dl class="ws-meta" id="verify-meta"></dl></div>
+        <ul id="verify-findings"></ul>
+        <button type="button" id="download" class="rerun">Download package (JSON)</button>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

@@ -10,7 +10,7 @@
   --refuse: #a3261b;
   --allow: #1f4e79;
   --muted: #655e51; /* 5.6:1 on paper, 4.8:1 on panel (WCAG AA) */
-  --focus: #b8860b;
+  --focus: #7f5a00; /* 5.4:1 on paper, 4.7:1 on panel: text and focus rings */
   --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
   --mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, "Liberation Mono", monospace;
   --sans: system-ui, "Segoe UI", Roboto, sans-serif;

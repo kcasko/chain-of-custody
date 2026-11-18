@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-11-18 (T17: investigation workspace)
+
+- Local investigation workspace at `/` (Integrity Challenge moved to `/challenge`): evidence explorer with exact-version reads, custody timeline with chain self-check and append-only corrections, findings and agent drafts with human promotion, and approval-gated export with independent verification. ADR 0009.
+- Core: `CaseReadService` adds audited, humans-only reads for the timeline, drafts and approvals (6 tests). Authorization stays in the core; the API only maps results.
+- Local demo identity (choose who you act as; no login) stated on the page. Session token, Host and Origin checks, JSON-only bodies with a 64 KiB limit, strict CSP, textContent rendering, no internal storage keys in responses.
+- Scripted agent pass replays the seven legitimate Stage B calls through the Gateway handler; labeled as not a model (RB-1).
+- Light-mode focus and correction color darkened to `#7f5a00` (was 2.84:1, now 5.4:1).
+- `npm test`: 371/371; typecheck clean. Browser checks were manual (dark, light, 375 px).
+
 ## 2026-11-18 (ledger overwrite risk and T12 CDK)
 
 - Session token check: the T14b test-role token appears in no repository file, git object, temp file, AWS CLI cache or shell history. It appears only in the local Claude session transcript. CloudTrail shows the session used only between 19:45:22 and 19:45:39 UTC, before the role was deleted at 19:46:57.

@@ -6,6 +6,7 @@ import { Buffer } from 'node:buffer';
 import { readFileSync } from 'node:fs';
 import { AgentToolService } from './agent-tools.ts';
 import { ApprovalService } from './approvals.ts';
+import { CaseReadService } from './case-read.ts';
 import { MemoryAuditLog } from './audit.ts';
 import { CheckpointAuthority } from './checkpoint.ts';
 import { signingKeyFromSeed } from './crypto.ts';
@@ -65,7 +66,8 @@ export function createLocalDomain() {
   const provenance = new ManifestProvenance(manifest);
   const tools = JSON.parse(repoFile('policy/tools/evidence-tools.json')) as ToolDefinition[];
   const agentTools = new AgentToolService({ tools, evidence, findings, proposals, provenance, audit });
-  return { store, directory, audit, ledger, objects, custody, proposals, evidence, approvals, checkpoints, exports, findings, provenance, agentTools, manifest, signingKey };
+  const caseRead = new CaseReadService({ ...base, ledger, checkpoints });
+  return { store, directory, audit, ledger, objects, custody, proposals, evidence, approvals, checkpoints, exports, findings, provenance, agentTools, caseRead, manifest, signingKey };
 }
 export type LocalDomain = ReturnType<typeof createLocalDomain>;
 
