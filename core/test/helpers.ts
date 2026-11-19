@@ -2,7 +2,7 @@
 
 import { MemoryStore, type TransactionalStore } from '../src/store.ts';
 import { MemoryDirectory } from '../src/policy.ts';
-import { MemoryAuditLog } from '../src/audit.ts';
+import { MemoryAuditLog, type SecurityAuditLog } from '../src/audit.ts';
 import type { RequestContext, Principal } from '../src/types.ts';
 import { readFileSync } from 'node:fs';
 import { Buffer } from 'node:buffer';
@@ -77,7 +77,7 @@ export function deps(store: TransactionalStore = makeStore()) {
 
 // Wires custody and proposals the way production must: the promotion
 // capability goes only to ProposalService.
-export function wireCustody(base: { store: TransactionalStore; directory: MemoryDirectory; audit: MemoryAuditLog }, ledger: Ledger) {
+export function wireCustody(base: { store: TransactionalStore; directory: MemoryDirectory; audit: SecurityAuditLog }, ledger: Ledger) {
   let promoter: Promoter | undefined;
   const custody = new CustodyService({ ...base, ledger }, { onPromoter: (p) => { promoter = p; } });
   if (!promoter) throw new Error("promoter not provided");
@@ -86,10 +86,11 @@ export function wireCustody(base: { store: TransactionalStore; directory: Memory
 }
 
 // A fully wired domain over one store. Every service shares the same ledger.
-export function makeWorld(options: { store?: TransactionalStore; objects?: ObjectStore } = {}) {
+// `audit` defaults to MemoryAuditLog; adapter tests pass a durable one.
+export function makeWorld<A extends SecurityAuditLog = MemoryAuditLog>(options: { store?: TransactionalStore; objects?: ObjectStore; audit?: A } = {}) {
   const store = options.store ?? makeStore();
   const directory = makeDirectory();
-  const audit = new MemoryAuditLog();
+  const audit = (options.audit ?? new MemoryAuditLog()) as A;
   const ledger = new Ledger(store);
   const objects = options.objects ?? new MemoryObjectStore();
   const scope = new StaticCaseScope([caseScope, { caseId: OTHER_CASE, evidenceIds: ['BW-001', 'BW-002'] }]);

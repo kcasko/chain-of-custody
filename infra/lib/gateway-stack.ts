@@ -4,23 +4,26 @@
 // load order. The engine is attached from creation, so with zero policies
 // every call is denied; boundary forbids are ACTIVE before any permit exists.
 //
-// The tool Lambda is the Stage B stub (harness/lambda), the version verified
-// live. The core-backed handler (core/src/gateway-handler.ts) replaces it once
-// it has a durable audit adapter; see docs/TASKS.md.
+// The tool Lambda is the core-backed handler (infra/lambda/tools.ts, T16):
+// the domain core over DynamoDB and S3 with the durable audit log. The Stage B
+// stub (harness/lambda) is the version that was verified live on November 18;
+// this one is synthesized and tested locally only, not yet deployed.
 
-import * as crypto from 'node:crypto';
-import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import * as cdk from 'aws-cdk-lib';
 import * as agentcore from 'aws-cdk-lib/aws-bedrockagentcore';
+import type * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as nodejs from 'aws-cdk-lib/aws-lambda-nodejs';
+import type * as s3 from 'aws-cdk-lib/aws-s3';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import type { Construct } from 'constructs';
 import { cfnPolicies } from './cedar.ts';
 import type { CocConfig } from './config.ts';
+import { WRITER_TABLE_DENY } from './storage-stack.ts';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.join(here, '..', '..');
@@ -33,43 +36,47 @@ const spec = require('../../harness/build-spec.cjs') as {
 export const TARGET_NAME = 'EvidenceTools'; // Cedar actions are EvidenceTools___<tool>
 export const MCP_VERSION = '2025-03-26';
 
-// Writes the stub bundle (same three files as harness/package-lambda.cjs) to a
-// content-addressed folder under .local/, which is git-ignored.
-function stubBundle(): string {
-  const files: Record<string, Buffer> = {
-    'handler.cjs': fs.readFileSync(path.join(repoRoot, 'harness', 'lambda', 'handler.cjs')),
-    'synthetic-evidence.json': fs.readFileSync(path.join(repoRoot, 'harness', 'lambda', 'synthetic-evidence.json')),
-    'tool-spec.json': Buffer.from(`${JSON.stringify(spec.buildSpec(), null, 2)}\n`),
-  };
-  const hash = crypto.createHash('sha256');
-  for (const [name, data] of Object.entries(files)) hash.update(name).update(data);
-  const dir = path.join(repoRoot, '.local', 'cdk-assets', `stub-lambda-${hash.digest('hex').slice(0, 16)}`);
-  fs.mkdirSync(dir, { recursive: true });
-  for (const [name, data] of Object.entries(files)) fs.writeFileSync(path.join(dir, name), data);
-  return dir;
+// What the tool Lambda may do: read and conditionally write the ledger table
+// (findings, proposals, audit records, idempotency), never delete or rewrite
+// in place, and read exact evidence versions. No s3:PutObject: the agent never
+// registers evidence.
+export const TOOL_TABLE_ALLOW = ['dynamodb:GetItem', 'dynamodb:Query', 'dynamodb:PutItem', 'dynamodb:ConditionCheckItem'];
+export const TOOL_EVIDENCE_ALLOW = ['s3:GetObject', 's3:GetObjectVersion'];
+
+export interface GatewayStorage {
+  readonly table: dynamodb.ITable;
+  readonly evidenceBucket: s3.IBucket;
 }
 
 export class CocGatewayStack extends cdk.Stack {
   readonly gateway: agentcore.CfnGateway;
   readonly policies: agentcore.CfnPolicy[];
 
-  constructor(scope: Construct, id: string, cfg: CocConfig, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, cfg: CocConfig, storage: GatewayStorage, props?: cdk.StackProps) {
     super(scope, id, props);
     const test = cfg.stage === 'test';
     const gatewayName = `${cfg.prefix}-gw`;
     const gatewayArnPattern = `arn:aws:bedrock-agentcore:${cfg.region}:${cfg.account}:gateway/${gatewayName}-*`;
 
     const toolLogs = new logs.LogGroup(this, 'ToolLogs', { retention: test ? logs.RetentionDays.ONE_DAY : logs.RetentionDays.ONE_YEAR, removalPolicy: test ? cdk.RemovalPolicy.DESTROY : cdk.RemovalPolicy.RETAIN });
-    const tool = new lambda.Function(this, 'EvidenceToolsFn', {
+    const tool = new nodejs.NodejsFunction(this, 'EvidenceToolsFn', {
+      entry: path.join(repoRoot, 'infra', 'lambda', 'tools.ts'),
+      handler: 'handler',
       runtime: lambda.Runtime.NODEJS_22_X,
       architecture: lambda.Architecture.ARM_64,
-      memorySize: 128,
-      timeout: cdk.Duration.seconds(10),
-      handler: 'handler.handler',
-      code: lambda.Code.fromAsset(stubBundle()),
+      memorySize: 512,
+      timeout: cdk.Duration.seconds(15),
       logGroup: toolLogs,
-      description: 'Stage B tool stub: closed-schema validation, synthetic evidence only',
+      description: 'Evidence tools on the domain core (DynamoDB, S3, durable audit)',
+      environment: { TABLE_NAME: storage.table.tableName, EVIDENCE_BUCKET: storage.evidenceBucket.bucketName },
+      projectRoot: repoRoot,
+      depsLockFilePath: path.join(repoRoot, 'package-lock.json'),
+      // Bundle the pinned SDK instead of whatever the runtime ships.
+      bundling: { format: nodejs.OutputFormat.ESM, target: 'node22', externalModules: [], minify: false, sourceMap: false, banner: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);" },
     });
+    tool.addToRolePolicy(new iam.PolicyStatement({ sid: 'ToolTableReadAndConditionalWrites', actions: TOOL_TABLE_ALLOW, resources: [storage.table.tableArn] }));
+    tool.addToRolePolicy(new iam.PolicyStatement({ sid: 'ToolNeverDeleteOrRewriteInPlace', effect: iam.Effect.DENY, actions: WRITER_TABLE_DENY, resources: [storage.table.tableArn] }));
+    tool.addToRolePolicy(new iam.PolicyStatement({ sid: 'ToolReadExactEvidenceVersions', actions: TOOL_EVIDENCE_ALLOW, resources: [storage.evidenceBucket.arnForObjects('*')] }));
 
     const engine = new agentcore.CfnPolicyEngine(this, 'PolicyEngine', {
       name: `${cfg.prefix.replace(/-/g, '_')}_policy`,

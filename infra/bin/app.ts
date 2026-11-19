@@ -11,7 +11,7 @@ export function buildApp(app = new cdk.App()) {
   const env = { account: cfg.account, region: cfg.region };
   const stack = cfg.stage === 'test' ? 'CocTest' : 'Coc';
   const storage = new CocStorageStack(app, `${stack}Storage`, cfg, { env, terminationProtection: cfg.stage === 'prod' });
-  const gateway = new CocGatewayStack(app, `${stack}Gateway`, cfg, { env, terminationProtection: cfg.stage === 'prod' });
+  const gateway = new CocGatewayStack(app, `${stack}Gateway`, cfg, { table: storage.table, evidenceBucket: storage.evidenceBucket }, { env, terminationProtection: cfg.stage === 'prod' });
   for (const s of [storage, gateway]) {
     cdk.Tags.of(s).add('Project', 'chain-of-custody');
     cdk.Tags.of(s).add('Stage', cfg.stage);

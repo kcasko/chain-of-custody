@@ -11,6 +11,9 @@ export const TABLES = {
   exports: 'exports',
   quarantine: 'quarantine',
   findings: 'findings',
+  // Security audit records (adapters/aws/src/dynamo-audit.ts). The in-memory
+  // log does not use the store; the durable one shares the physical table.
+  audit: 'audit',
 } as const;
 
 export const APPEND_ONLY_TABLES: readonly string[] = Object.freeze([
@@ -20,4 +23,5 @@ export const APPEND_ONLY_TABLES: readonly string[] = Object.freeze([
   TABLES.exports,
   TABLES.quarantine,
   TABLES.findings,
+  TABLES.audit,
 ]);

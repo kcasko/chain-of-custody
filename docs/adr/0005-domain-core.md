@@ -13,7 +13,7 @@ It is independent of Bedrock Managed Agents and AWS. Every external system is a 
 | `TransactionalStore` (conditional writes, all-or-nothing transactions, no delete, append-only tables) | DynamoDB `TransactWriteItems` | `MemoryStore`, `InterleavingStore` (forces races), `FaultyStore` |
 | `ObjectStore` (`putNew` write-once, `getVersion` exact) | S3 with versioning, `If-None-Match` bucket policy, `GetObjectVersion` | `MemoryObjectStore` |
 | `MembershipDirectory` | Cognito groups or a membership table | `MemoryDirectory` |
-| `SecurityAuditLog` | Separate append-only audit table plus anchoring | `MemoryAuditLog` |
+| `SecurityAuditLog` (append, `forCase` read) | `DynamoAuditLog` (T16): logical table `audit` in the ledger table, create-only, archived by the stream (ADR 0008) | `MemoryAuditLog` |
 
 The agent reaches the core only through the Gateway tool Lambda (ADR 0003). The core sees it as `{ type: 'agent', agentId }` on channel `gateway`; it never sees prompts or model output.
 
@@ -31,7 +31,7 @@ The agent reaches the core only through the Gateway tool Lambda (ADR 0003). The 
 
 1. **The ledger is the registry.** Evidence counts as registered only when its `evidence_registered` event commits. Bytes stored without a committed event are quarantined (recorded, never deleted, never readable).
 2. **One transaction per state change.** Event, head move, idempotency record, and any consumed approval or promoted proposal commit together or not at all. This keeps ADR 0002's atomicity rule and maps to one DynamoDB transaction.
-3. **Append-only is enforced at the store adapter,** not just by convention: a write to an existing key in `events`, `idempotency`, `checkpoints`, `exports` or `quarantine` throws.
+3. **Append-only is enforced at the store adapter,** not just by convention: a write to an existing key in `events`, `idempotency`, `checkpoints`, `exports`, `quarantine`, `findings` or `audit` throws (`findings` added with T15, `audit` with T16: the durable audit log shares the physical table).
 4. **Idempotency keys are bound to case and actor,** and the stored digest covers the request content. Same key and content returns the original event; same key and different content is refused.
 5. **Corrections reference `targetSequence` and `targetHash` exactly.** The original event never changes.
 6. **Historical assertions** cite registered pinned versions and keep raw claimed time, source clock, timezone and uncertainty separate from server time.

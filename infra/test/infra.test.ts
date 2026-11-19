@@ -10,6 +10,7 @@ import { Match, Template } from 'aws-cdk-lib/assertions';
 import { buildApp } from '../bin/app.ts';
 import { readConfig } from '../lib/config.ts';
 import { WRITER_TABLE_ALLOW, WRITER_TABLE_DENY } from '../lib/storage-stack.ts';
+import { TOOL_EVIDENCE_ALLOW, TOOL_TABLE_ALLOW } from '../lib/gateway-stack.ts';
 
 const ACCOUNT = '111111111111';
 function synth(context: Record<string, string> = {}) {
@@ -162,7 +163,9 @@ test('gateway role: assumed only by AgentCore for this gateway name; invokes one
 });
 
 test('callers: only the admitted session role may invoke, and only this gateway', () => {
-  const bma = statements(test1.gateway, 'AWS::IAM::Policy', (p) => p.PolicyDocument);
+  const sessionPolicies = Object.values(test1.gateway.findResources('AWS::IAM::Policy')).filter((r) => JSON.stringify(r.Properties.Roles) === '["CocBmaSessionRole"]');
+  assert.equal(sessionPolicies.length, 1);
+  const bma = (sessionPolicies[0]!.Properties.PolicyDocument as { Statement: Stmt[] }).Statement;
   assert.equal(bma.length, 1);
   assert.equal(bma[0]!.Sid, 'InvokeThisGatewayOnly');
   assert.deepEqual(bma[0]!.Action, 'bedrock-agentcore:InvokeGateway');
@@ -173,6 +176,26 @@ test('callers: only the admitted session role may invoke, and only this gateway'
   assert.match(JSON.stringify(roles[0]!.Properties.AssumeRolePolicyDocument), /ArnLike.*AWSReservedSSO_AdministratorAccess_\*/);
   const boundary = Object.values(harness.gateway.findResources('AWS::BedrockAgentCore::Policy')).find((r) => r.Properties.Name === 'boundary_session_role_only')!;
   assert.match(JSON.stringify(boundary.Properties.Definition), /assumed-role\/CocTestHarnessRole/);
+});
+
+test('tool Lambda: the core-backed handler, wired to the ledger table and evidence bucket, with the narrowest permissions', () => {
+  const fns = Object.values(test1.gateway.findResources('AWS::Lambda::Function')).filter((r) => String(r.Properties.Description ?? '').startsWith('Evidence tools on the domain core'));
+  assert.equal(fns.length, 1, 'the Stage B stub is no longer the tool Lambda');
+  const fn = fns[0]!.Properties as { Handler: string; Environment: { Variables: Record<string, unknown> }; Role: unknown };
+  assert.equal(fn.Handler, 'index.handler');
+  assert.deepEqual(Object.keys(fn.Environment.Variables).sort(), ['TABLE_NAME', 'EVIDENCE_BUCKET'].sort());
+  assert.match(JSON.stringify(fn.Environment.Variables.TABLE_NAME), /Fn::ImportValue.*Ledger/, 'the table from the storage stack');
+  const roleId = (fn.Role as { 'Fn::GetAtt': string[] })['Fn::GetAtt'][0]!;
+  const policies = Object.values(test1.gateway.findResources('AWS::IAM::Policy')).filter((r) => JSON.stringify(r.Properties.Roles).includes(roleId));
+  assert.equal(policies.length, 1);
+  const stmts = (policies[0]!.Properties.PolicyDocument as { Statement: Stmt[] }).Statement;
+  const bySid = Object.fromEntries(stmts.map((s) => [s.Sid, s]));
+  assert.deepEqual(asList(bySid.ToolTableReadAndConditionalWrites!.Action).sort(), [...TOOL_TABLE_ALLOW].sort());
+  assert.equal(bySid.ToolNeverDeleteOrRewriteInPlace!.Effect, 'Deny');
+  assert.deepEqual(asList(bySid.ToolNeverDeleteOrRewriteInPlace!.Action).sort(), [...WRITER_TABLE_DENY].sort());
+  assert.deepEqual(asList(bySid.ToolReadExactEvidenceVersions!.Action).sort(), [...TOOL_EVIDENCE_ALLOW].sort());
+  const actions = stmts.filter((s) => s.Effect === 'Allow').flatMap((s) => asList(s.Action).map(String));
+  for (const forbidden of ['s3:PutObject', 's3:DeleteObject', 'dynamodb:DeleteItem', 'dynamodb:UpdateItem', 'dynamodb:Scan']) assert.ok(!actions.includes(forbidden), forbidden);
 });
 
 test('config refuses values that could inject into Cedar or IAM', () => {
