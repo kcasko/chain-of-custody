@@ -44,7 +44,7 @@ Afterwards, check on GitHub: the README renders with its images, the Mermaid dia
 
 1. Open the hackathon page on Builder Center and create the project from "Your project".
 2. Paste `docs/submission/builder-center-project.md` without its leading HTML comment.
-3. Upload the images from `docs/submission/screenshots/` where the draft references them: `architecture.png` and `agent-running-managed-harness.png`. Optional: `workspace-compare.png`, `workspace-security-log.png`, `integrity-challenge.png`.
+3. Upload the images from `docs/submission/screenshots/` where the draft references them, in this order: `evidence-timeline.png`, `agent-running-managed-harness.png`, `injection-sequence.png`, `architecture.png`. Keep each image's alt text and the italic caption under it. Optional extras: `workspace-compare.png`, `workspace-security-log.png`, `integrity-challenge.png`. To change a figure, edit its HTML source in `docs/submission/` and run `node harness/render-architecture.mts`.
 4. Confirm the links point at the public repository (step 1 first).
 5. Preview, then publish.
 
