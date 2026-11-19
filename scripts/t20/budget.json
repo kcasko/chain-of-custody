@@ -1,0 +1,17 @@
+{
+  "BudgetName": "coc-t20-deploy",
+  "BudgetType": "COST",
+  "TimeUnit": "MONTHLY",
+  "BudgetLimit": { "Amount": "3", "Unit": "USD" },
+  "CostFilters": {
+    "Service": [
+      "Amazon DynamoDB",
+      "Amazon Simple Storage Service",
+      "AWS Lambda",
+      "AmazonCloudWatch",
+      "Amazon Bedrock AgentCore",
+      "Amazon Simple Notification Service"
+    ]
+  },
+  "Notes": "Exact service names must be confirmed against the Budgets console picker at creation (as in T09). Alerts: ACTUAL 50%, ACTUAL 100%, FORECASTED 100% to the existing alert address, which is not stored in the repository."
+}

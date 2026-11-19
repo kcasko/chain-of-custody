@@ -40,6 +40,9 @@ cd infra && npx cdk synth -c account=111111111111 --quiet -o ../.local/cdk.out
 
 ## Deploy (needs approval)
 
+The concrete, costed plan for the first deploy of this version is [T20](../plans/2026-11-18-t20-test-deploy.md).
+
+
 1. Bootstrap once per account and region (creates the CDK staging bucket and roles; small storage cost): `npx cdk bootstrap aws://<account>/us-east-1`. Not done yet: T09 found the account is not bootstrapped.
 2. `cd infra && npx cdk diff -c stage=test` and review every IAM and bucket policy change.
 3. `npx cdk deploy CocTestStorage CocTestGateway -c stage=test -c harness=true [-c alarmEmail=...]`. Use `harness=true` until BMA access exists (RB-1): the harness role stands in for the BMA session role.

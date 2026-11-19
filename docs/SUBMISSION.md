@@ -35,7 +35,7 @@ Last updated November 18, 2026. **Not submission-ready: release blocker RB-1 (Be
 
 ### Needs approval (prepared, not done)
 
-- [ ] **Deploy the test stacks** with the harness role. Use the [runbook](runbooks/infra.md) steps, a budget alarm like T14b, and same-day teardown. This needs a cost estimate and Keith's approval.
+- [ ] **T20: deploy the test stacks** with the harness role, per the [T20 plan](plans/2026-11-18-t20-test-deploy.md): about $0.03 expected, $1.56 computed worst case, $3 budget, same-day teardown. Four decisions for Keith are listed at the end of the plan.
 - [ ] **Seed evidence and run the smoke checks** on AWS: the core-backed tool Lambda, the audit records, one archive round trip and one denied write.
 
 ### Not built (stated limits)
