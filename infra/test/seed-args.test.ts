@@ -18,9 +18,9 @@ const SAFE_ENV = {
 const run = (...args: string[]) => spawnSync(process.execPath, [SCRIPT, ...args], { encoding: 'utf8', env: SAFE_ENV, timeout: 30_000 });
 
 test('seed script: refuses without --as, with --as but no value, with a bad ID, or without --confirm', () => {
-  for (const args of [['owen.hale', '--confirm'], ['--confirm', '--as'], ['--as', 'Owen Hale', '--confirm'], ['--as', 'owen.hale']]) {
+  for (const args of [['owen.hale', '--confirm'], ['--confirm', '--as'], ['--as', 'Owen Hale', '--confirm'], ['--as', 'owen.hale'], ['--as', 'owen.hale', '--confirm', '--out']]) {
     const r = run(...args);
     assert.equal(r.status, 2, `${args.join(' ')}: ${r.stderr}`);
-    assert.match(r.stderr, /usage:/);
+    assert.match(r.stderr, /usage:|--out needs a file path/);
   }
 });

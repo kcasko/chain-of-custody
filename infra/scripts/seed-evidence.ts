@@ -6,7 +6,9 @@
 //
 // Usage (credentials from the standard AWS chain, with the writer policy):
 //   TABLE_NAME=... EVIDENCE_BUCKET=... AWS_REGION=... \
-//     node infra/scripts/seed-evidence.ts --as owen.hale --confirm
+//     node infra/scripts/seed-evidence.ts --as owen.hale --confirm [--out .local/versions.json]
+// --out writes the registered version IDs ("BW-001/original" -> ID) for the
+// T19 runner (harness/run-stage-b-core.mts).
 //
 // Safe to re-run only on an empty case: registration is append-only, so a
 // second run registers duplicate versions rather than overwriting anything.
@@ -15,7 +17,7 @@
 // the writer policy can seed "as" any investigator ID. The registrations are
 // recorded as stated by the operator; record who ran it in the deploy notes.
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { S3Client } from '@aws-sdk/client-s3';
 import { createAwsDomain, DEPLOYED_AGENT_ID, registerManifest } from '../../adapters/aws/src/aws-domain.ts';
@@ -26,6 +28,12 @@ import { USER_ID } from '../../core/src/validate.ts';
 const args = process.argv.slice(2);
 const asAt = args.indexOf('--as');
 const as = asAt >= 0 ? args[asAt + 1] : undefined;
+const outAt = args.indexOf('--out');
+const outFile = outAt >= 0 ? args[outAt + 1] : undefined;
+if (outAt >= 0 && (!outFile || outFile.startsWith('--'))) {
+  console.error('--out needs a file path');
+  process.exit(2);
+}
 const env = (n: string) => process.env[n] ?? '';
 if (!args.includes('--confirm') || !as || !USER_ID.test(as) || !env('TABLE_NAME') || !env('EVIDENCE_BUCKET')) {
   console.error('usage: TABLE_NAME=... EVIDENCE_BUCKET=... node infra/scripts/seed-evidence.ts --as <investigator-id> --confirm');
@@ -49,3 +57,7 @@ if (head.sequence !== 0) {
 }
 const versions = await registerManifest(d, caseScope.caseId, manifest, readFixtureBytes, as);
 console.log(`registered ${versions.size} versions; ledger head is now #${(await d.ledger.head(caseScope.caseId)).sequence}`);
+if (outFile) {
+  writeFileSync(outFile, `${JSON.stringify(Object.fromEntries(versions), null, 2)}\n`);
+  console.log(`version IDs written to ${outFile}`);
+}

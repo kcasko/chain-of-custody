@@ -26,6 +26,7 @@ Last updated November 18, 2026. **Not submission-ready: release blocker RB-1 (Be
 - [x] Offline export verifier (`npm run verify:export`), stating integrity versus authenticity.
 - [x] Architecture diagram ([ARCHITECTURE.md](ARCHITECTURE.md)), demo walkthrough, setup and teardown ([README](../README.md), [runbook](runbooks/infra.md)).
 - [x] Independent security and correctness review, with confirmed findings fixed and re-verified (see "Review" below).
+- [x] T19: Stage B runner for the core-backed Lambda, checking each call by its effects (response, audit records, stored state, ledger head). 29 of 29 locally against the real Cedar policies and handler; proven to fail on a Cedar bypass, a leaking handler and wrong attribution. Not run on AWS.
 
 ### Blocked
 
@@ -34,7 +35,6 @@ Last updated November 18, 2026. **Not submission-ready: release blocker RB-1 (Be
 
 ### Needs approval (prepared, not done)
 
-- [ ] **T19,** the Stage B runner for the core-backed Lambda. Needed before the first deploy; no AWS cost.
 - [ ] **Deploy the test stacks** with the harness role. Use the [runbook](runbooks/infra.md) steps, a budget alarm like T14b, and same-day teardown. This needs a cost estimate and Keith's approval.
 - [ ] **Seed evidence and run the smoke checks** on AWS: the core-backed tool Lambda, the audit records, one archive round trip and one denied write.
 
@@ -60,7 +60,7 @@ Last updated November 18, 2026. **Not submission-ready: release blocker RB-1 (Be
 
 | Check | Result |
 |---|---|
-| `npm test` (core, app API, policy, adapters on DynamoDB Local, infra templates, CLI) | 403 of 403 pass, none skipped |
+| `npm test` (core, app API, policy, adapters on DynamoDB Local, infra templates, CLI, T19 runner) | 409 of 409 pass, none skipped |
 | `npm run typecheck` (core, app, e2e, adapters, infra) | Clean |
 | `npm run test:e2e` (Playwright, Chromium) | 14 of 14 pass: full audit workflow with offline CLI verification of the downloaded files; brief, provenance and compare; dismissal; claims; outsider; security log; exact reader bytes; hostile text; keyboard (tabs and new controls, visible focus ring); phone width 375 px; WCAG AA 4.5:1 contrast in light and dark; Integrity Challenge 28 of 28 |
 | Desktop and phone screenshots, light and dark | Checked by eye; no horizontal overflow, no script errors |

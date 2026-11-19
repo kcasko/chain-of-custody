@@ -12,6 +12,7 @@ Tests the tool-enforcement stack on real AWS without Bedrock Managed Agents (BMA
 | `lambda/synthetic-evidence.json` | Fictional, agent-visible material. BW-010 contains a planted instruction |
 | `build-spec.cjs` | Builds the Lambda spec from `policy/` and the Gateway-compatible tool schemas (Gateway supports only `type`, `description`, `items`, `properties`, `required`) |
 | `clients/gateway-harness-client.cjs` | `AgentToolClient` that calls the Gateway's MCP endpoint, SigV4-signed. Credentials go to curl on stdin, never as arguments |
+| `run-stage-b-core.mts` | T19: the Stage B scenarios against the **core-backed** tool Lambda (`npm run harness:stage-b-core`). Checks each call by its effects: response, durable audit records, stored findings and drafts, ledger head. Logic in `adapters/aws/src/stage-b-core.ts`, tested locally in `adapters/aws/test/stage-b-core.test.ts`. Needs a deployment; not yet run on AWS |
 | `scenarios.cjs` | Client-agnostic live scenarios with expected outcomes |
 | `run-stage-b.cjs` | Live runner (`npm run harness:stage-b`). Verifies each outcome against Lambda logs and which policy denied |
 | `check-exec-env.sh` | Verifies the planned exec-server container and its credentials (run in WSL) |

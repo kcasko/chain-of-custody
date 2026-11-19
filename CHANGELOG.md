@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-18 (T19: Stage B runner for the core-backed Lambda)
+
+- `runCoreStageB` (`adapters/aws/src/stage-b-core.ts`) checks every scenario by its effects instead of stub log hashes: the tool response, the durable audit records (none for a Cedar denial; agent-attributed under one Gateway request ID otherwise), the findings and drafts added, and an unmoving ledger head; plus the unsigned and other-principal probes. Stub error codes are mapped to core codes explicitly.
+- Local Gateway emulation (the real Cedar policies in the official engine, in front of the real handler on DynamoDB Local): 29 of 29. The runner fails, as it should, when Cedar is bypassed (all 9 Cedar scenarios and the boundary probe), when a handler executes an attack, and when records carry the wrong agent identity.
+- Live wrapper `npm run harness:stage-b-core` and `seed-evidence.ts --out` for the registered version IDs. Not run on AWS.
+- `npm test` 409/409, `npm run test:e2e` 14/14, typecheck clean.
+
 ## 2026-11-18 (T16, independent review, submission materials)
 
 - T16: `DynamoAuditLog` (durable, create-only, append-only, archived; integrity failures reported, bounded count) and the core-backed tool Lambda (`createAwsDomain`, `infra/lambda/tools.ts`) replacing the Stage B stub in the synthesized template, with a least-privilege role (LeadingKeys-pinned tables, no evidence writes). All 24 Stage B scenarios behave correctly through it on DynamoDB Local; the core alone refuses all 17 attacks. Seed script for a deployed environment (not run). Nothing deployed.

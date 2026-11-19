@@ -1,4 +1,4 @@
 {
   "extends": "../core/tsconfig.json",
-  "include": ["bin/**/*.ts", "lib/**/*.ts", "lambda/**/*.ts", "scripts/**/*.ts", "test/**/*.ts", "../core/src/**/*.ts", "../adapters/aws/src/**/*.ts"]
+  "include": ["bin/**/*.ts", "lib/**/*.ts", "lambda/**/*.ts", "scripts/**/*.ts", "../harness/**/*.mts", "test/**/*.ts", "../core/src/**/*.ts", "../adapters/aws/src/**/*.ts"]
 }

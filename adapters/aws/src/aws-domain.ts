@@ -111,3 +111,15 @@ export async function registerManifest(
   }
   return versions;
 }
+
+// Read-only observer for the T19 Stage B runner: the case's audit page, ledger
+// head, and how many findings and drafts the case holds. Uses the same tables
+// and adapters as the Lambda, with the operator's read credentials.
+export function stageBObserver(d: ReturnType<typeof createAwsDomain>, caseId: string) {
+  const countFor = async (table: string) => (await d.store.list<{ caseId?: string }>(table, '')).filter((r) => r.item.value.caseId === caseId).length;
+  return {
+    audit: () => d.audit.forCase(caseId, 200),
+    ledgerHead: () => d.ledger.head(caseId),
+    count: (collection: 'findings' | 'proposals') => countFor(collection === 'findings' ? TABLES.findings : TABLES.proposals),
+  };
+}
