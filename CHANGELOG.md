@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-19 (article republished)
+
+- Builder Center project updated in place and republished (approved by Keith), same URL. Four new images: timeline, agent-run excerpt, overview, injection in three moments. The S2 excerpt image was rejected by Builder Center's image moderation ("flagged as inappropriate content", most likely the verbatim injection text); per Keith, it is replaced by a text blockquote of the first two sentences of the recorded S2 reply, exactly as recorded, with a link to the full run-1 transcript. The image file stays in the repository.
+- Verified signed out at 1536 px and on a 390 px phone: cover and four figures load in order (790 px wide on desktop, 348 px on the phone), three tables fit the column, four code blocks render (three scroll sideways inside their own box on the phone), no page overflow, all 13 repository links resolve.
+
 ## 2026-11-19 (final targeted corrections, draft)
 
 - Agent-run excerpt simplified: tool calls shown by name only, with their JSON arguments marked as omitted characters; the outcome shown by the transcript's own "Finding created" block. render-transcript.mts gains per-line character ranges (N@start-end) with a marker for every omitted segment. The unedited screenshot and full transcript are unchanged.
