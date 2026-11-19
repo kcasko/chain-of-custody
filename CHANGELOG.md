@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-19 (Builder Center draft prepared)
+
+- Bare URLs in the Builder Center draft became Markdown links (Builder Center does not auto-link them): the At a glance repository line, the transcripts line and every entry under Links, plus a link to the screenshot in the repository.
+- The project is saved as an unpublished draft on Builder Center with the four figures uploaded. Not published: on Builder Center, publishing a hackathon project is the hackathon submission.
+
 ## 2026-11-19 (figures restyled)
 
 - The three submission figures share one design system (docs/submission/figures.css): case-file masthead, serif headlines, mono for evidence text, one palette (navy verified, oxblood refused, rust uncertain or a known gap) and one set of evidence labels (live, template, local, configured, model behavior). Still HTML rendered by harness/render-architecture.mts; no generated artwork is used.
