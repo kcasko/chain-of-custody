@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-11-19 (compromised-agent test, local; live plan proposed)
+
+- New: `harness/compromised-agent.cjs`, 21 attacks a fully compromised agent would send (modify BW-003, forge approval or export, impersonate the supervisor, conclude guilt or intent, read outside the case) plus one legitimate control. No model is involved.
+- New: `adapters/aws/src/compromised-agent.ts`, a client-agnostic runner that records, per call, the first layer that refused and re-reads the ledger head, every evidence version's stored bytes, findings, drafts and the audit log.
+- New test `adapters/aws/test/compromised-agent.test.ts`: the attacks against the real backend alone (Gateway and Cedar bypassed) on DynamoDB Local and the S3 fake. Result: 18 refused and audited as the agent; the control and three attacks shaped like legitimate work were allowed (a forged correction draft, which a person then could not promote; a finding naming a supervisor; an accusation without blocked words). The ledger and every evidence byte were unchanged across all 22 calls. Local only: not evidence about IAM, storage or the live Gateway.
+- New: `harness/run-compromised-agent.mts` (the same attacks through a live Gateway; not yet run) and plan `docs/plans/2026-11-19-t22-compromised-agent-live.md` (proposed, not approved; no model; maximum $3).
+- Draft section for the Builder Center project: `docs/submission/proposed-section-compromised-agent.md` (not merged into the post).
+
 ## 2026-11-19 (publication prepared, not published)
 
 - Apache License 2.0 (`LICENSE`, `package.json`), repository `github.com/kcasko/chain-of-custody`.
