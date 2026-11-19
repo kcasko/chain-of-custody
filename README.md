@@ -4,7 +4,7 @@ Evidence can be questioned. Its history should never be rewritten.
 
 A fictional forensic evidence audit project. An auditor investigates inconsistencies in records from a 2021 research-facility fire in northern Michigan, reopened during a 2026 archive migration. The agent audits support for claims; it never decides guilt or rewrites originals.
 
-Status: domain core (TypeScript, `core/`), Cedar tool policies (`policy/`) and a Stage B enforcement harness (`harness/`) are built and tested locally (`npm test`, `npm run typecheck`). Nothing is deployed. No remote is configured.
+Status: domain core (TypeScript, `core/`), Cedar tool policies (`policy/`) and a Stage B enforcement harness (`harness/`) are built and tested locally (`npm test`, `npm run typecheck`). Browser tests for the workspace: `npm run test:e2e` (Playwright, Chromium; first time, run `npx playwright install chromium`). Nothing is deployed. No remote is configured.
 
 **Local demo:** `npm run demo`, then open http://127.0.0.1:4317. The investigation workspace lets you act as each synthetic staff member: read pinned evidence versions, record custody, append corrections, review agent drafts and findings, and run an approval-gated export that is verified independently. The Integrity Challenge (http://127.0.0.1:4317/challenge) runs 28 attempts (21 attacks, 7 legitimate) and shows which layer refused each attack. Local only: no login (you choose who you act as), no AWS calls, no model; the agent pass is a scripted replay, not evidence of Bedrock Managed Agents behavior.
 

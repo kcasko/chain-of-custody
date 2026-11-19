@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-18 (T18: browser tests for the workspace)
+
+- Playwright 1.64.1 (pinned, Chromium only) with `npm run test:e2e`. It starts its own server on port 4391. 7 tests: the full audit walkthrough, outsider refusal on every tab, reader text equal to the API for all 12 versions, hostile markup shown as inert text, keyboard tabs, phone width, and the Integrity Challenge at 28 of 28. A script error or CSP violation fails any test.
+- Mutation-checked: an inline script fails all 7; `innerHTML` on timeline entries fails the hostile-text test.
+- No new npm audit findings (the accepted minimatch advisory via aws-cdk-lib is unchanged). `npm test`: 371/371; typecheck now includes the e2e tests.
+
 ## 2026-11-18 (T17: investigation workspace)
 
 - Local investigation workspace at `/` (Integrity Challenge moved to `/challenge`): evidence explorer with exact-version reads, custody timeline with chain self-check and append-only corrections, findings and agent drafts with human promotion, and approval-gated export with independent verification. ADR 0009.

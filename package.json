@@ -5,16 +5,18 @@
   "description": "Chain of Custody: Blackwater Evidence. Domain core, policies, harness and planning.",
   "scripts": {
     "test": "node --test tests/*.test.cjs core/test/*.test.ts app/test/*.test.ts adapters/aws/test/*.test.ts infra/test/*.test.ts",
+    "test:e2e": "playwright test",
     "collaborate": "node scripts/collaborate.cjs",
     "verify:conversation": "node scripts/verify-conversation.cjs",
     "harness:stage-b": "node harness/run-stage-b.cjs",
-    "typecheck": "tsc -p core && tsc -p app && tsc -p adapters/aws && tsc -p infra",
+    "typecheck": "tsc -p core && tsc -p app && tsc -p app/e2e && tsc -p adapters/aws && tsc -p infra",
     "cdk:synth": "cd infra && cdk synth --quiet",
     "fixtures:check": "node core/tools/fixture-manifest.ts",
     "demo": "node app/src/main.ts"
   },
   "devDependencies": {
     "@cedar-policy/cedar-wasm": "4.14.0",
+    "@playwright/test": "1.64.1",
     "@types/node": "24.19.2",
     "aws-cdk": "2.1147.0",
     "aws-cdk-lib": "2.275.0",
