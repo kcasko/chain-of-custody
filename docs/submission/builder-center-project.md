@@ -77,9 +77,9 @@ A fair question: rule 7 says not to convert or reconcile clocks, and the agent a
 
 The labeling is the model's behavior, not a control. The rest is enforced: the timestamp tool returns raw values only, the agent has no tool that changes a recorded time, and a finding is a report for a person, not a change to the record. The next version of the rule should say all of this in plain words.
 
-![The Blackwater audit agent running on the AgentCore managed harness](screenshots/agent-running-managed-harness.png)
+![Excerpt of the Blackwater audit agent's real terminal output on the AgentCore managed harness: the prompt, six tool calls, the recorded finding and its ID](screenshots/agent-running-excerpt.png)
 
-*The agent's real terminal output from the live run: each tool call, the recorded finding, and its summary. Rendered as an image, with no edits.*
+*An excerpt of the agent's real terminal output from the live run. Every line is verbatim and every omission is marked; the full output and a full-length screenshot are in the repository (see Links).*
 
 That finding didn't land on the first try, by the way. The first attempt was refused twice by my own authorization rules, and the reason was my bug, not the model's. That story is further down, under what broke.
 
@@ -152,6 +152,8 @@ Each of those was checked on AWS. The figure says which test covered which layer
 I built this with a lot of help from Claude, Anthropic's AI, through Claude Code. It wrote much of the code, the tests and the documentation, and it ran the commands. I directed the work, set the scope, and approved every plan, every AWS deployment and every dollar spent before it happened.
 
 That makes two different AIs in this story, and it's worth keeping them straight. Claude Code helped me build the system. Claude Sonnet 4.6, running on the AgentCore managed harness, is the agent the system was built to contain, and the one I tried to break.
+
+One more AI, for the record: the cover image was generated with ChatGPT, then edited to blur invented log details that contradicted the case. The figures in this post are not generated art. They're drawn from the project's data and source files, and the repository can re-render them.
 
 Every result here comes from real runs on AWS, and the transcripts, CloudTrail findings and reports are in the repository. Nothing about the agent is simulated or written up from memory. Where something was tested only in an earlier stage, locally, or in the CloudFormation template, I say so.
 
@@ -318,4 +320,4 @@ An agent should be able to question the evidence. It shouldn't be able to rewrit
 - [No-model compromised-agent run (T22)](https://github.com/kcasko/chain-of-custody/blob/main/docs/research/2026-11-19-t22-compromised-agent-report.md)
 - [The evidence exhibits](https://github.com/kcasko/chain-of-custody/tree/main/fixtures/evidence) (BW-001, BW-005 and BW-010 are the three in this story)
 - [Demo walkthrough of the investigation workspace](https://github.com/kcasko/chain-of-custody/blob/main/docs/DEMO.md)
-- Screenshot of the agent running on the AgentCore managed harness: above, and [in the repository](https://github.com/kcasko/chain-of-custody/blob/main/docs/submission/screenshots/agent-running-managed-harness.png)
+- Screenshot of the agent running on the AgentCore managed harness: an excerpt above, plus the [full-length screenshot](https://github.com/kcasko/chain-of-custody/blob/main/docs/submission/screenshots/agent-running-managed-harness.png) and the [full transcript](https://github.com/kcasko/chain-of-custody/blob/main/docs/research/t21-evidence/a3-legitimate-job-after-fix.txt)

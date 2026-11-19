@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-19 (published article updated)
+
+- Builder Center project republished (approved by Keith) with the redesigned figures, the readable terminal excerpt in place of the full-length screenshot (caption says it is an excerpt; the full screenshot and transcript are linked), and a cover image.
+- The cover is ChatGPT-generated art supplied by Keith, edited to blur two invented log panels that contradicted the case (BW-005 "modified", "checksum mismatch"). The article's AI disclosure now says so; the figures remain data-drawn. The cover file itself stays outside the repository.
+- Verified signed in and signed out: cover and four figures load, four captions, three tables, ten repository links; the listing card shows the cover.
+
 ## 2026-11-19 (Blackwater visual identity)
 
 - figures.css is now a dark investigative case-file system: charcoal and deep navy, off-white paper for every piece of evidence, warning red for refusals and the planted instruction, amber for evidence markers, hypotheticals and known gaps, steel blue for verified results. Decoration is CSS only.
