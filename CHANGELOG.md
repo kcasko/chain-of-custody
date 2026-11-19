@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-11-18 (T16, independent review, submission materials)
+
+- T16: `DynamoAuditLog` (durable, create-only, append-only, archived; integrity failures reported, bounded count) and the core-backed tool Lambda (`createAwsDomain`, `infra/lambda/tools.ts`) replacing the Stage B stub in the synthesized template, with a least-privilege role (LeadingKeys-pinned tables, no evidence writes). All 24 Stage B scenarios behave correctly through it on DynamoDB Local; the core alone refuses all 17 attacks. Seed script for a deployed environment (not run). Nothing deployed.
+- Independent review of everything since T17: 8 findings, none critical; 6 fixed with tests, 2 documented (see docs/SUBMISSION.md).
+- Retried 4xx and in-flight DynamoDB transactions are now `OUTCOME_UNKNOWN`, never a definite failure.
+- Export check on the page reworded: it is a consistency check against this server's key; independent verification is the offline CLI with a separately delivered trust file.
+- Browser tests: keyboard-only use of the new controls with a visible focus ring, and measured WCAG AA contrast in light and dark (mutation-checked).
+- Docs: architecture with diagram and trust boundaries, demo walkthrough, security controls and limitations, submission readiness checklist, README setup and teardown, runbook deploy order and smoke checks, T19 (Stage B runner for the core-backed Lambda).
+- `npm test` 403/403, `npm run test:e2e` 14/14, typecheck clean.
+
 ## 2026-11-18 (workflow completion: brief, provenance, compare, offline verification)
 
 - Workspace: case brief (folded cover sheet: situation, rules of the record, a path through the case); documented provenance in the reader (source clock, zone, times as written, uncertainty, matched by hash, labeled stated and unverified); Compare tab listing every claimed time exactly as written by source, plus ledger claims, never merged into one chronology; side-by-side version diff whose verdict comes only from the recorded lineage (derivative, same bytes, unexplained, different items).

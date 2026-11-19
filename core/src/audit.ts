@@ -20,10 +20,26 @@ export interface SecurityEvent {
   readonly at: string;
 }
 
+export interface AuditPage {
+  readonly events: SecurityEvent[];
+  readonly total: number;
+  /** True when counting stopped at the adapter's bound: the case has at least `total` records. */
+  readonly totalIsLowerBound?: boolean;
+}
+
 export interface SecurityAuditLog {
   append(event: SecurityEvent): Promise<void>;
   /** The newest `limit` events recorded under this case ID, newest first, and the case's total. */
-  forCase(caseId: string, limit: number): Promise<{ events: SecurityEvent[]; total: number }>;
+  forCase(caseId: string, limit: number): Promise<AuditPage>;
+}
+
+// A stored audit record that does not match its schema or its key: evidence of
+// tampering or corruption, reported as INTEGRITY_FAILURE, never skipped.
+export class AuditIntegrityError extends Error {
+  constructor(detail: string) {
+    super(detail);
+    this.name = 'AuditIntegrityError';
+  }
 }
 
 export class MemoryAuditLog implements SecurityAuditLog {
@@ -33,7 +49,7 @@ export class MemoryAuditLog implements SecurityAuditLog {
     if (!this.available) throw new Error('audit store unavailable');
     this.events.push(Object.freeze({ ...event }));
   }
-  async forCase(caseId: string, limit: number): Promise<{ events: SecurityEvent[]; total: number }> {
+  async forCase(caseId: string, limit: number): Promise<AuditPage> {
     if (!this.available) throw new Error('audit store unavailable');
     const all = this.events.filter((e) => e.caseId === caseId);
     return { events: all.slice(-limit).reverse(), total: all.length };

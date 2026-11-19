@@ -11,7 +11,7 @@ A local investigation workspace at `/` (the Integrity Challenge moves to `/chall
 | Evidence | List registered versions; read an exact version as plain text with its re-checked hash; record a custody transfer | `EvidenceService.list`, `read`; `CustodyService.recordTransfer` |
 | Custody timeline | See every ledger entry, its hash and link, and a chain self-check; append a correction (the original line stays) | new `CaseReadService.timeline`; `appendCorrection` |
 | Findings and drafts | Run the scripted agent pass; record a finding; promote an agent draft to the ledger | `createGatewayHandler` with the agent tools; `FindingService.record`; `ProposalService.promote` |
-| Approvals and export | Request an export; approve or revoke as a different supervisor; export and see the independent verification | `ApprovalService`; `ExportService.exportCase`; `verifyExport` |
+| Approvals and export | Request an export; approve or revoke as a different supervisor; export and see a check against this server's published key; download the package and trust file for offline verification (`npm run verify:export`) | `ApprovalService`; `ExportService.exportCase`; `verifyExport` |
 
 ## Choices
 
@@ -36,6 +36,11 @@ A local investigation workspace at `/` (the Integrity Challenge moves to `/chall
 - Historical claim form (T18): 1 API test (stored exactly as entered, including a 12-hour time with no zone; refusals for no source, unregistered version, unknown subject, blank field, extra field, outsider; refusals append nothing) and 1 browser test (no source is refused on the page; claim appended as #13 and shown verbatim with its source; chain intact). Checked in light, dark and 375 px; fixed checkboxes shrinking beside long labels (also in the export form) and placeholders that looked like entered values.
 - Security log (T18): 3 core tests (only supervisors; agent, investigator, auditor, outsider and anonymous refused; case-scoped, newest first, refusals included, own read first; capped at 200 with the truncation flag; an unavailable log fails closed), 1 API test, 1 browser test (an auditor's refused transfer and refused log read both appear for the supervisor; the filter shows only refusals). Mutation-checked: allowing auditors fails 4 tests. Checked in light, dark and 375 px (the fifth tab spans the row on phones).
 - Contrast: the light-mode gold used for corrections and focus rings was 2.84:1; changed to `#7f5a00` (5.4:1 on paper, 4.7:1 on panels).
+
+## Review notes (November 18, after T16)
+
+- Provenance is matched by content hash (`core/src/provenance.ts`). A version registered with bytes identical to another inherits that version's documented clock and times. Harmless with today's fixtures, where every version's bytes differ; a real collection system should key provenance by registration, not by content.
+- The export check on the page uses the key and head published by the same server, so it is a consistency check, not independent verification. The page now says so. Independence comes from the offline verifier with a trust file delivered separately.
 
 ## Not done
 

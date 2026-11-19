@@ -10,6 +10,10 @@
 //
 // Safe to re-run only on an empty case: registration is append-only, so a
 // second run registers duplicate versions rather than overwriting anything.
+//
+// Attribution is asserted, not authenticated: whoever holds credentials with
+// the writer policy can seed "as" any investigator ID. The registrations are
+// recorded as stated by the operator; record who ran it in the deploy notes.
 
 import { readFileSync } from 'node:fs';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
@@ -20,7 +24,8 @@ import type { ToolDefinition } from '../../core/src/tool-schema.ts';
 import { USER_ID } from '../../core/src/validate.ts';
 
 const args = process.argv.slice(2);
-const as = args[args.indexOf('--as') + 1];
+const asAt = args.indexOf('--as');
+const as = asAt >= 0 ? args[asAt + 1] : undefined;
 const env = (n: string) => process.env[n] ?? '';
 if (!args.includes('--confirm') || !as || !USER_ID.test(as) || !env('TABLE_NAME') || !env('EVIDENCE_BUCKET')) {
   console.error('usage: TABLE_NAME=... EVIDENCE_BUCKET=... node infra/scripts/seed-evidence.ts --as <investigator-id> --confirm');

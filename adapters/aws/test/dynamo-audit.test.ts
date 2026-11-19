@@ -6,7 +6,7 @@ import { after, describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { PutItemCommand, QueryCommand } from '@aws-sdk/client-dynamodb';
-import { MemoryAuditLog, type SecurityAuditLog, type SecurityEvent } from '../../../core/src/audit.ts';
+import { AuditIntegrityError, MemoryAuditLog, type SecurityAuditLog, type SecurityEvent } from '../../../core/src/audit.ts';
 import { CASE, OTHER_CASE, USERS, human, makeWorld, registerFixtures } from '../../../core/test/helpers.ts';
 import { AUDIT_PK, DynamoAuditLog } from '../src/dynamo-audit.ts';
 import { DynamoStore } from '../src/dynamo-store.ts';
@@ -28,7 +28,8 @@ function auditContract(make: () => Promise<SecurityAuditLog>) {
     assert.deepEqual(r.events.map((e) => e.requestId), ['r-5', 'r-4', 'r-3', 'r-2', 'r-1']);
     assert.deepEqual(r.events[0], event(CASE, 5, 'attempted'), 'stored exactly as appended');
     assert.equal((await log.forCase(OTHER_CASE, 10)).total, 1);
-    assert.deepEqual((await log.forCase('NO-SUCH-CASE', 10)), { events: [], total: 0 });
+    const none = await log.forCase('NO-SUCH-CASE', 10);
+    assert.deepEqual([none.events, none.total, none.totalIsLowerBound ?? false], [[], 0, false]);
   });
 
   test('the limit keeps the newest records and the total still counts all of them', async () => {
@@ -49,11 +50,13 @@ after(async () => { if (local.ok) await local.dynamo.stop(); });
 
 describe('DynamoAuditLog on DynamoDB Local', { skip: local.ok ? false : local.reason }, () => {
   const dynamo = local.ok ? local.dynamo : undefined!;
-  async function fresh(now?: () => Date) {
+  async function fresh(now?: () => Date, maxCountPages?: number) {
     const tableName = `coc-audit-${randomUUID()}`;
     await dynamo.createTable(tableName);
-    return { tableName, log: new DynamoAuditLog({ client: dynamo.client, tableName, ...(now ? { now } : {}) }) };
+    return { tableName, log: new DynamoAuditLog({ client: dynamo.client, tableName, ...(now ? { now } : {}), ...(maxCountPages ? { maxCountPages } : {}) }) };
   }
+  const forge = (tableName: string, sk: string, body: string) =>
+    dynamo.client.send(new PutItemCommand({ TableName: tableName, Item: { pk: { S: AUDIT_PK }, sk: { S: sk }, v: { S: body }, ver: { N: '1' } } }));
 
   describe('port contract', () => {
     // A frozen clock: ordering must still follow append order.
@@ -71,11 +74,30 @@ describe('DynamoAuditLog on DynamoDB Local', { skip: local.ok ? false : local.re
     assert.deepEqual((await log.forCase(CASE, 5)).events, [event(CASE, 1)]);
   });
 
-  test('a malformed record is reported, never skipped', async () => {
+  test('a malformed record is reported as an integrity failure, never skipped', async () => {
     const { tableName, log } = await fresh();
     await log.append(event(CASE, 1));
-    await dynamo.client.send(new PutItemCommand({ TableName: tableName, Item: { pk: { S: AUDIT_PK }, sk: { S: `${CASE}#9999-12-31T00:00:00.000Z#000000#x` }, v: { S: '{"requestId":"r","caseId":"BLACKWATER-2021","outcome":"erased"}' }, ver: { N: '1' } } }));
-    await assert.rejects(log.forCase(CASE, 5), /malformed audit item/);
+    await forge(tableName, `${CASE}#9999-12-31T00:00:00.000Z#000000#x`, '{"requestId":"r","caseId":"BLACKWATER-2021","outcome":"erased"}');
+    await assert.rejects(log.forCase(CASE, 5), (e: Error) => e instanceof AuditIntegrityError && /unexpected shape/.test(e.message));
+  });
+
+  test('a record filed under one case but naming another is an integrity failure, not shown', async () => {
+    const { tableName, log } = await fresh();
+    await log.append(event(CASE, 1));
+    await forge(tableName, `${CASE}#9999-12-31T00:00:00.000Z#000000#y`, JSON.stringify(event(OTHER_CASE, 2)));
+    await assert.rejects(log.forCase(CASE, 5), (e: Error) => e instanceof AuditIntegrityError && /names case GREYHOLLOW-2019/.test(e.message));
+  });
+
+  test('the total stops at the count bound and is reported as a lower bound, not a failure', async () => {
+    const { tableName, log } = await fresh(undefined, 1);
+    const pad = 'x'.repeat(200_000); // about 5 items per 1 MB COUNT page
+    for (let n = 0; n < 12; n++) await forge(tableName, `${CASE}#2026-11-18T20:00:00.${String(n).padStart(3, '0')}Z#000000#p${n}`, JSON.stringify({ ...event(CASE, n), requestId: `r-${n}-${pad}` }));
+    const r = await log.forCase(CASE, 2);
+    assert.equal(r.events.length, 2);
+    assert.equal(r.totalIsLowerBound, true);
+    assert.ok(r.total >= 2 && r.total < 12, String(r.total));
+    const full = await (await fresh()).log.forCase(CASE, 2);
+    assert.equal(full.totalIsLowerBound, false, 'a small log is counted exactly');
   });
 
   test('case ids that could cross a key boundary are refused', async () => {
@@ -96,6 +118,14 @@ describe('DynamoAuditLog on DynamoDB Local', { skip: local.ok ? false : local.re
     assert.deepEqual([r.value.events[0]!.operation, r.value.events[0]!.outcome, r.value.events[0]!.principal], ['read_audit_log', 'attempted', `human:${USERS.supervisor}`]);
     assert.deepEqual([r.value.events[1]!.operation, r.value.events[1]!.code, r.value.events[1]!.principal], ['read_audit_log', 'DENIED_ROLE', `human:${USERS.auditor}`]);
     assert.ok(r.value.total >= 24, 'registration of 12 versions left attempted and completed records');
+  });
+
+  test('a tampered audit record makes the supervisor view report INTEGRITY_FAILURE, not a storage error', async () => {
+    const { tableName, log } = await fresh();
+    const w = makeWorld({ audit: log });
+    await forge(tableName, `${CASE}#9999-12-31T00:00:00.000Z#000000#z`, '{"not":"an audit event"}');
+    const r = await w.caseRead.auditLog(human(USERS.supervisor), CASE);
+    assert.equal(!r.ok && r.code, 'INTEGRITY_FAILURE');
   });
 
   test('an unreachable audit table fails closed: no protected action runs', async () => {

@@ -24,6 +24,7 @@ import type { Construct } from 'constructs';
 import { cfnPolicies } from './cedar.ts';
 import type { CocConfig } from './config.ts';
 import { WRITER_TABLE_DENY } from './storage-stack.ts';
+import { TOOL_LAMBDA_TABLES } from '../../adapters/aws/src/aws-domain.ts';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.join(here, '..', '..');
@@ -36,11 +37,15 @@ const spec = require('../../harness/build-spec.cjs') as {
 export const TARGET_NAME = 'EvidenceTools'; // Cedar actions are EvidenceTools___<tool>
 export const MCP_VERSION = '2025-03-26';
 
-// What the tool Lambda may do: read and conditionally write the ledger table
-// (findings, proposals, audit records, idempotency), never delete or rewrite
-// in place, and read exact evidence versions. No s3:PutObject: the agent never
-// registers evidence.
-export const TOOL_TABLE_ALLOW = ['dynamodb:GetItem', 'dynamodb:Query', 'dynamodb:PutItem', 'dynamodb:ConditionCheckItem'];
+// What the tool Lambda may do: query ledger events; append findings, proposals
+// and audit records (and nothing else: dynamodb:LeadingKeys pins each action to
+// the logical tables in TOOL_LAMBDA_TABLES); never delete or rewrite in place;
+// read exact evidence versions. No s3:PutObject: the agent never registers
+// evidence. IAM cannot force the create-only condition, so a compromised tool
+// Lambda could still overwrite one of its own three tables; audit and findings
+// are append-only and archived with tamper alarms, proposals are drafts.
+export const TOOL_TABLE_READ = ['dynamodb:GetItem', 'dynamodb:Query'];
+export const TOOL_TABLE_WRITE = ['dynamodb:PutItem'];
 export const TOOL_EVIDENCE_ALLOW = ['s3:GetObject', 's3:GetObjectVersion'];
 
 export interface GatewayStorage {
@@ -74,7 +79,9 @@ export class CocGatewayStack extends cdk.Stack {
       // Bundle the pinned SDK instead of whatever the runtime ships.
       bundling: { format: nodejs.OutputFormat.ESM, target: 'node22', externalModules: [], minify: false, sourceMap: false, banner: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);" },
     });
-    tool.addToRolePolicy(new iam.PolicyStatement({ sid: 'ToolTableReadAndConditionalWrites', actions: TOOL_TABLE_ALLOW, resources: [storage.table.tableArn] }));
+    const onlyKeys = (keys: readonly string[]) => ({ 'ForAllValues:StringEquals': { 'dynamodb:LeadingKeys': [...keys] }, Null: { 'dynamodb:LeadingKeys': 'false' } });
+    tool.addToRolePolicy(new iam.PolicyStatement({ sid: 'ToolQueryLedgerEvents', actions: TOOL_TABLE_READ, resources: [storage.table.tableArn], conditions: onlyKeys(TOOL_LAMBDA_TABLES.read) }));
+    tool.addToRolePolicy(new iam.PolicyStatement({ sid: 'ToolAppendFindingsDraftsAudit', actions: TOOL_TABLE_WRITE, resources: [storage.table.tableArn], conditions: onlyKeys(TOOL_LAMBDA_TABLES.append) }));
     tool.addToRolePolicy(new iam.PolicyStatement({ sid: 'ToolNeverDeleteOrRewriteInPlace', effect: iam.Effect.DENY, actions: WRITER_TABLE_DENY, resources: [storage.table.tableArn] }));
     tool.addToRolePolicy(new iam.PolicyStatement({ sid: 'ToolReadExactEvidenceVersions', actions: TOOL_EVIDENCE_ALLOW, resources: [storage.evidenceBucket.arnForObjects('*')] }));
 

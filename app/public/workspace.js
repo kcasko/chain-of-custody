@@ -262,7 +262,11 @@ async function submitCompare(ev) {
   side(ra.value, la, common?.inX, 'a');
   side(rb.value, lb, common?.inY, 'b');
   const marked = common ? common.inX.filter((x) => !x).length + common.inY.filter((x) => !x).length : null;
-  const lineNote = marked === null ? 'Too large to mark line differences.' : marked === 0 ? 'No line differences.' : `${marked} lines appear on one side only (marked).`;
+  const shownAll = !ra.value.truncated && !rb.value.truncated;
+  const lineNote = marked === null ? 'Too large to mark line differences.'
+    : marked > 0 ? `${marked} lines appear on one side only (marked).`
+      : ra.value.sha256 !== rb.value.sha256 ? `No difference in the shown text, but the bytes differ (different SHA-256)${shownAll ? ', in bytes that are not shown as text' : ', beyond the part shown'}.`
+        : 'No line differences.';
   $('compare-verdict').textContent = `${compareVerdict(ra.value, rb.value)} ${lineNote}`;
   $('compare-out').hidden = false;
 }
@@ -506,7 +510,7 @@ async function loadApprovals() {
 
 async function doExport(approvalId) {
   const r = await api('POST', '/api/exports', { approvalId, payload: payloadFor(approvalId) });
-  notice(r, r.ok ? 'Export created and verified independently.' : '');
+  notice(r, r.ok ? 'Export created and checked against this server\'s published key. Download both files to verify independently.' : '');
   if (!r.ok) return;
   state.lastExport = r.value.package;
   state.lastTrust = r.value.trust;
@@ -561,7 +565,8 @@ async function loadAudit() {
     return;
   }
   auditEvents = r.value.events;
-  $('audit-count').textContent = r.value.truncated ? `Showing the newest ${r.value.events.length} of ${r.value.total} entries.` : `${r.value.total} entries.`;
+  const total = r.value.totalIsLowerBound ? `at least ${r.value.total}` : `${r.value.total}`;
+  $('audit-count').textContent = r.value.truncated ? `Showing the newest ${r.value.events.length} of ${total} entries.` : `${total} entries.`;
   renderAudit();
 }
 

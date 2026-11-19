@@ -19,13 +19,23 @@ import { Ledger } from '../../../core/src/ledger.ts';
 import { MemoryDirectory } from '../../../core/src/policy.ts';
 import { ProposalService } from '../../../core/src/proposals.ts';
 import { ManifestProvenance } from '../../../core/src/provenance.ts';
-import { APPEND_ONLY_TABLES } from '../../../core/src/tables.ts';
+import { APPEND_ONLY_TABLES, TABLES } from '../../../core/src/tables.ts';
 import type { ToolDefinition } from '../../../core/src/tool-schema.ts';
 import type { Role } from '../../../core/src/types.ts';
 import { CASE_ID } from '../../../core/src/validate.ts';
 import { DynamoAuditLog } from './dynamo-audit.ts';
 import { DynamoStore } from './dynamo-store.ts';
 import { S3ObjectStore } from './s3-objects.ts';
+
+// The logical tables (partition keys) the agent path touches, measured over
+// every Stage B scenario (adapters/aws/test/aws-domain.test.ts fails if the code
+// reaches outside them). The tool Lambda's IAM role is limited to exactly these
+// with dynamodb:LeadingKeys, so a compromised tool Lambda cannot write
+// approvals, heads or ledger events (review finding 1, November 18).
+export const TOOL_LAMBDA_TABLES = Object.freeze({
+  read: Object.freeze([TABLES.events]),
+  append: Object.freeze([TABLES.audit, TABLES.findings, TABLES.proposals]),
+});
 
 // The deployed agent's identity: deployment configuration, never a tool argument.
 export const DEPLOYED_AGENT_ID = 'coc-audit-agent';

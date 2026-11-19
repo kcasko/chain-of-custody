@@ -145,11 +145,18 @@ export class DynamoStore implements TransactionalStore {
         const index = reasons.findIndex((r) => r.Code === 'ConditionalCheckFailed' || r.Code === 'TransactionConflict');
         if (index >= 0) return { ok: false, reason: 'CONFLICT', index };
       }
-      // A 4xx (validation, throttling, access denied) is a definite rejection:
-      // nothing was written. Anything else (5xx, timeout, lost connection after
-      // the SDK gave up) may have committed, and the caller must reconcile.
+      // A 4xx (validation, throttling, access denied) on the first and only
+      // attempt is a definite rejection: nothing was written. It is NOT definite
+      // when the SDK had already retried (an earlier attempt may have committed
+      // and only its response was lost), or when DynamoDB says the same token's
+      // transaction is still running or was used differently. Those, and
+      // anything else (5xx, timeout, lost connection), may have committed: the
+      // caller must reconcile by reading (review finding 2, November 18).
       const status = httpStatus(err);
-      if (status !== undefined && status >= 400 && status < 500) throw err;
+      const name = (err as { name?: string }).name ?? '';
+      const attempts = (err as { $metadata?: { attempts?: number } }).$metadata?.attempts ?? 1;
+      const mayHaveCommitted = attempts > 1 || name === 'TransactionInProgressException' || name === 'IdempotentParameterMismatchException';
+      if (!mayHaveCommitted && status !== undefined && status >= 400 && status < 500) throw err;
       throw new OutcomeUnknownError(err);
     }
   }

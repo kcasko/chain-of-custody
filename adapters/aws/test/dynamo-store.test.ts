@@ -44,6 +44,21 @@ test('DynamoDB errors: cancellations are CONFLICT, 4xx are definite failures, ev
   }
 });
 
+test('a 4xx after the SDK retried, or for an in-flight or reused token, is OUTCOME_UNKNOWN, not a definite failure', async () => {
+  // Attempt 1 may have committed; the retry's 4xx says nothing about it.
+  const err = (name: string, status: number, attempts: number) => Object.assign(new Error(name), { name, $metadata: { httpStatusCode: status, attempts } });
+  let next: Error = new Error('unset');
+  const store = new DynamoStore({ client: { send: async () => { throw next; } } as never, tableName: 't', appendOnlyTables: [] });
+  const write = [{ table: 'heads', key: 'k', value: 1, expectVersion: null }];
+  for (const e of [err('ThrottlingException', 400, 2), err('ValidationException', 400, 3), err('TransactionInProgressException', 400, 1), err('IdempotentParameterMismatchException', 400, 1)]) {
+    next = e;
+    await assert.rejects(store.transact(write), (x: Error) => x instanceof OutcomeUnknownError && x.cause === e, e.name);
+  }
+  const first = err('ThrottlingException', 400, 1);
+  next = first;
+  await assert.rejects(store.transact(write), (x: Error) => x === first, 'a 4xx on the only attempt stays definite');
+});
+
 const local = await startLocalDynamo();
 after(async () => { if (local.ok) await local.dynamo.stop(); });
 

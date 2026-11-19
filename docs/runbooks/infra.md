@@ -7,9 +7,9 @@
 | Stack | Resources | Verified live by |
 |---|---|---|
 | `CocTestStorage` / `CocStorage` | Ledger table (stream on), evidence bucket and ledger archive bucket (Object Lock, versioned, private, TLS only, create-only puts, destructive actions only for break-glass), archiver Lambda on the stream, tamper and stalled-archiver alarms with an SNS topic, the T14b writer policy | Table, evidence bucket, policies and IAM: T14b. Archive and alarms: local tests only (ADR 0008) |
-| `CocTestGateway` / `CocGateway` | Stage B tool stub Lambda, AgentCore policy engine (ENFORCE), Gateway (AWS_IAM, MCP 2025-03-26), one Lambda target, 11 Cedar policies in the verified load order, caller permission | Stage B (T09), deployed by hand then; this CDK version has not been deployed |
+| `CocTestGateway` / `CocGateway` | Core-backed tool Lambda (`infra/lambda/tools.ts`, T16: the domain core over the ledger table, the evidence bucket and the durable audit log, with its own narrow role), AgentCore policy engine (ENFORCE), Gateway (AWS_IAM, MCP 2025-03-26), one Lambda target, 11 Cedar policies in the verified load order, caller permission | Gateway, engine and Cedar: Stage B (T09B), deployed by hand with the stub Lambda. The core-backed Lambda: DynamoDB Local and S3 fake tests only. This CDK version has not been deployed |
 
-The two stacks share nothing, so either can be deployed or destroyed alone.
+The gateway stack imports the ledger table and evidence bucket from the storage stack, so deploy storage first and destroy it last.
 
 ## Configuration (CDK context)
 
@@ -42,8 +42,13 @@ cd infra && npx cdk synth -c account=111111111111 --quiet -o ../.local/cdk.out
 
 1. Bootstrap once per account and region (creates the CDK staging bucket and roles; small storage cost): `npx cdk bootstrap aws://<account>/us-east-1`. Not done yet: T09 found the account is not bootstrapped.
 2. `cd infra && npx cdk diff -c stage=test` and review every IAM and bucket policy change.
-3. `npx cdk deploy CocTestStorage CocTestGateway -c stage=test [-c harness=true] [-c alarmEmail=...]`.
-4. Smoke checks: the Stage B scenarios (`npm run harness:stage-b`) with the harness role; one archive round trip (write an event, see `ledger/events/...` in the archive bucket).
+3. `npx cdk deploy CocTestStorage CocTestGateway -c stage=test -c harness=true [-c alarmEmail=...]`. Use `harness=true` until BMA access exists (RB-1): the harness role stands in for the BMA session role.
+4. Seed the synthetic evidence once, as an investigator, with credentials that carry the stack's writer policy: `TABLE_NAME=<LedgerTableName> EVIDENCE_BUCKET=<EvidenceBucketName> AWS_REGION=us-east-1 node infra/scripts/seed-evidence.ts --as owen.hale --confirm`. It refuses to run on a case that already has ledger events.
+5. Smoke checks:
+   - the Stage B scenarios with the harness role, through the **core-backed** Lambda for the first time on AWS. **Blocked on T19:** `npm run harness:stage-b` was written for the stub. It sends the stub's synthetic version IDs (`syn-v1`) and confirms outcomes by matching the stub's log lines on an argument hash, which the core-backed handler does not log. Until T19 adapts it, compare by hand with the local run in `adapters/aws/test/aws-domain.test.ts` (7 executed, 17 refused);
+   - the tool Lambda's audit records: `audit` items for `BLACKWATER-2021` attributed to `agent:coc-audit-agent` under the Gateway request IDs;
+   - one archive round trip: a new event appears as `ledger/events/...` and each audit record as `ledger/audit/...` in the archive bucket;
+   - one denied write by the tool role (for example `UpdateItem` on the table), expected `AccessDenied`.
 
 ## Teardown (test stage)
 
@@ -56,6 +61,7 @@ cd infra && npx cdk synth -c account=111111111111 --quiet -o ../.local/cdk.out
 
 ## Known limits
 
-- The tool Lambda is the Stage B stub. The core-backed handler needs a durable audit adapter before it can replace it.
+- The core-backed tool Lambda (T16) replaced the Stage B stub in the template. It has been tested locally and its bundle loads, but it has not run on AWS.
+- The seed script and the archive round trip have not been run against AWS.
 - `npm audit` reports a moderate `minimatch` advisory inside `aws-cdk-lib` (dev dependency, synth time only, our own glob patterns). The suggested fix downgrades `aws-cdk-lib` to 2.239.0. Accepted; revisit when `aws-cdk-lib` updates its bundled copy.
 - Multipart uploads are blocked by the create-only bucket rule (UploadPart has no `If-None-Match`). Evidence is capped at 10 MiB and uploaded in one request, so this is intended.

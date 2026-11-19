@@ -23,32 +23,45 @@
 
 import { randomUUID } from 'node:crypto';
 import { QueryCommand, type AttributeValue, type DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import type { SecurityAuditLog, SecurityEvent } from '../../../core/src/audit.ts';
+import { AuditIntegrityError, type AuditPage, type SecurityAuditLog, type SecurityEvent } from '../../../core/src/audit.ts';
 import { TABLES } from '../../../core/src/tables.ts';
 import { DynamoStore } from './dynamo-store.ts';
 
 export const AUDIT_PK = TABLES.audit;
-const MAX_COUNT_PAGES = 1000;
+// Counting reads the case's whole key range; stop after this many 1 MB pages
+// and report the total as a lower bound rather than fail (review finding 4).
+const DEFAULT_MAX_COUNT_PAGES = 10;
 
 export interface DynamoAuditLogOptions {
   readonly client: Pick<DynamoDBClient, 'send'>;
   readonly tableName: string;
   /** Write time source; tests inject a fixed clock. */
   readonly now?: () => Date;
+  /** Bound on COUNT pages per read (default 10, about 10 MB of keys). */
+  readonly maxCountPages?: number;
 }
 
 const OUTCOMES = new Set(['attempted', 'denied', 'completed', 'failed']);
 
-function decodeEvent(raw: Record<string, AttributeValue>): SecurityEvent {
+function decodeEvent(raw: Record<string, AttributeValue>, caseId: string): SecurityEvent {
   const v = raw.v?.S;
-  if (v === undefined) throw new Error('malformed audit item: missing v');
-  const e = JSON.parse(v) as Record<string, unknown>;
+  const sk = raw.sk?.S ?? '';
+  if (v === undefined) throw new AuditIntegrityError(`malformed audit item ${sk.slice(0, 120)}: missing v`);
+  let e: Record<string, unknown>;
+  try {
+    e = JSON.parse(v) as Record<string, unknown>;
+  } catch {
+    throw new AuditIntegrityError(`malformed audit item ${sk.slice(0, 120)}: not JSON`);
+  }
   // A record that does not have the expected shape is reported, never skipped:
   // silently dropping it would hide exactly the tampering this log exists for.
   const ok = typeof e.requestId === 'string' && typeof e.caseId === 'string' && typeof e.principal === 'string'
     && typeof e.operation === 'string' && typeof e.outcome === 'string' && OUTCOMES.has(e.outcome)
     && (e.code === null || typeof e.code === 'string') && typeof e.at === 'string';
-  if (!ok) throw new Error('malformed audit item: unexpected shape');
+  if (!ok) throw new AuditIntegrityError(`malformed audit item ${sk.slice(0, 120)}: unexpected shape`);
+  // The body must belong to the case its key files it under; a record keyed
+  // under one case but naming another would otherwise show up in that view.
+  if (e.caseId !== caseId || !sk.startsWith(`${caseId}#`)) throw new AuditIntegrityError(`audit item ${sk.slice(0, 120)} names case ${String(e.caseId).slice(0, 64)}`);
   return e as unknown as SecurityEvent;
 }
 
@@ -57,12 +70,14 @@ export class DynamoAuditLog implements SecurityAuditLog {
   readonly #table: string;
   readonly #store: DynamoStore;
   readonly #now: () => Date;
+  readonly #maxCountPages: number;
   #counter = 0;
 
   constructor(options: DynamoAuditLogOptions) {
     this.#client = options.client;
     this.#table = options.tableName;
     this.#now = options.now ?? (() => new Date());
+    this.#maxCountPages = options.maxCountPages ?? DEFAULT_MAX_COUNT_PAGES;
     this.#store = new DynamoStore({ client: options.client, tableName: options.tableName, appendOnlyTables: [AUDIT_PK] });
   }
 
@@ -75,12 +90,12 @@ export class DynamoAuditLog implements SecurityAuditLog {
     if (!r.ok) throw new Error('audit record key already exists');
   }
 
-  async forCase(caseId: string, limit: number): Promise<{ events: SecurityEvent[]; total: number }> {
+  async forCase(caseId: string, limit: number): Promise<AuditPage> {
     if (caseId.includes('#')) throw new Error('audit case id must not contain #');
     if (!Number.isSafeInteger(limit) || limit < 1) throw new Error('limit must be a positive integer');
     const key = { KeyConditionExpression: 'pk = :pk AND begins_with(sk, :prefix)', ExpressionAttributeValues: { ':pk': { S: AUDIT_PK }, ':prefix': { S: `${caseId}#` } } };
     const page = await this.#client.send(new QueryCommand({ TableName: this.#table, ...key, ScanIndexForward: false, Limit: limit, ConsistentRead: true }));
-    const events = (page.Items ?? []).map(decodeEvent);
+    const events = (page.Items ?? []).map((raw) => decodeEvent(raw, caseId));
     let total = 0;
     let start: Record<string, AttributeValue> | undefined;
     let pages = 0;
@@ -88,8 +103,8 @@ export class DynamoAuditLog implements SecurityAuditLog {
       const c = await this.#client.send(new QueryCommand({ TableName: this.#table, ...key, Select: 'COUNT', ConsistentRead: true, ExclusiveStartKey: start }));
       total += c.Count ?? 0;
       start = c.LastEvaluatedKey;
-      if ((pages += 1) > MAX_COUNT_PAGES) throw new Error('audit count did not finish');
-    } while (start);
-    return { events, total };
+      pages += 1;
+    } while (start && pages < this.#maxCountPages);
+    return { events, total: Math.max(total, events.length), totalIsLowerBound: start !== undefined };
   }
 }

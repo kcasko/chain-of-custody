@@ -17,4 +17,4 @@ A release blocker stops submission to the event. Do not mark the project submiss
 
 ## What is not blocked
 
-Everything that does not need BMA keeps moving: the domain core (T00 to T04, done), the policies and Stage B enforcement stack (done), CDK for the Stage B stack (T12), the real tool Lambda on top of the core, and the UI.
+Everything that does not need BMA is done locally (November 18): the domain core, the policies and Stage B enforcement stack, CDK (synthesized), the durable audit log and the core-backed tool Lambda (T16, local), and the full investigation workflow UI. What remains to qualify, step by step, is in [SUBMISSION.md](SUBMISSION.md). Deploying the test stacks with the harness role (after T19) is the next step that does not need BMA; it needs Keith's approval.

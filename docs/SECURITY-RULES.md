@@ -54,6 +54,8 @@ Prevention stops a change from happening. Detection makes a change visible. Reco
 | Forged *append* with stolen application credentials | Not prevented (looks like a legitimate write) | Actor attribution in every event, audit log, human review | Corrections are appended, never edits |
 | Account administrator | Not prevented (R2) | CloudTrail; checkpoints held outside the account if anchored externally (not built) | Object Lock COMPLIANCE mode survives even an administrator, for retained data |
 
+Application-level controls (roles, case isolation, agent limits, approvals, audit integrity, hostile content) and the plain list of limitations are in [SECURITY-LIMITATIONS.md](SECURITY-LIMITATIONS.md), in the same prevention, detection and recovery form.
+
 Residual risks stated plainly: R1 evidence exfiltration through the agent's network egress (synthetic data, accepted for MVP). R2 an account administrator can change bucket policies, IAM and the ledger working copy; checkpoints and the stream alarm detect ledger edits but do not prevent them, and only COMPLIANCE-mode Object Lock survives an administrator. R4 stolen application credentials can overwrite the DynamoDB working copy; the archived original survives and the change raises an alarm (ADR 0008). R3 BMA service-held session data cannot use a customer-managed KMS key in preview.
 
 Future AWS controls must be validated with real authorization-denial tests before claims are made. Document residual administrator and credential-compromise risks; do not call local simulation immutable storage.

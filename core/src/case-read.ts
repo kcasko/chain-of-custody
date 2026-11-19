@@ -5,7 +5,7 @@
 // The security audit log is readable only by supervisors (read_audit_log), and
 // reading it is itself audited.
 
-import { guarded, type GuardDeps, type SecurityEvent } from './audit.ts';
+import { AuditIntegrityError, guarded, type GuardDeps, type SecurityEvent } from './audit.ts';
 import type { Approval } from './approvals.ts';
 import type { CheckpointAuthority } from './checkpoint.ts';
 import { ZERO_HASH } from './crypto.ts';
@@ -29,6 +29,8 @@ export interface AuditView {
   /** Newest first. Includes the 'attempted' record of this read itself. */
   readonly events: readonly SecurityEvent[];
   readonly total: number;
+  /** The case has at least `total` records; the adapter stopped counting at its bound. */
+  readonly totalIsLowerBound: boolean;
   readonly truncated: boolean;
 }
 
@@ -98,8 +100,14 @@ export class CaseReadService {
   async auditLog(ctx: RequestContext, caseId: string): Promise<Result<AuditView>> {
     return guarded(this.#deps, ctx, 'read_audit_log', caseId, async (d) => {
       if (d.kind !== 'human') return fail('DENIED_AGENT', 'the audit log is an operator view');
-      const { events, total } = await this.#deps.audit.forCase(caseId, AUDIT_VIEW_LIMIT);
-      return ok({ events, total, truncated: total > events.length });
+      try {
+        const page = await this.#deps.audit.forCase(caseId, AUDIT_VIEW_LIMIT);
+        const lowerBound = page.totalIsLowerBound === true;
+        return ok({ events: page.events, total: page.total, totalIsLowerBound: lowerBound, truncated: lowerBound || page.total > page.events.length });
+      } catch (err) {
+        if (err instanceof AuditIntegrityError) return fail('INTEGRITY_FAILURE', `the audit log holds a record that does not match its schema or key (${err.message}); investigate before trusting this view`);
+        throw err;
+      }
     });
   }
 }

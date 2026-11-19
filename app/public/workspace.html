@@ -213,21 +213,21 @@
         </div>
       </div>
       <article class="ws-verify" id="verification" hidden aria-labelledby="verify-title">
-        <h2 id="verify-title">Independent verification of the export</h2>
+        <h2 id="verify-title">Export check against this server's key</h2>
         <div class="ws-verify-head"><span id="verify-stamp" class="stamp"></span><dl class="ws-meta" id="verify-meta"></dl></div>
         <ul id="verify-findings"></ul>
         <div class="ws-actions">
           <button type="button" id="download" class="rerun">Download package (JSON)</button>
           <button type="button" id="download-trust" class="ws-quiet">Download trust file</button>
         </div>
-        <p class="ws-hint">Verify offline with <code>npm run verify:export -- package.json trust.json</code>. The trust file holds the checkpoint public key and the ledger head; in real use it must reach the recipient by a separate channel. A pass proves the history and files are complete and unaltered, not that the original material is authentic or true.</p>
+        <p class="ws-hint">This check uses the key and ledger head published by this same server, so it shows the package is complete and consistent, not that the server is honest. For an independent check, a recipient verifies offline with <code>npm run verify:export -- package.json trust.json</code>, using a trust file that reached them by a separate channel. Either way, a pass proves the history and files are complete and unaltered, not that the original material is authentic or true.</p>
       </article>
     </section>
     <section class="ws-panel" role="tabpanel" id="panel-audit" aria-labelledby="tab-audit" hidden>
       <div class="ws-agent">
         <div>
           <h2>Security log</h2>
-          <p class="ws-hint">Every attempt to read or change this case, including refusals, separate from the custody ledger. Supervisors only. Reading this log is itself recorded, so your own read is the newest entry.</p>
+          <p class="ws-hint">Every attempt to read or change this case, including refusals, separate from the custody ledger. Supervisors only. Reading this log is itself recorded, so your own read is the newest entry. Order follows each server's write time, so entries from different server instances within the same moment may appear in either order.</p>
         </div>
         <label class="ws-filter"><input type="checkbox" id="audit-problems"> Refusals and failures only</label>
       </div>

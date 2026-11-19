@@ -109,7 +109,7 @@ test('a full audit: transfer, refusal by role, draft promotion, approved export,
 
   await actAs(page, 'investigator');
   await request.getByRole('button', { name: 'Export' }).click();
-  const verification = page.getByRole('article', { name: 'Independent verification of the export' });
+  const verification = page.getByRole('article', { name: "Export check against this server's key" });
   await expect(verification).toBeVisible();
   await expect(page.locator('#verify-stamp')).toHaveText('VERIFIED');
   await expect(verification).toContainText('FRESH');
@@ -355,6 +355,35 @@ test('tabs work from the keyboard', async ({ page }) => {
   await expect(page.getByRole('tabpanel', { name: 'Evidence' })).toBeVisible();
 });
 
+test('new controls work from the keyboard alone, with a visible focus ring', async ({ page }) => {
+  const outline = () => page.evaluate(() => getComputedStyle(document.activeElement!).outlineStyle + ' ' + getComputedStyle(document.activeElement!).outlineWidth);
+  // Case brief folds and unfolds with Enter.
+  const summary = page.locator('#brief > summary');
+  await summary.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#brief')).not.toHaveAttribute('open', '');
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#brief')).toHaveAttribute('open', '');
+  // Compare: reach the tab with arrows, then Tab to the pickers and the button.
+  await page.getByRole('tab', { name: 'Evidence' }).focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(page.getByRole('tabpanel', { name: 'Compare' })).toBeVisible();
+  await page.getByLabel('Left').focus();
+  await page.keyboard.press('Tab');
+  await expect(page.getByLabel('Right')).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('button', { name: 'Compare', exact: true })).toBeFocused();
+  expect(await outline()).toBe('solid 3px');
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#compare-out')).toBeVisible();
+  // Security log filter toggles with Space.
+  await actAs(page, 'supervisor');
+  await page.getByRole('tab', { name: 'Security log' }).click();
+  await page.getByLabel('Refusals and failures only').focus();
+  await page.keyboard.press('Space');
+  await expect(page.getByLabel('Refusals and failures only')).toBeChecked();
+});
+
 test('phone width: no sideways scrolling and every tab is reachable', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   for (const name of ['Evidence', 'Compare', 'Custody timeline', 'Findings & drafts', 'Approvals & export', 'Security log']) {
@@ -367,6 +396,85 @@ test('phone width: no sideways scrolling and every tab is reachable', async ({ p
     expect(overflow, `${name} scrolls sideways`).toBeLessThanOrEqual(0);
   }
 });
+
+// WCAG 2.2 AA body-text contrast (4.5:1), measured from computed colors with
+// translucent backgrounds composited up the tree, in both color schemes.
+const CONTRAST_TARGETS = [
+  '.ws-brief-body p', '.lede', '.ws-identity', '.ws-hint', '.ws-synthetic', '.ws-brief a', '.ws-brief-h', '.reason', '.ws-untrusted',
+  '[role="tab"][aria-selected="false"]', '[role="tab"][aria-selected="true"]', '.docket thead th', '.ws-times td', '.ws-times--claim td',
+  '.ws-diff li', '.ws-diff--only', '.ws-compare-verdict', '.ws-audit td', '.ws-audit--denied td', '.verdict--refused', '.verdict--allowed', '.verdict--na', '.stamp',
+];
+
+async function contrastReport(page: Page) {
+  return page.evaluate((selectors) => {
+    const parse = (c: string): [number, number, number, number] => {
+      const n = (c.match(/[\d.]+/g) ?? []).map(Number);
+      if (c.startsWith('color(srgb')) return [n[0]! * 255, n[1]! * 255, n[2]! * 255, n[3] ?? 1];
+      return [n[0]!, n[1]!, n[2]!, n[3] ?? 1];
+    };
+    const over = (top: number[], under: number[]) => [0, 1, 2].map((i) => top[i]! * top[3]! + under[i]! * (1 - top[3]!)).concat(1);
+    const bgOf = (el: Element | null): number[] => {
+      const layers: number[][] = [];
+      for (let e = el; e; e = e.parentElement) {
+        const b = parse(getComputedStyle(e).backgroundColor);
+        if (b[3] > 0) layers.push(b);
+        if (b[3] >= 1) break;
+      }
+      let acc = [255, 255, 255, 1];
+      for (const l of layers.reverse()) acc = over(l, acc);
+      return acc;
+    };
+    const lum = (c: number[]) => {
+      const [r, g, b] = c.slice(0, 3).map((v) => { const x = v / 255; return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; });
+      return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+    };
+    const out: Array<{ selector: string; ratio: number }> = [];
+    for (const selector of selectors) {
+      const el = [...document.querySelectorAll(selector)].find((e) => (e as HTMLElement).offsetParent !== null && (e.textContent ?? '').trim() !== '');
+      if (!el) { out.push({ selector, ratio: -1 }); continue; }
+      const bg = bgOf(el);
+      const fg = over(parse(getComputedStyle(el).color), bg);
+      const [a, b] = [lum(fg), lum(bg)].sort((x, y) => y - x);
+      out.push({ selector, ratio: Math.round(((a! + 0.05) / (b! + 0.05)) * 100) / 100 });
+    }
+    return out;
+  }, CONTRAST_TARGETS);
+}
+
+for (const scheme of ['light', 'dark'] as const) {
+  test(`readable contrast (WCAG AA 4.5:1) in ${scheme} mode`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme: scheme });
+    const seen = new Map<string, number>();
+    const collect = async () => { for (const r of await contrastReport(page)) if (r.ratio >= 0) seen.set(r.selector, Math.min(seen.get(r.selector) ?? Infinity, r.ratio)); };
+    await collect();
+    await page.getByRole('button', { name: 'Read BW-005 original' }).click();
+    await collect();
+    await openTab(page, 'Compare');
+    await page.getByRole('button', { name: 'Compare', exact: true }).click();
+    await expect(page.locator('#compare-out')).toBeVisible();
+    await collect();
+    await actAs(page, 'investigator');
+    await openTab(page, 'Custody timeline');
+    await page.getByText('Record a historical claim').click();
+    const form = page.locator('#claim-form');
+    await form.getByLabel('What the source claims').fill('Contrast check claim.');
+    for (const [label, value] of [['Claimed time, as written', '1'], ['Source clock', 'x'], ['Time zone', 'x'], ['Offset uncertainty', 'x']]) await form.getByLabel(label!).fill(value!);
+    await form.getByLabel('BW-004 original', { exact: true }).check();
+    await form.getByRole('button', { name: 'Append claim to the ledger' }).click();
+    await openTab(page, 'Compare');
+    await expect(page.locator('.ws-times--claim')).toHaveCount(1);
+    await collect();
+    await actAs(page, 'auditor');
+    await openTab(page, 'Security log');
+    await actAs(page, 'supervisor');
+    await expect(page.locator('.ws-audit--denied').first()).toBeVisible();
+    await collect();
+    const missing = CONTRAST_TARGETS.filter((t) => !seen.has(t));
+    expect(missing, 'every target was measured at least once').toEqual([]);
+    const low = [...seen].filter(([, r]) => r < 4.5).map(([s, r]) => `${s}: ${r}`);
+    expect(low, `below 4.5:1 in ${scheme}`).toEqual([]);
+  });
+}
 
 test('the Integrity Challenge page still reports every entry as expected', async ({ page }) => {
   await page.getByRole('navigation', { name: 'Other pages' }).getByRole('link', { name: 'Integrity Challenge' }).click();

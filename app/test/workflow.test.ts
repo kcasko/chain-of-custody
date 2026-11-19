@@ -133,7 +133,9 @@ test('export: request, self-approval refused, independent approval, export verif
   assert.equal(exp.body.value.package.evidence.length, 2);
   assert.equal(exp.body.value.trust.expectedCaseId, 'BLACKWATER-2021');
   assert.equal(exp.body.value.trust.keys.length, 1);
-  assert.equal(exp.body.value.trust.reference.minSequence, exp.body.value.verification.validThrough);
+  // The trust file names the ledger head the case read reports (it is this server's own view, not an independent one).
+  const caseNow = (await call('GET', '/api/case', U.investigator)).body.value.head;
+  assert.deepEqual([exp.body.value.trust.reference.minSequence, exp.body.value.trust.reference.headHashAtMinSequence], [caseNow.sequence, caseNow.hash]);
   assert.equal(JSON.stringify(exp.body.value.trust).includes('private'), false, 'only the public key leaves the server');
   assert.equal((await call('POST', '/api/exports', U.investigator, { approvalId, payload })).status, 403, 'single use');
   const statuses = (await call('GET', '/api/approvals', U.auditor)).body.value.map((a: { status: string }) => a.status);

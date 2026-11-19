@@ -10,7 +10,7 @@ import { Match, Template } from 'aws-cdk-lib/assertions';
 import { buildApp } from '../bin/app.ts';
 import { readConfig } from '../lib/config.ts';
 import { WRITER_TABLE_ALLOW, WRITER_TABLE_DENY } from '../lib/storage-stack.ts';
-import { TOOL_EVIDENCE_ALLOW, TOOL_TABLE_ALLOW } from '../lib/gateway-stack.ts';
+import { TOOL_EVIDENCE_ALLOW, TOOL_TABLE_READ, TOOL_TABLE_WRITE } from '../lib/gateway-stack.ts';
 
 const ACCOUNT = '111111111111';
 function synth(context: Record<string, string> = {}) {
@@ -190,12 +190,20 @@ test('tool Lambda: the core-backed handler, wired to the ledger table and eviden
   assert.equal(policies.length, 1);
   const stmts = (policies[0]!.Properties.PolicyDocument as { Statement: Stmt[] }).Statement;
   const bySid = Object.fromEntries(stmts.map((s) => [s.Sid, s]));
-  assert.deepEqual(asList(bySid.ToolTableReadAndConditionalWrites!.Action).sort(), [...TOOL_TABLE_ALLOW].sort());
+  // Each table action is pinned to named logical tables; no unconditioned table grant exists.
+  assert.deepEqual(asList(bySid.ToolQueryLedgerEvents!.Action).sort(), [...TOOL_TABLE_READ].sort());
+  assert.deepEqual(bySid.ToolQueryLedgerEvents!.Condition, { 'ForAllValues:StringEquals': { 'dynamodb:LeadingKeys': ['events'] }, Null: { 'dynamodb:LeadingKeys': 'false' } });
+  assert.deepEqual(asList(bySid.ToolAppendFindingsDraftsAudit!.Action), [...TOOL_TABLE_WRITE]);
+  assert.deepEqual(bySid.ToolAppendFindingsDraftsAudit!.Condition, { 'ForAllValues:StringEquals': { 'dynamodb:LeadingKeys': ['audit', 'findings', 'proposals'] }, Null: { 'dynamodb:LeadingKeys': 'false' } });
+  for (const s of stmts.filter((x) => x.Effect === 'Allow' && asList(x.Action).some((a) => String(a).startsWith('dynamodb:')))) {
+    assert.ok(s.Condition, `${s.Sid}: every table grant carries a LeadingKeys condition`);
+    assert.ok(!JSON.stringify(s.Condition).match(/approvals|heads|idempotency|checkpoints|exports/), `${s.Sid} must not reach approvals, heads or other core tables`);
+  }
   assert.equal(bySid.ToolNeverDeleteOrRewriteInPlace!.Effect, 'Deny');
   assert.deepEqual(asList(bySid.ToolNeverDeleteOrRewriteInPlace!.Action).sort(), [...WRITER_TABLE_DENY].sort());
   assert.deepEqual(asList(bySid.ToolReadExactEvidenceVersions!.Action).sort(), [...TOOL_EVIDENCE_ALLOW].sort());
   const actions = stmts.filter((s) => s.Effect === 'Allow').flatMap((s) => asList(s.Action).map(String));
-  for (const forbidden of ['s3:PutObject', 's3:DeleteObject', 'dynamodb:DeleteItem', 'dynamodb:UpdateItem', 'dynamodb:Scan']) assert.ok(!actions.includes(forbidden), forbidden);
+  for (const forbidden of ['s3:PutObject', 's3:DeleteObject', 'dynamodb:DeleteItem', 'dynamodb:UpdateItem', 'dynamodb:Scan', 'dynamodb:ConditionCheckItem']) assert.ok(!actions.includes(forbidden), forbidden);
 });
 
 test('config refuses values that could inject into Cedar or IAM', () => {

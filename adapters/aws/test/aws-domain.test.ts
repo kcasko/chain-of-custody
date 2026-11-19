@@ -16,7 +16,7 @@ import { createRequire } from 'node:module';
 import { bind } from '../../../app/src/challenge.ts';
 import { loadManifest, readFixtureBytes } from '../../../core/src/fixtures.ts';
 import { TOOL_DEFINITIONS } from '../../../core/test/helpers.ts';
-import { createAwsDomain, createAwsToolHandler, registerManifest, type AwsDomainConfig } from '../src/aws-domain.ts';
+import { createAwsDomain, createAwsToolHandler, registerManifest, TOOL_LAMBDA_TABLES, type AwsDomainConfig } from '../src/aws-domain.ts';
 import { startLocalDynamo } from './dynamodb-local.ts';
 import { FakeBucket, fakeS3Client } from './fake-s3.ts';
 
@@ -60,6 +60,28 @@ describe('deployable tool handler on DynamoDB Local + S3 fake', { skip: local.ok
       const out = await call(s.tool, bind(s.args, versions), s.id);
       assert.equal(out.status, 'rejected', `${s.id} (${s.expect}) must be refused even without Cedar: ${JSON.stringify(out).slice(0, 200)}`);
     }
+  });
+
+  test('the agent path stays inside the tables its IAM role allows (TOOL_LAMBDA_TABLES)', async () => {
+    const { cfg, versions } = await environment();
+    const reads = new Set<string>();
+    const writes = new Set<string>();
+    const other = new Set<string>();
+    const real = cfg.dynamo.send.bind(cfg.dynamo);
+    const spy = { send: async (cmd: { constructor: { name: string }; input: Record<string, any> }) => {
+      const i = cmd.input;
+      const op = cmd.constructor.name;
+      if (op === 'QueryCommand' || op === 'GetItemCommand') reads.add(i.ExpressionAttributeValues?.[':pk']?.S ?? i.Key?.pk?.S);
+      else if (op === 'TransactWriteItemsCommand') for (const t of i.TransactItems) { if (t.Put) writes.add(t.Put.Item.pk.S); else other.add(Object.keys(t)[0]!); }
+      else other.add(op);
+      return real(cmd as never);
+    } };
+    const handler = createAwsToolHandler({ ...cfg, dynamo: spy as never }, { log: () => {} });
+    for (const s of SCENARIOS) await handler(bind(s.args, versions), { clientContext: { custom: { bedrockAgentCoreToolName: `EvidenceTools___${s.tool}`, bedrockAgentCoreAwsRequestId: s.id } } });
+    assert.deepEqual([...other], [], 'only Query, GetItem and transactional Put are used');
+    assert.ok([...reads].every((t) => (TOOL_LAMBDA_TABLES.read as readonly string[]).includes(t)), `reads ${[...reads]}`);
+    assert.ok([...writes].every((t) => (TOOL_LAMBDA_TABLES.append as readonly string[]).includes(t)), `writes ${[...writes]}`);
+    assert.deepEqual([...writes].sort(), [...TOOL_LAMBDA_TABLES.append].sort(), 'and the list is not wider than needed');
   });
 
   test('agent writes are attributed to the configured agent and stay drafts; the ledger only grows by human action', async () => {
