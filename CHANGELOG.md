@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-19 (final editorial pass on the Builder Center draft)
+
+- Added an "At a glance" summary under the disclaimer (the agent, the rules, both stress tests, what broke, the code) and a short section on usefulness, "Why this matters outside a fictional fire", checked against the four judging criteria on the official event page (each 25%).
+- Removed repetition: the per-layer evidence notes (now carried by the figure and the no-model run), a second telling of the "intentionally" refusal, a second svc-migrate parallel, the doubled "the model refused first" paragraph, and the stage labels restated in the build section. "Testing the infrastructure" became a short "Verification at a glance" list.
+- Headings now say what each section shows: "The rule set", "Then I tried to break it: eight attacks on the live agent", "What broke, and how I fixed it". No result, quote or figure changed; the missing hour, BW-010, the compromised-agent run and the unsupported accusation are all kept.
+
 ## 2026-11-19 (compromised-agent section merged)
 
 - "What if the agent ignores every rule?" merged into the Builder Center draft after "Then I tried to break it", with the T22 results and the unsupported-accusation weakness (C4-4). Claims made stale by T22 updated: layer evidence in "Why a polite refusal isn't enough", rules 4 and 5 in the enforcement table, the T19 status, test counts (427; a fresh clone still runs 381, re-checked), and links.
