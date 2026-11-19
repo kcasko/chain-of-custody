@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-11-18 (qualifying runtime: AgentCore managed harness, stress-test tooling, submission drafts)
+
+- Rules checked live on the official page: entries may use Bedrock Managed Agents or the AgentCore managed harness; due December 2, 2026, 11:59 PM PT. RB-2 resolved; RB-3 (no run on a qualifying runtime yet) is now primary; RB-1 no longer blocks.
+- Read-only account checks: the harness API answers; Claude Sonnet 4.6 and others need no new agreement.
+- ADR 0010 and `CocTestAgent` (synthesized): `CfnHarness` with Claude Sonnet 4.6, temperature 0, explicit limits, memory off, only `@evidence` tools; an execution role limited to one model and one Gateway, denying role switching and direct commands; the Cedar boundary admits exactly that role. Config key `agentRuntime`. Nine plain-language rules (`infra/lib/agent-rules.ts`) serve as both the system prompt and the published rule set.
+- Stress test: 9 prompts (1 legitimate, 8 adversarial including direct and indirect injection) and a recorder that captures the reply, tools, backend decisions and protected-state change, with a deterministic verdict. Tested locally on a scripted stand-in (not a model); a sabotaged run is reported as broken. `npm run agent:ask` and `npm run agent:stress` for the live run (not run).
+- Plans and drafts: T21 (deploy and run the agent, about $7.40 typical, $25 budget including Claude's Marketplace billing line), the Builder Center project draft in Keith's voice, and the publishing checklist (license and author-email decisions).
+- `@aws-sdk/client-bedrock-agentcore` 3.1161.0 (matches the other pinned SDK clients). `npm test` 420/420, `npm run test:e2e` 14/14, typecheck clean. Nothing deployed or published.
+
 ## 2026-11-18 (T19: Stage B runner for the core-backed Lambda)
 
 - `runCoreStageB` (`adapters/aws/src/stage-b-core.ts`) checks every scenario by its effects instead of stub log hashes: the tool response, the durable audit records (none for a Cedar denial; agent-attributed under one Gateway request ID otherwise), the findings and drafts added, and an unmoving ledger head; plus the unsigned and other-principal probes. Stub error codes are mapped to core codes explicitly.

@@ -1,6 +1,6 @@
 # Architecture
 
-Status, November 18, 2026: the domain core, the local investigation workspace and the AWS adapters are built and tested. The CDK app is synthesized and tested, **not deployed**. The Bedrock Managed Agents (BMA) runtime is **not connected**: the account has no access (release blocker RB-1). Each box below is labeled with how far it has been verified.
+Status, November 18, 2026: the domain core, the local investigation workspace and the AWS adapters are built and tested. The CDK app (storage, gateway, and the agent on the AgentCore managed harness) is synthesized and tested, **not deployed**. The agent has **not yet run** on the harness (T21, release blocker RB-3); Bedrock Managed Agents is refused for this account (RB-1) and no longer needed. Each box below is labeled with how far it has been verified.
 
 ## Components
 
@@ -39,13 +39,13 @@ flowchart LR
   SV --> S3
 
   subgraph AWS["AWS (CDK synthesized, not deployed)"]
-    BMA["Bedrock Managed Agents session<br/>NOT CONNECTED (RB-1)"]
+    BMA["AgentCore managed harness (ADR 0010)<br/>Claude Sonnet 4.6, @evidence tools only<br/>synthesized; not yet run (T21)"]
     GW["AgentCore Gateway, AWS_IAM, MCP<br/>+ Policy engine ENFORCE (Cedar)<br/>(hand-built version verified live in Stage B)"]
     L["Tool Lambda infra/lambda/tools.ts<br/>createAwsToolHandler (local tests only)"]
     DDB[("DynamoDB ledger table<br/>stream on")]
     EB[("S3 evidence bucket<br/>Object Lock, create-only")]
     AR["Archiver Lambda -> archive bucket<br/>Object Lock; tamper alarms"]
-    BMA -.->|session role, SigV4| GW
+    BMA -.->|execution role, SigV4| GW
     GW --> L
     L --> DDB
     L --> EB

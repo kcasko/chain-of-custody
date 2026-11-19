@@ -10,6 +10,8 @@
     "verify:conversation": "node scripts/verify-conversation.cjs",
     "harness:stage-b": "node harness/run-stage-b.cjs",
     "harness:stage-b-core": "node harness/run-stage-b-core.mts",
+    "agent:ask": "node harness/ask-agent.mts",
+    "agent:stress": "node harness/run-stress-test.mts",
     "typecheck": "tsc -p core && tsc -p app && tsc -p app/e2e && tsc -p adapters/aws && tsc -p infra",
     "cdk:synth": "cd infra && cdk synth --quiet",
     "fixtures:check": "node core/tools/fixture-manifest.ts",
@@ -27,6 +29,7 @@
     "typescript": "7.0.2"
   },
   "dependencies": {
+    "@aws-sdk/client-bedrock-agentcore": "3.1161.0",
     "@aws-sdk/client-dynamodb": "3.1161.0",
     "@aws-sdk/client-s3": "3.1161.0"
   }

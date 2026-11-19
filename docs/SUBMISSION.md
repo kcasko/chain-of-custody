@@ -1,6 +1,21 @@
 # Submission readiness
 
-Last updated November 18, 2026. **Not submission-ready: release blocker RB-1 (Bedrock Managed Agents access) is open.** Nothing has been pushed, published, deployed or submitted.
+Last updated November 18, 2026. **Not submission-ready: the agent has not yet run on a qualifying runtime (RB-3).** The rules accept the AgentCore managed harness as well as BMA, so BMA access (RB-1) no longer blocks. Nothing has been pushed, published, deployed or submitted.
+
+## Rules, checked live on the official page (November 18, 2026)
+
+Deadline: **December 2, 2026, 11:59 PM PT.** Every requirement is pass-or-fail.
+
+| Requirement | Where it stands |
+|---|---|
+| A working agent on Bedrock Managed Agents **or the AgentCore managed harness**, doing one defined job | **Built, not run.** Harness stack, execution role and Cedar boundary are synthesized and tested (ADR 0010). Running it is T21 (needs approval) |
+| A written rule set in plain language: access, refusals, edge cases | **Done:** `infra/lib/agent-rules.ts` (9 rules), the same text the harness gets as its system prompt |
+| How each rule is enforced, with an architecture description or diagram | **Done:** each rule names its enforcing layer; diagram in ARCHITECTURE.md and the write-up |
+| A stress test of at least 5 adversarial prompts, including at least 1 prompt injection, with what each tried and how the agent responded | **Tooling done, run pending:** 9 prompts (8 adversarial, direct and indirect injection), recorder tested locally; live run in T21 |
+| An original agent, not published before | Yes (nothing published) |
+| A Builder Center project: build process, rule set, enforcement, stress-test results, any rule that broke and its fix | **Drafted:** docs/submission/builder-center-project.md; results placeholders until T21 |
+| A repository or demo link, and at least one screenshot of the agent running | **Pending:** screenshot comes from T21; the repository must be public with an OSI license (decisions in docs/submission/PUBLISHING.md) |
+| Eligibility: 18+, Builder Center profile, not in an excluded country, not an Amazon employee or household member | Keith to confirm |
 
 ## Status at a glance
 
@@ -12,8 +27,9 @@ Last updated November 18, 2026. **Not submission-ready: release blocker RB-1 (Be
 | AWS infrastructure (CDK) | **Synthesized and tested only; not deployed** |
 | Storage adapters on real AWS | **Verified live** in T14b (23/23, torn down the same day) |
 | Gateway and Cedar enforcement on real AWS | **Verified live** in Stage B (T09B) with a stub Lambda, not with the core-backed one |
-| Bedrock Managed Agents integration | **Blocked (RB-1).** Not connected, not demonstrated |
-| Event rules (submission format, judging, eligibility) | **Unknown (RB-2).** The rules tab was still "coming soon" at last check |
+| Agent on a qualifying runtime (AgentCore managed harness) | **Built and synthesized; not run (RB-3).** T21 needs approval |
+| Bedrock Managed Agents | Refused for this account (RB-1); no longer needed to qualify |
+| Event rules | **Verified live** November 18 (see above) |
 
 ## Checklist
 
@@ -30,8 +46,8 @@ Last updated November 18, 2026. **Not submission-ready: release blocker RB-1 (Be
 
 ### Blocked
 
-- [ ] **RB-1: BMA access.** The account gets HTTP 401 "Bedrock Managed Agents is not available for this account". Keith sends the access requests ([drafts](plans/2026-11-18-bma-access-requests.md)); decision date November 24, 2026.
-- [ ] **RB-2: event rules.** Re-check before writing the final submission text (T07b).
+- [ ] **RB-3: the agent runs its job on the AgentCore managed harness,** with the stress test recorded ([T21 plan](plans/2026-11-18-t21-agent-run.md)). Needs Keith's approvals.
+- [ ] **Publishing:** license, author e-mail decision, public repository, Builder Center project, submission ([checklist](submission/PUBLISHING.md)). Each step needs Keith's approval.
 
 ### Needs approval (prepared, not done)
 
@@ -44,7 +60,7 @@ Last updated November 18, 2026. **Not submission-ready: release blocker RB-1 (Be
 - [ ] An independent checkpoint signing authority (the local server signs with a demo key).
 - [ ] Paging and search in the security log beyond the newest 200 entries.
 
-## What remains to qualify, in order
+## BMA path (optional now, kept for reference)
 
 1. **BMA access granted** (RB-1).
 2. **Rerun T09 G1:** create a BMA session with the session role `CocBmaSessionRole`.
@@ -60,7 +76,7 @@ Last updated November 18, 2026. **Not submission-ready: release blocker RB-1 (Be
 
 | Check | Result |
 |---|---|
-| `npm test` (core, app API, policy, adapters on DynamoDB Local, infra templates, CLI, T19 runner) | 409 of 409 pass, none skipped |
+| `npm test` (core, app API, policy, adapters on DynamoDB Local, infra templates including the agent stack, CLI, T19 runner, stress recorder) | 420 of 420 pass, none skipped. One earlier full run had a single failure whose output was not captured; five full runs since passed. The flaky test is **not identified** |
 | `npm run typecheck` (core, app, e2e, adapters, infra) | Clean |
 | `npm run test:e2e` (Playwright, Chromium) | 14 of 14 pass: full audit workflow with offline CLI verification of the downloaded files; brief, provenance and compare; dismissal; claims; outsider; security log; exact reader bytes; hostile text; keyboard (tabs and new controls, visible focus ring); phone width 375 px; WCAG AA 4.5:1 contrast in light and dark; Integrity Challenge 28 of 28 |
 | Desktop and phone screenshots, light and dark | Checked by eye; no horizontal overflow, no script errors |

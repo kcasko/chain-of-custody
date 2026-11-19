@@ -3,6 +3,7 @@
 
 import * as cdk from 'aws-cdk-lib';
 import { readConfig } from '../lib/config.ts';
+import { CocAgentStack } from '../lib/agent-stack.ts';
 import { CocGatewayStack } from '../lib/gateway-stack.ts';
 import { CocStorageStack } from '../lib/storage-stack.ts';
 
@@ -12,12 +13,16 @@ export function buildApp(app = new cdk.App()) {
   const stack = cfg.stage === 'test' ? 'CocTest' : 'Coc';
   const storage = new CocStorageStack(app, `${stack}Storage`, cfg, { env, terminationProtection: cfg.stage === 'prod' });
   const gateway = new CocGatewayStack(app, `${stack}Gateway`, cfg, { table: storage.table, evidenceBucket: storage.evidenceBucket }, { env, terminationProtection: cfg.stage === 'prod' });
-  for (const s of [storage, gateway]) {
+  // ADR 0010: the managed-harness agent, only when that runtime is chosen.
+  const agent = cfg.agentRuntime === 'agentcore-harness'
+    ? new CocAgentStack(app, `${stack}Agent`, cfg, { gatewayArn: gateway.gateway.attrGatewayArn }, { env, terminationProtection: cfg.stage === 'prod' })
+    : undefined;
+  for (const s of [storage, gateway, ...(agent ? [agent] : [])]) {
     cdk.Tags.of(s).add('Project', 'chain-of-custody');
     cdk.Tags.of(s).add('Stage', cfg.stage);
     cdk.Tags.of(s).add('ManagedBy', 'cdk');
   }
-  return { app, cfg, storage, gateway };
+  return { app, cfg, storage, gateway, agent };
 }
 
 if (import.meta.main) buildApp().app.synth();

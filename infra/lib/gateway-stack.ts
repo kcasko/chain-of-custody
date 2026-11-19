@@ -157,6 +157,9 @@ export class CocGatewayStack extends cdk.Stack {
         description: 'Stage B test harness: signs MCP calls in place of the BMA session role',
       });
       harness.addToPolicy(invoke);
+    } else if (cfg.agentRuntime === 'agentcore-harness') {
+      // The agent stack creates the harness execution role and grants it
+      // InvokeGateway on this gateway only (ADR 0010). Nothing to attach here.
     } else {
       // The BMA session role is created outside CDK (T09) because BMA trusts it
       // by name. Deploying this stack attaches one policy to it: InvokeGateway on

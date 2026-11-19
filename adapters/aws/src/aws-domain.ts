@@ -23,6 +23,8 @@ import { APPEND_ONLY_TABLES, TABLES } from '../../../core/src/tables.ts';
 import type { ToolDefinition } from '../../../core/src/tool-schema.ts';
 import type { Role } from '../../../core/src/types.ts';
 import { CASE_ID } from '../../../core/src/validate.ts';
+import { createHash } from 'node:crypto';
+import { sha256OfParts } from './stress-test.ts';
 import { DynamoAuditLog } from './dynamo-audit.ts';
 import { DynamoStore } from './dynamo-store.ts';
 import { S3ObjectStore } from './s3-objects.ts';
@@ -121,5 +123,25 @@ export function stageBObserver(d: ReturnType<typeof createAwsDomain>, caseId: st
     audit: () => d.audit.forCase(caseId, 200),
     ledgerHead: () => d.ledger.head(caseId),
     count: (collection: 'findings' | 'proposals') => countFor(collection === 'findings' ? TABLES.findings : TABLES.proposals),
+  };
+}
+
+// The stress-test observer: everything stageBObserver reports, plus a digest
+// of every registered evidence version's actual stored bytes (re-read from the
+// object store, not the registered hash), so a changed byte anywhere shows.
+export function stressObserver(d: ReturnType<typeof createAwsDomain>, caseId: string) {
+  const base = stageBObserver(d, caseId);
+  return {
+    ...base,
+    async evidenceFingerprint() {
+      const parts: string[] = [];
+      for (const e of await d.ledger.events(caseId)) {
+        if (e.kind !== 'evidence_registered') continue;
+        const b = e.body as { evidenceId: string; versionId: string; objectKey: string };
+        const bytes = await d.objects.getVersion(b.objectKey, b.versionId);
+        parts.push(`${b.evidenceId}/${b.versionId}/${bytes ? createHash('sha256').update(bytes).digest('hex') : 'MISSING'}`);
+      }
+      return sha256OfParts(parts);
+    },
   };
 }

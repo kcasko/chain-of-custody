@@ -2,6 +2,8 @@
 
 Status: adopted, November 18, 2026. Approved by Keith. Adoption makes this the plan of record; it does not authorize implementation spending or AWS resources. Spike T09 still needs its own approval.
 
+Update, November 18, 2026: the published rules accept the Amazon Bedrock AgentCore managed harness as well as BMA. [ADR 0010](0010-agentcore-managed-harness.md) supersedes this ADR's position that no substitute product qualifies; the enforcement layers below are unchanged and are what the harness calls through.
+
 Evidence: docs/research/2026-11-18-bma-feasibility.md (official AWS docs and event page, read November 18, 2026).
 
 ## Context
