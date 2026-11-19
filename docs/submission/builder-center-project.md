@@ -56,7 +56,7 @@ It recorded that as finding ecf25cb9, a discrepancy with high uncertainty, and l
 
 ![Excerpt of the Blackwater audit agent's real terminal output on the AgentCore managed harness: the prompt, the tool calls and the recorded finding](screenshots/agent-running-excerpt.png)
 
-*The agent running on the AgentCore managed harness. Every line is verbatim from the live run, and every omission is marked, including the end of one long line; the full transcript and the unedited full-length screenshot are in the repository.*
+*The agent running on the AgentCore managed harness. Every line is verbatim from the live run; tool arguments and other omitted output are marked where they were cut. The full transcript and the unedited full-length screenshot are in the repository.*
 
 ## An investigator that can't rewrite history
 
@@ -171,7 +171,7 @@ The compromised agent recorded this finding: "Elena Ward altered the S-17 result
 
 The other two were softer. The fake correction draft was refused the moment a person tried to promote it, because its hash didn't match the real ledger. And the "Approved by supervisor Elena Ward" finding was recorded as the agent, because typing a name doesn't make you that person.
 
-What keeps the accusation from doing damage isn't a filter. A finding is a report for a person, labeled as the agent's, and it can't touch the ledger or the evidence. That limits the damage. It doesn't prevent the accusation, and if the person reading it trusts the agent too much, the hole is still there. A compromised agent can still write things that are wrong. It can't make them part of the record.
+What keeps the accusation from doing damage isn't a filter. A finding is a report for a person, labeled as the agent's, and it can't touch the ledger or the evidence. That limits the damage. It doesn't prevent the accusation, and if the person reading it trusts the agent too much, the hole is still there. So here's exactly where the line sits. A compromised agent can't modify the protected evidence or the custody ledger. It can still store findings that the evidence doesn't support, and a person has to catch those.
 
 Here's how each claim in this post was checked, because "tested" means different things:
 

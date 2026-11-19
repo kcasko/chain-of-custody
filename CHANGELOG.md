@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-11-19 (final targeted corrections, draft)
+
+- Agent-run excerpt simplified: tool calls shown by name only, with their JSON arguments marked as omitted characters; the outcome shown by the transcript's own "Finding created" block. render-transcript.mts gains per-line character ranges (N@start-end) with a marker for every omitted segment. The unedited screenshot and full transcript are unchanged.
+- Overview figure: "five scoped evidence tools".
+- Article: states plainly that a compromised agent can't modify protected evidence or the custody ledger but can still store unsupported findings.
+- Checked every repository link in the draft: all resolve on GitHub except the two detailed figures (architecture-detailed.png, injection-sequence-detailed.png), which exist only in unpushed local commits and must be pushed before the article is republished.
+- Local draft only. The published Builder Center article is unchanged.
+
 ## 2026-11-19 (accuracy corrections and compact article figures, draft)
 
 - Article: tool requests meet the layers in order and stop at the first denial; S2 to S6 left the downstream controls in place but unexercised; rule 5 is now "partly enforced", with the incomplete word list named and rule 4 as the containment.
