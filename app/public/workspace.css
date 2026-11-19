@@ -140,7 +140,7 @@
 .ws-form label { display: grid; gap: 0.3rem; font-size: 0.88rem; color: var(--ink-soft); }
 .ws-form fieldset { border: 1px solid var(--rule); padding: 0.6rem 0.75rem; margin: 0; }
 .ws-form legend { font-size: 0.88rem; color: var(--ink-soft); padding: 0 0.3rem; }
-.ws-form .rerun { justify-self: start; min-height: 2.75rem; }
+.ws-form .rerun, .ws-form .ws-quiet { justify-self: start; min-height: 2.75rem; }
 .ws-form--inline { margin-top: 0.5rem; border-top: 0; padding-top: 0; }
 .ws-checks { display: flex; flex-wrap: wrap; gap: 0.35rem 1rem; }
 .ws-checks--wide { display: grid; grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); }
@@ -173,6 +173,10 @@
 .ws-entry-head { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
 .ws-entry .rerun { margin-top: 0.4rem; min-height: 2.5rem; }
 .ws-empty { padding: 0.8rem 0; color: var(--muted); }
+.ws-dismiss { margin-top: 0.4rem; font-size: 0.88rem; }
+.ws-dismiss summary { cursor: pointer; color: var(--ink-soft); padding: 0.4rem 0; }
+.ws-dismissed { font-size: 0.86rem; color: var(--refuse); }
+.ws-entry--dismissed .ws-meta { opacity: 0.7; }
 .ws-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.4rem; }
 
 .ws-verify { margin-top: 2rem; border: 1px solid var(--rule); background: var(--paper-edge); padding: 1rem 1.15rem; }

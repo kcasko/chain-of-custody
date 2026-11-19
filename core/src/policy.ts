@@ -25,6 +25,9 @@ export const HUMAN_MATRIX: Readonly<Record<Operation, readonly Role[]>> = {
   create_proposal: [], // proposals exist for the agent; humans act directly
   // Gate only: promotion then re-runs the proposed operation's own policy for this human.
   promote_proposal: ALL,
+  // Any case member may set aside an agent draft; a reason is required, and the
+  // draft stays visible as dismissed (ADR 0009).
+  dismiss_proposal: ALL,
   overwrite_original: [],
   delete_history: [],
   grant_role: [], // denied until membership changes get their own policy and audit contract

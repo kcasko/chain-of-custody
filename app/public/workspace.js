@@ -228,14 +228,30 @@ async function loadDrafts() {
       notice(res, res.ok ? `Draft promoted as ledger entry #${res.value.sequence}, attributed to ${persona().name}.` : '');
       if (res.ok) await Promise.all([loadCase(), loadDrafts()]);
     });
-    return el('li', { className: 'ws-entry' }, [
+    // Dismissal needs a reason and is final; the draft stays listed as dismissed.
+    const dismiss = el('details', { className: 'ws-dismiss' }, [el('summary', { text: 'Dismiss this draft' })]);
+    const dismissForm = el('form', { className: 'ws-form ws-form--inline' }, [
+      el('label', {}, [el('span', { text: 'Why it should not be acted on' }), el('input', { attrs: { name: 'reason', required: '', maxlength: '2000', autocomplete: 'off' } })]),
+      el('button', { className: 'ws-quiet', text: 'Dismiss draft', attrs: { type: 'submit' } }),
+    ]);
+    dismissForm.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const res = await api('POST', '/api/proposals/dismiss', { proposalId: p.proposalId, reason: new FormData(dismissForm).get('reason') });
+      notice(res, res.ok ? `Draft dismissed by ${persona().name}. It stays listed and can no longer be promoted; the ledger is unchanged.` : '');
+      if (res.ok) await loadDrafts();
+    });
+    dismiss.append(dismissForm);
+    const stampClass = p.status === 'draft' ? 'stamp--pending' : p.status === 'promoted' ? 'stamp--executed' : 'stamp--refused';
+    return el('li', { className: `ws-entry ws-entry--${p.status}` }, [
       el('p', { className: 'ws-entry-head' }, [
         el('span', { className: 'ws-kind', text: p.kind.replace(/_/g, ' ') }),
-        el('span', { className: `stamp ${p.status === 'draft' ? 'stamp--pending' : 'stamp--executed'}`, text: p.status }),
+        el('span', { className: `stamp ${stampClass}`, text: p.status }),
       ]),
       describeInput(p.input),
       el('p', { className: 'reason', text: `Drafted by ${p.proposedBy}, ${when(p.createdAt)}.${p.promotedBy ? ` Promoted by ${p.promotedBy}.` : ''}` }),
-      p.status === 'draft' ? promote : null,
+      p.dismissal ? el('p', { className: 'ws-dismissed', text: `Dismissed by ${p.dismissal.by}, ${when(p.dismissal.at)}: ${p.dismissal.reason}` }) : null,
+      p.status === 'draft' ? el('div', { className: 'ws-actions' }, [promote]) : null,
+      p.status === 'draft' ? dismiss : null,
     ]);
   }));
 }

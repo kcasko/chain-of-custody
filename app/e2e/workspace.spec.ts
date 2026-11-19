@@ -134,6 +134,35 @@ test('a full audit: transfer, refusal by role, draft promotion, approved export,
   await expect(page.locator('#chain-stamp')).toHaveText('Chain intact');
 });
 
+test('a person dismisses an agent draft with a reason; it stays listed and the ledger is unchanged', async ({ page }) => {
+  await actAs(page, 'auditor');
+  await openTab(page, 'Findings & drafts');
+  await page.getByRole('button', { name: 'Run scripted agent pass' }).click();
+  await expect(page.getByRole('button', { name: 'Promote to the ledger' })).toHaveCount(2);
+  const head = await page.locator('#ledger-head').textContent();
+
+  const draft = page.locator('#drafts li', { hasText: 'historical assertion' });
+  await draft.getByText('Dismiss this draft').click();
+  // A reason is required: the browser blocks an empty submit before any request.
+  await draft.getByRole('button', { name: 'Dismiss draft' }).click();
+  await expect(draft).toContainText('draft');
+  await draft.getByLabel('Why it should not be acted on').fill('The claimed time contradicts the BW-004 access log');
+  await draft.getByRole('button', { name: 'Dismiss draft' }).click();
+  await expect(status(page)).toContainText('Draft dismissed by Mara Voss. It stays listed and can no longer be promoted; the ledger is unchanged.');
+
+  await expect(draft.locator('.stamp')).toHaveText('dismissed');
+  await expect(draft).toContainText('Dismissed by mara.voss');
+  await expect(draft).toContainText('The claimed time contradicts the BW-004 access log');
+  await expect(draft.getByRole('button')).toHaveCount(0);
+  await expect(page.locator('#drafts li')).toHaveCount(2);
+  await expect(page.locator('#ledger-head')).toHaveText(head ?? '');
+
+  // Other people see the same dismissal; the other draft is still open.
+  await actAs(page, 'investigator');
+  await expect(draft).toContainText('Dismissed by mara.voss');
+  await expect(page.getByRole('button', { name: 'Promote to the ledger' })).toHaveCount(1);
+});
+
 test('a person outside the case sees nothing but the refusal', async ({ page }) => {
   await actAs(page, 'outsider');
   await expect(page.locator('#chain-stamp')).toHaveText('DENIED_NOT_MEMBER');

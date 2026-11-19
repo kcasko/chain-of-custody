@@ -29,6 +29,7 @@ export type Operation =
   | 'record_finding'
   | 'create_proposal'
   | 'promote_proposal'
+  | 'dismiss_proposal'
   | 'overwrite_original'
   | 'delete_history'
   | 'grant_role';

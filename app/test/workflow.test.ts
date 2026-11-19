@@ -144,3 +144,24 @@ test('reset restores the seeded case; unknown endpoints are 404', async () => {
   assert.equal((await call('GET', '/api/nope', U.auditor)).status, 404);
   assert.equal((await call('DELETE', '/api/evidence', U.supervisor)).status, 404);
 });
+
+test('drafts: a person dismisses one with a reason; it stays listed, cannot be promoted, and the ledger is unchanged', async () => {
+  const { call } = await setup();
+  await call('POST', '/api/agent/run', U.auditor, {});
+  const drafts = (await call('GET', '/api/proposals', U.auditor)).body.value;
+  const target = drafts.find((p: { kind: string }) => p.kind === 'historical_assertion');
+  const head = (await call('GET', '/api/case', U.auditor)).body.value.head.sequence;
+  const noReason = await call('POST', '/api/proposals/dismiss', U.auditor, { proposalId: target.proposalId });
+  assert.deepEqual([noReason.status, noReason.body.code], [400, 'INVALID_REQUEST']);
+  const outsider = await call('POST', '/api/proposals/dismiss', U.outsider, { proposalId: target.proposalId, reason: 'x' });
+  assert.equal(outsider.status, 404);
+  const ok = await call('POST', '/api/proposals/dismiss', U.auditor, { proposalId: target.proposalId, reason: 'The claimed time contradicts BW-004' });
+  assert.equal(ok.status, 200, JSON.stringify(ok.body));
+  const after = (await call('GET', '/api/proposals', U.investigator)).body.value;
+  assert.equal(after.length, 2, 'dismissed drafts stay listed');
+  const d = after.find((p: { proposalId: string }) => p.proposalId === target.proposalId);
+  assert.equal(d.status, 'dismissed');
+  assert.deepEqual(d.dismissal, { by: U.auditor, at: '2026-11-18T20:00:00.000Z', reason: 'The claimed time contradicts BW-004' });
+  assert.equal((await call('GET', '/api/case', U.auditor)).body.value.head.sequence, head);
+  assert.equal((await call('POST', '/api/proposals/promote', U.investigator, { proposalId: target.proposalId })).status, 400);
+});

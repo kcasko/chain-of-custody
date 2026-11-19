@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-18 (T18: dismissing agent drafts)
+
+- Core: `ProposalService.dismiss` and the `dismiss_proposal` operation (all case roles, humans only). A reason is required; the draft is kept and marked dismissed with who, when and why; it can never be promoted; the ledger does not change; the action is audited. Conditional on the version read, so a dismissal and a promotion cannot both win. ADR 0009 records the choice to let any member dismiss.
+- Workspace: "Dismiss this draft" on each open draft, with a required reason; dismissed drafts stay listed with the reason. API `POST /api/proposals/dismiss`.
+- Tests: 4 core (including a deterministic stale-write test), 1 API, 1 browser. Mutation-checked. `npm test`: 375/375; `npm run test:e2e`: 8/8; typecheck clean.
+
 ## 2026-11-18 (T18: browser tests for the workspace)
 
 - Playwright 1.64.1 (pinned, Chromium only) with `npm run test:e2e`. It starts its own server on port 4391. 7 tests: the full audit walkthrough, outsider refusal on every tab, reader text equal to the API for all 12 versions, hostile markup shown as inert text, keyboard tabs, phone width, and the Integrity Challenge at 28 of 28. A script error or CSP violation fails any test.

@@ -131,6 +131,8 @@ export class Workflow {
       case 'POST /api/custody/transfer': return this.#ledgerWrite(await d.custody.recordTransfer(this.#ctx(userId), c, body));
       case 'POST /api/custody/correction': return this.#ledgerWrite(await d.custody.appendCorrection(this.#ctx(userId), c, body));
       case 'POST /api/proposals/promote': return this.#ledgerWrite(await d.proposals.promote(this.#ctx(userId), String(body.proposalId ?? '')));
+      // Not a ledger write: a dismissed draft was never part of the record.
+      case 'POST /api/proposals/dismiss': return reply(await d.proposals.dismiss(this.#ctx(userId), body));
       case 'POST /api/findings': return reply(await d.findings.record(this.#ctx(userId), c, body));
       case 'POST /api/approvals/request': return reply(await d.approvals.requestExport(this.#ctx(userId), c, body));
       case 'POST /api/approvals/approve': return reply(await d.approvals.approve(this.#ctx(userId), String(body.approvalId ?? '')));

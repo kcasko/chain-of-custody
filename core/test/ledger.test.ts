@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Ledger, computeEventHash } from '../src/ledger.ts';
 import { CustodyService } from '../src/custody.ts';
-import { InterleavingStore, AppendOnlyViolation } from '../src/store.ts';
+import { InterleavingStore, AppendOnlyViolation, type TransactionalStore, type Write, type Item, type TransactResult } from '../src/store.ts';
 import { ZERO_HASH } from '../src/crypto.ts';
 import type { CustodyEvent } from '../src/types.ts';
 import { CASE, OTHER_CASE, USERS, human, agent, makeWorld, makeStore, registerFixtures, deps, wireCustody } from './helpers.ts';
@@ -222,4 +222,100 @@ test('humans cannot create proposals; bad proposal kinds and oversized input are
     const r = await w.proposals.create(agent(), CASE, req);
     assert.equal(!r.ok && r.code, 'INVALID_REQUEST', JSON.stringify(req).slice(0, 60));
   }
+});
+
+test('a human dismisses a draft with a reason: kept as dismissed, never on the ledger, never promotable', async () => {
+  const { w, transfer } = await seeded();
+  const p = await w.proposals.create(agent(), CASE, { kind: 'custody_transfer', input: transfer });
+  assert.ok(p.ok);
+  const id = p.value.proposalId;
+
+  const byAgent = await w.proposals.dismiss(agent(), { proposalId: id, reason: 'not needed' });
+  assert.equal(!byAgent.ok && byAgent.code, 'DENIED_AGENT', 'the agent cannot withdraw or bury drafts');
+  const byOutsider = await w.proposals.dismiss(human(USERS.outsider), { proposalId: id, reason: 'x' });
+  assert.equal(!byOutsider.ok && byOutsider.code, 'NOT_FOUND', 'a non-member learns nothing about the draft');
+  for (const bad of [{ proposalId: id }, { proposalId: id, reason: '   ' }, { proposalId: id, reason: 'r'.repeat(2001) }, { proposalId: id, reason: 'ok', status: 'draft' }]) {
+    const r = await w.proposals.dismiss(human(USERS.auditor), bad);
+    assert.equal(!r.ok && r.code, 'INVALID_REQUEST', JSON.stringify(bad).slice(0, 60));
+  }
+  assert.equal((await w.proposals.getUnchecked(id))?.status, 'draft');
+
+  const head = (await w.ledger.head(CASE)).sequence;
+  const auditBefore = w.audit.events.length;
+  const d = await w.proposals.dismiss(human(USERS.auditor), { proposalId: id, reason: 'BW-007 never left the locker; the draft misreads BW-004' });
+  assert.ok(d.ok, JSON.stringify(d));
+  assert.equal(d.value.status, 'dismissed');
+  assert.deepEqual(d.value.dismissal, { by: USERS.auditor, at: '2026-11-18T16:00:00.000Z', reason: 'BW-007 never left the locker; the draft misreads BW-004' });
+  assert.deepEqual(d.value.input, transfer, 'the draft content is kept as proposed');
+  assert.equal((await w.ledger.head(CASE)).sequence, head, 'dismissal does not touch the ledger');
+  assert.deepEqual(w.audit.events.slice(auditBefore).map((e) => [e.operation, e.outcome, e.principal]),
+    [['dismiss_proposal', 'attempted', `human:${USERS.auditor}`], ['dismiss_proposal', 'completed', `human:${USERS.auditor}`]]);
+
+  const promote = await w.proposals.promote(human(USERS.investigator), id);
+  assert.equal(!promote.ok && promote.code, 'INVALID_REQUEST');
+  const again = await w.proposals.dismiss(human(USERS.supervisor), { proposalId: id, reason: 'again' });
+  assert.equal(!again.ok && again.code, 'INVALID_REQUEST');
+  assert.equal((await w.proposals.getUnchecked(id))?.dismissal?.by, USERS.auditor, 'the first dismissal stands');
+});
+
+test('a dismissal racing promotions: exactly one wins, and the ledger agrees with the draft', async () => {
+  for (let round = 0; round < 5; round++) {
+    const base = makeStore();
+    const w = makeWorld({ store: base });
+    const versions = await registerFixtures(w);
+    const p = await w.proposals.create(agent(), CASE, { kind: 'custody_transfer', input: { evidenceId: 'BW-001', versionId: versions.get('BW-001/original')!, from: 'a', to: 'b', reason: 'r' } });
+    assert.ok(p.ok);
+    const il = new InterleavingStore(base);
+    const racing = wireCustody(deps(il), new Ledger(il)).proposals;
+    const results = await Promise.all([
+      racing.dismiss(human(USERS.auditor), { proposalId: p.value.proposalId, reason: 'set aside' }),
+      ...Array.from({ length: 3 }, () => racing.promote(human(USERS.investigator), p.value.proposalId)),
+    ]);
+    assert.equal(results.filter((r) => r.ok).length, 1, `round ${round}`);
+    const status = (await w.proposals.getUnchecked(p.value.proposalId))?.status;
+    const transfers = (await w.ledger.events(CASE)).filter((e) => e.kind === 'custody_transfer').length;
+    assert.equal(transfers, status === 'promoted' ? 1 : 0, `round ${round}: ${status}`);
+    assert.equal(results[0]!.ok, status === 'dismissed');
+  }
+});
+
+// Runs \`hook\` once, just before the first transaction that writes a dismissed
+// proposal: the exact window a stale dismissal would need.
+class BeforeDismissWrite implements TransactionalStore {
+  hook: (() => Promise<unknown>) | undefined;
+  readonly inner: TransactionalStore;
+  constructor(inner: TransactionalStore) {
+    this.inner = inner;
+  }
+  get<T>(table: string, key: string): Promise<Item<T> | undefined> {
+    return this.inner.get<T>(table, key);
+  }
+  list<T>(table: string, keyPrefix: string): Promise<Array<{ key: string; item: Item<T> }>> {
+    return this.inner.list<T>(table, keyPrefix);
+  }
+  async transact(writes: Write[]): Promise<TransactResult> {
+    const hook = this.hook;
+    if (hook && writes.some((w) => (w.value as { status?: string } | undefined)?.status === 'dismissed')) {
+      this.hook = undefined;
+      await hook();
+    }
+    return this.inner.transact(writes);
+  }
+}
+
+test('a promotion that lands between a dismissal\'s read and write wins; the stale dismissal is refused', async () => {
+  const base = makeStore();
+  const w = makeWorld({ store: base });
+  const versions = await registerFixtures(w);
+  const p = await w.proposals.create(agent(), CASE, { kind: 'custody_transfer', input: { evidenceId: 'BW-001', versionId: versions.get('BW-001/original')!, from: 'a', to: 'b', reason: 'r' } });
+  assert.ok(p.ok);
+  const store = new BeforeDismissWrite(base);
+  const dismisser = wireCustody(deps(store), new Ledger(store)).proposals;
+  let promoted: unknown;
+  store.hook = async () => { promoted = await w.proposals.promote(human(USERS.investigator), p.value.proposalId); };
+  const d = await dismisser.dismiss(human(USERS.auditor), { proposalId: p.value.proposalId, reason: 'set aside' });
+  assert.ok((promoted as { ok: boolean }).ok, 'the promotion went through inside the window');
+  assert.equal(!d.ok && d.code, 'LEDGER_CONFLICT');
+  assert.equal((await w.proposals.getUnchecked(p.value.proposalId))?.status, 'promoted', 'the draft is not overwritten as dismissed');
+  assert.equal((await w.ledger.events(CASE)).filter((e) => e.kind === 'custody_transfer').length, 1);
 });
