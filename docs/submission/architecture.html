@@ -2,170 +2,175 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Chain of Custody architecture</title>
-<!-- Source for docs/submission/screenshots/architecture.png. Rendered locally by
-     harness/render-architecture.mts (Playwright, no network). Edit here, re-render.
-     Every status tag is backed by a report: T21 (docs/research/2026-11-19-t21-agent-run-report.md),
-     T14b (docs/research/2026-11-18-t14b-real-aws-report.md), Stage B (docs/research/2026-11-18-t09-spike-report.md),
-     T22 (docs/research/2026-11-19-t22-compromised-agent-report.md). -->
+<title>Chain of Custody: which layer enforces which rule</title>
+<!-- Source for docs/submission/screenshots/architecture.png. Rendered by
+     harness/render-architecture.mts (Playwright, local files only). Edit here, re-render.
+     Every evidence label is backed by a report: T14b (docs/research/2026-11-18-t14b-real-aws-report.md),
+     Stage B (docs/research/2026-11-18-t09-spike-report.md), T21 (docs/research/2026-11-19-t21-agent-run-report.md),
+     T22 (docs/research/2026-11-19-t22-compromised-agent-report.md). Rule names: infra/lib/agent-rules.ts. -->
+<link rel="stylesheet" href="figures.css">
 <style>
-  :root { --ink: #1c1d1f; --soft: #4a4d52; --rule: #b9b3a6; --paper: #f4efe4; --edge: #e9e2d3; --allow: #1f4e6e; --deny: #8c2a1f; --gold: #7f5a00; --grey: #6b6f75; }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--paper); color: var(--ink); font: 15px/1.4 "Segoe UI", system-ui, sans-serif; }
-  .wrap { width: 1180px; padding: 26px 30px 22px; }
-  h1 { font: 700 24px/1.2 Georgia, serif; margin: 0 0 4px; }
-  .sub { color: var(--soft); margin: 0 0 18px; font-size: 14px; }
-  .grid { display: grid; grid-template-columns: 1fr 300px; gap: 22px; align-items: start; }
-  .layer { display: grid; grid-template-columns: 92px 1fr; gap: 10px; align-items: stretch; }
-  .lname { font: 700 10.5px/1.25 Consolas, monospace; letter-spacing: .05em; text-transform: uppercase; color: var(--soft); border-right: 3px solid var(--ink); padding: 8px 8px 0 0; text-align: right; }
-  .lname.guide { border-right-style: dashed; border-right-color: var(--rule); }
-  .box { border: 2px solid var(--ink); background: #fff; padding: 10px 14px; position: relative; }
-  .box.guide { border: 2px dashed var(--rule); background: transparent; }
-  .box h2 { margin: 0 0 4px; font: 700 15px/1.2 Georgia, serif; padding-right: 150px; }
-  .box ul { margin: 4px 0 0; padding-left: 18px; font-size: 13px; color: var(--soft); }
-  .box li { margin: 1px 0; }
-  .rules { margin-top: 6px; font: 12px/1.2 Consolas, monospace; color: var(--ink); }
-  .rules b { background: var(--edge); padding: 1px 4px; margin-right: 3px; font-weight: 700; }
-  .tag { position: absolute; top: 9px; right: 10px; font: 700 10.5px/1 Consolas, monospace; letter-spacing: .05em; text-transform: uppercase; padding: 4px 6px; border: 1.5px solid; background: #fff; }
-  .tag.live { color: var(--allow); }
-  .tag.local { color: var(--gold); }
-  .tag.cfg { color: var(--grey); }
-  .s { font: 700 10px/1 Consolas, monospace; letter-spacing: .04em; text-transform: uppercase; padding: 1px 4px; border: 1px solid; margin-left: 4px; white-space: nowrap; }
-  .s.live { color: var(--allow); }
-  .s.cfg { color: var(--grey); }
-  .s.local { color: var(--gold); }
-  .arrow { padding: 4px 0 4px 130px; font: 12.5px/1.2 Consolas, monospace; color: var(--soft); }
-  .arrow::before { content: "↓  "; color: var(--ink); font-weight: 700; }
-  .arrow .deny { font-family: "Segoe UI", system-ui, sans-serif; }
-  .row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-  .row .box h2 { font-size: 14px; padding-right: 0; }
-  .side .box { margin-bottom: 14px; }
-  .side .box h2 { padding-right: 90px; }
-  .deny { color: var(--deny); font-weight: 600; }
-  .layers { border: 2px dashed var(--rule); background: var(--edge); padding: 10px 14px; font-size: 13px; }
-  .layers h2 { margin: 0 0 6px; font: 700 14px/1.2 Georgia, serif; }
-  .layers ol { margin: 0; padding-left: 18px; }
-  .layers li { margin: 3px 0; }
-  .foot { margin-top: 16px; font-size: 12px; color: var(--soft); }
-  .foot .s { margin-left: 0; }
+  .bands { display: grid; grid-template-columns: 128px 1fr; gap: 14px; margin-bottom: 8px; }
+  .band { font: 700 10.5px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; padding: 0 0 7px; border-bottom: 2.5px solid var(--ink); }
+  .band.guide { color: var(--grey); border-bottom-style: dashed; border-bottom-color: var(--faint); }
+  .band span { font: 12px/1.3 var(--sans); letter-spacing: 0; text-transform: none; color: var(--soft); margin-left: 8px; }
+  .flow { display: grid; grid-template-columns: 128px 156px 176px 204px 146px 226px; gap: 14px; align-items: stretch; }
+  .col { background: var(--sheet); border: 1.5px solid var(--ink); border-top: 5px solid var(--navy); padding: 10px 11px 10px; position: relative; display: flex; flex-direction: column; }
+  .col + .col::before { content: ""; position: absolute; left: -14px; top: 60px; width: 14px; border-top: 2px solid var(--ink); }
+  .col + .col::after { content: ""; position: absolute; left: -6px; top: 55px; border: 6px solid transparent; border-left: 7px solid var(--ink); }
+  .col.guide { background: transparent; border: 1.5px dashed var(--faint); border-top: 5px dashed var(--faint); }
+  .k { font: 700 9.5px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--navy); }
+  .col.guide .k { color: var(--grey); }
+  .col h2 { font: 700 15.5px/1.2 var(--serif); margin: 4px 0 6px; }
+  .col ul { margin: 0; padding-left: 15px; font-size: 12.3px; line-height: 1.38; color: var(--soft); }
+  .col li { margin: 0 0 3px; }
+  .col li b { color: var(--ink); }
+  .evs { margin-top: auto; padding-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
+  .store { border-top: 1.3px solid var(--rule); padding-top: 6px; margin-top: 6px; }
+  .store:first-of-type { border-top: 0; padding-top: 0; margin-top: 0; }
+  .store h3 { font: 700 12.5px/1.25 var(--serif); margin: 0 0 3px; }
+  .store p { margin: 0 0 3px; font-size: 11.8px; line-height: 1.35; color: var(--soft); }
+  .store .ev { margin-left: 2px; }
+  .gapnote { color: var(--rust); font-weight: 600; }
+  .lower { display: grid; grid-template-columns: 1fr 0.8fr 1.25fr; gap: 14px; margin-top: 16px; }
+  .panel { border: 1.5px solid var(--ink); background: var(--sheet); padding: 11px 14px 12px; }
+  .panel h2 { font: 700 16px/1.2 var(--serif); margin: 2px 0 6px; }
+  .panel p { margin: 0 0 5px; font-size: 12.8px; color: var(--soft); }
+  .panel.gap { border-color: var(--rust); background: var(--rust-bg); border-left: 6px solid var(--rust); }
+  .panel.gap .k { color: var(--rust); }
+  .rules { margin-top: 16px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px 18px; padding: 10px 0 0; border-top: 2px solid var(--ink); }
+  .rules div { font-size: 12.5px; color: var(--ink); display: flex; gap: 8px; align-items: baseline; }
+  .rules b { font: 700 10.5px/1 var(--mono); background: var(--panel-2); padding: 3px 5px; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Chain of Custody: which layer enforces which rule</h1>
-  <p class="sub">The model reasons about evidence. It never holds the authority to change it. Each solid layer is a separate check; R1 to R9 are the nine rules in the post.</p>
-  <div class="grid">
-    <div>
-      <div class="layer">
-        <div class="lname guide">Model<br>(guidance)</div>
-        <div class="box guide">
-          <h2>System prompt: the nine rules in plain language</h2>
-          <ul><li>Shapes how the model behaves. <b>Not counted as a control:</b> every rule below is enforced again by a layer the model cannot talk past</li></ul>
-        </div>
-      </div>
-      <div class="arrow">the model asks for a tool</div>
-      <div class="layer">
-        <div class="lname">Service<br>config</div>
-        <div class="box"><span class="tag live">verified live, T21</span>
-          <h2>AgentCore managed harness</h2>
-          <ul>
-            <li>Claude Sonnet 4.6, temperature 0, 12 iterations max, memory off</li>
-            <li><b>allowedTools: @evidence only</b>: the Gateway's five tools; no shell, files or web</li>
-            <li>Execution role: one model, one Gateway, <span class="deny">no role switching</span></li>
-          </ul>
-          <div class="rules"><b>R1</b><b>R8</b></div>
-        </div>
-      </div>
-      <div class="arrow">SigV4, signed as the harness execution role</div>
-      <div class="layer">
-        <div class="lname">Authori-<br>zation</div>
-        <div class="box"><span class="tag live">verified live, T21 and T22</span>
-          <h2>AgentCore Gateway + Cedar (ENFORCE)</h2>
-          <ul>
-            <li>Boundary: <b>only the harness role</b> (unsigned: 401; an admin role: denied, 0 tools)</li>
-            <li>One permit per tool, with argument constraints: case evidence IDs, citations, provenance</li>
-            <li>Anything else: <span class="deny">denied by default</span>. A denied call never reaches the backend, so it leaves <b>no backend audit entry</b></li>
-          </ul>
-          <div class="rules"><b>R1</b><b>R2</b><b>R7</b><b>R8</b><b>R9</b></div>
-        </div>
-      </div>
-      <div class="arrow">tool name and request ID; arguments treated as untrusted</div>
-      <div class="layer">
-        <div class="lname">Backend</div>
-        <div class="box"><span class="tag live">verified live, T21 and T22</span>
-          <h2>Tool Lambda: the domain core</h2>
-          <ul>
-            <li>Deny by default; the agent gets 4 operations: read metadata, read originals, record a finding, draft a proposal</li>
-            <li>Closed schemas; exact versions only; a content rule refuses guilt, intent or blame <i>words</i> (a carefully worded accusation passed, T22)</li>
-            <li>Identity and case from deployment configuration, never arguments; approvals and exports are human-only</li>
-            <li>Evidence returned with <code>content_is_untrusted_data: true</code>; times returned raw</li>
-            <li>Every backend decision, refusals included, goes to a durable append-only audit log</li>
-          </ul>
-          <div class="rules"><b>R2</b><b>R3</b><b>R4</b><b>R5</b><b>R6</b><b>R7</b><b>R8</b><b>R9</b></div>
-        </div>
-      </div>
-      <div class="arrow">AWS SDK calls under the Lambda's own role</div>
-      <div class="layer">
-        <div class="lname">IAM</div>
-        <div class="box"><span class="tag live">simulated on the deployed role, T22</span>
-          <h2>The tool Lambda's IAM role</h2>
-          <ul><li>DynamoDB writes only to 3 logical tables (audit, findings, proposals); <span class="deny">no evidence writes, no updates or deletes</span>, no custody-ledger writes</li></ul>
-          <div class="rules"><b>R4</b></div>
-        </div>
-      </div>
-      <div class="arrow">conditional writes, exact-version reads</div>
-      <div class="layer">
-        <div class="lname">Storage</div>
-        <div class="row">
-          <div class="box"><h2>Custody ledger (DynamoDB)</h2><ul>
-            <li>Hash-chained, append-only events <span class="s live">live T14b</span></li>
-            <li>Corrections append; originals stay</li>
-            <li>The app's own credentials <i>can</i> overwrite a raw item; the hash chain catches it <span class="s live">live T14b</span></li>
-          </ul><div class="rules"><b>R4</b></div></div>
-          <div class="box"><h2>Evidence (S3)</h2><ul>
-            <li>Create-only: overwrite refused <span class="s live">live T14b; deployed BW-003, T22</span></li>
-            <li>Bucket policy denies delete and retention changes <span class="s live">live T14b</span></li>
-            <li>Object Lock retention <span class="s cfg">configured, not exercised</span></li>
-          </ul><div class="rules"><b>R3</b><b>R4</b></div></div>
-          <div class="box"><h2>Audit archive (S3, Object Lock)</h2><ul>
-            <li>Copies every ledger event and audit record <span class="s live">live T21</span></li>
-            <li>Tamper alarm <span class="s local">tested locally</span></li>
-          </ul><div class="rules"><b>R4</b><b>R9</b></div></div>
-        </div>
-      </div>
+  <div class="kicker"><span>Chain of Custody</span><span>Enforcement</span><span>Figure 3</span></div>
+  <h1>Which layer enforces which rule</h1>
+  <div class="bar"></div>
+  <p class="dek">The model only asks. Five layers it can't talk past decide, and a person decides anything that would change the record. Each layer is tagged with the rules it enforces (R1 to R9) and with how that was checked.</p>
+
+  <div class="bands">
+    <div class="band guide">Guidance</div>
+    <div class="band">Enforcement <span>every rule is enforced in at least one of these layers, never by the prompt alone</span></div>
+  </div>
+
+  <div class="flow">
+    <div class="col guide">
+      <div class="k">Not a control</div>
+      <h2>The model and its prompt</h2>
+      <ul>
+        <li>Claude Sonnet 4.6, temperature 0</li>
+        <li>System prompt: the nine rules in plain language</li>
+        <li>Shapes what the model tries; enforced again to the right</li>
+      </ul>
+      <div class="evs"><span class="ev model">model behavior</span></div>
     </div>
-    <div class="side">
-      <div class="box"><span class="tag local">local app</span>
-        <h2>People, in the workspace</h2>
-        <ul>
-          <li>Promote or dismiss the agent's drafts (both kept)</li>
-          <li>Record custody, claims, corrections</li>
-          <li>Exports need a <b>different</b> supervisor; single use</li>
-          <li>Supervisors read the security log</li>
-        </ul>
-        <div class="rules"><b>R4</b><b>R8</b></div>
-      </div>
-      <div class="box"><span class="tag local">offline</span>
-        <h2>Independent verifier</h2>
-        <ul>
-          <li>Checks an export against a separately delivered key and ledger head</li>
-          <li>Proves integrity, not authenticity</li>
-        </ul>
-      </div>
-      <div class="layers">
-        <h2>What an attack has to get past</h2>
-        <ol>
-          <li>The harness tool allowlist</li>
-          <li>Cedar at the Gateway</li>
-          <li>The domain core's own checks</li>
-          <li>IAM on the Lambda's role</li>
-          <li>Create-only storage and the hash chain</li>
-          <li>A person, for anything that changes the record</li>
-        </ol>
-      </div>
+
+    <div class="col">
+      <div class="k">Layer 1: service config</div>
+      <h2>Managed harness</h2>
+      <ul>
+        <li><b>allowedTools: @evidence</b> only, the Gateway's five tools</li>
+        <li>No shell, files, web or memory</li>
+        <li>12 iterations max</li>
+        <li>Execution role: one model, one Gateway, no role switching</li>
+      </ul>
+      <div class="chips"><b>R1</b><b>R8</b></div>
+      <div class="evs"><span class="ev live">live, T21</span></div>
+    </div>
+
+    <div class="col">
+      <div class="k">Layer 2: authorization</div>
+      <h2>AgentCore Gateway + Cedar</h2>
+      <ul>
+        <li>Admits only the agent's role: unsigned call 401; admin role denied, 0 tools</li>
+        <li>Permits constrain arguments: case evidence IDs, citations, provenance</li>
+        <li>Everything else <span class="deny">denied by default</span>; unknown tools rejected</li>
+        <li>A denial never reaches the backend, so it leaves no backend audit entry</li>
+      </ul>
+      <div class="chips"><b>R1</b><b>R2</b><b>R7</b><b>R8</b><b>R9</b></div>
+      <div class="evs"><span class="ev live">live, T21</span><span class="ev live">live, T22</span></div>
+    </div>
+
+    <div class="col">
+      <div class="k">Layer 3: backend</div>
+      <h2>Domain core (tool Lambda)</h2>
+      <ul>
+        <li>Re-checks every call; deny by default</li>
+        <li>The agent gets 4 operations: read metadata, read originals, record a finding, draft a proposal</li>
+        <li>Closed schemas; exact registered versions only</li>
+        <li>Identity and case from configuration, never from arguments</li>
+        <li>Approvals and exports: humans only</li>
+        <li>Every refusal goes to an append-only audit log</li>
+        <li>A content rule blocks guilt and intent <i>words</i> <span class="gapnote">(gap below)</span></li>
+      </ul>
+      <div class="chips"><b>R2</b><b>R3</b><b>R4</b><b>R5</b><b>R6</b><b>R7</b><b>R8</b><b>R9</b></div>
+      <div class="evs"><span class="ev live">live, T21</span><span class="ev live">live, T22</span></div>
+    </div>
+
+    <div class="col">
+      <div class="k">Layer 4: IAM</div>
+      <h2>The tool Lambda's role</h2>
+      <ul>
+        <li>Writes only findings, drafts and audit records</li>
+        <li><span class="deny">No evidence writes</span></li>
+        <li>No ledger, approval or export writes</li>
+        <li>No updates or deletes</li>
+      </ul>
+      <div class="chips"><b>R4</b></div>
+      <div class="evs"><span class="ev live">simulated, T22</span><span class="ev tmpl">template</span></div>
+    </div>
+
+    <div class="col">
+      <div class="k">Layer 5: storage</div>
+      <div class="store"><h3>Evidence (S3)</h3>
+        <p>Create-only: overwrites refused on a test bucket <span class="ev live">T14b</span>, and on the deployed BW-003 even for the admin <span class="ev live">T22</span></p>
+        <p>Bucket policy denies deletes and retention changes <span class="ev live">T14b</span></p>
+        <p>Object Lock retention <span class="ev cfg">configured, not exercised</span></p></div>
+      <div class="store"><h3>Custody ledger (DynamoDB)</h3>
+        <p>Hash-chained and append-only. A raw overwrite with the app's own credentials is possible; the hash chain catches it <span class="ev live">T14b</span></p></div>
+      <div class="store"><h3>Audit archive (S3)</h3>
+        <p>Copies every ledger event and audit record <span class="ev live">T21</span></p>
+        <p>Tamper alarm <span class="ev local">local</span></p></div>
+      <div class="chips"><b>R3</b><b>R4</b><b>R9</b></div>
     </div>
   </div>
-  <p class="foot"><span class="s live">live</span> exercised on AWS: T21 (agent, Gateway, core, archive; November 19, 2026), T22 (compromised-agent calls with no model, IAM simulation, BW-003 overwrite probes; November 19) or T14b (storage adapters; November 18), each torn down the same day. <span class="s cfg">template-tested</span> / <span class="s cfg">configured</span> checked in the CloudFormation template or set up, not attacked live. <span class="s local">local</span> runs on the developer's machine. All case data is synthetic.</p>
+
+  <div class="lower">
+    <div class="panel">
+      <div class="k">Human approval</div>
+      <h2>A person decides</h2>
+      <p>Promotes or dismisses every agent draft; both stay on record. Promotion re-checks the draft against the real ledger: a forged correction was refused <span class="ev live">live, T22</span></p>
+      <p>Exports need a different supervisor; approvals are single-use <span class="ev local">local app</span></p>
+      <div class="chips"><b>R4</b><b>R8</b></div>
+    </div>
+    <div class="panel">
+      <div class="k">Detection</div>
+      <h2>Independent verifier</h2>
+      <p>Checks an export offline against a separately delivered key and ledger head. Proves integrity, not authenticity <span class="ev local">local</span></p>
+    </div>
+    <div class="panel gap">
+      <div class="k">Known gap</div>
+      <h2>The content rule is a word list</h2>
+      <p>In the no-model run, a carefully worded accusation with none of the blocked words passed every layer and was stored as a finding <span class="ev gap">live, T22</span></p>
+      <p>Contained, not prevented: a finding changes nothing in the record, and a person decides what it's worth.</p>
+    </div>
+  </div>
+
+  <div class="rules">
+    <div><b>R1</b>What it can touch</div><div><b>R4</b>No rewriting history</div><div><b>R7</b>Times stay as written</div>
+    <div><b>R2</b>One case only</div><div><b>R5</b>No conclusions about people</div><div><b>R8</b>Identity isn't negotiable</div>
+    <div><b>R3</b>Exact versions</div><div><b>R6</b>Evidence is data, not instructions</div><div><b>R9</b>Edge cases</div>
+  </div>
+
+  <div class="foot"><div class="legend">
+    <span><span class="ev live">live</span> on AWS: T14b storage (Nov 18), T21 agent and T22 no-model run (Nov 19), each torn down the same day</span>
+    <span><span class="ev tmpl">template</span> CloudFormation template tests</span>
+    <span><span class="ev local">local</span> developer's machine</span>
+    <span><span class="ev cfg">configured</span> set up, never exercised</span>
+    <span><span class="ev model">model behavior</span> not a control</span>
+  </div></div>
 </div>
 </body>
 </html>

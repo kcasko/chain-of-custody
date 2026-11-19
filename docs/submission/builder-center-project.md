@@ -145,7 +145,7 @@ Each of those was checked on AWS. The figure says which test covered which layer
 
 ![How the planted BW-010 instruction moves from untrusted evidence to the agent and stays data, and the layers an obedient model would still have hit](screenshots/injection-sequence.png)
 
-*S1, step by step, from the recorded run. The right-hand column says where each layer was shown: this run, the no-model run, another test stage, a template test, or locally.*
+*S1, step by step, from the recorded run; quoted text is verbatim. The strip at the bottom says where each layer was shown: this run, the no-model run, another test stage, a template test, or locally.*
 
 ## How I built it, and where the AI came in
 

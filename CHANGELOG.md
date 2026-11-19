@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-19 (figures restyled)
+
+- The three submission figures share one design system (docs/submission/figures.css): case-file masthead, serif headlines, mono for evidence text, one palette (navy verified, oxblood refused, rust uncertain or a known gap) and one set of evidence labels (live, template, local, configured, model behavior). Still HTML rendered by harness/render-architecture.mts; no generated artwork is used.
+- Timeline: two rows plus a what-if band, a prominent 16-minute gap, and positions computed from the source times by script. "Just before midnight" ends at midnight. Architecture: left-to-right flow with the model shown as guidance and five enforcement layers (harness, Gateway and Cedar, backend, IAM, storage), human approval, the verifier, the content-rule gap, and evidence labels on every claim. Injection sequence: four columns, steps numbered in transcript order, verbatim quote blocks only for verbatim text, and the backend's refusal of the first finding.
+- Corrections found while rebuilding: Cedar has seven permits for five tools (the old figure said five permits); T14b storage results came from a separate test bucket, not from BW-003 or the admin role, so the figures now attribute those to T22.
+- The AI-generated visual concepts in docs/submission/visual-concepts/ were reviewed for ideas only and are not tracked or used.
+
 ## 2026-11-19 (final editorial pass on the Builder Center draft)
 
 - Added an "At a glance" summary under the disclaimer (the agent, the rules, both stress tests, what broke, the code) and a short section on usefulness, "Why this matters outside a fictional fire", checked against the four judging criteria on the official event page (each 25%).

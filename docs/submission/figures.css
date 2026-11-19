@@ -1,0 +1,68 @@
+/* Shared design system for the three submission figures
+   (timeline.html, injection-sequence.html, architecture.html).
+   Rendered to PNG by harness/render-architecture.mts. Local fonts only, no network.
+
+   Palette
+     ink / navy   structure, verified results
+     oxblood      refusals and denials
+     rust         uncertainty, hypotheticals, known gaps
+     grey         configured or template-only claims
+     amber text   local-only claims
+   Evidence labels (.ev) say how a claim was checked: live on AWS, template, local,
+   or configured. Model behavior is always shown dashed: guidance, never a control. */
+
+:root {
+  --paper: #f7f5f0;
+  --sheet: #fffdf9;
+  --panel: #edf0f4;
+  --panel-2: #e3e8ee;
+  --ink: #18202c;
+  --soft: #4a5260;
+  --faint: #7b828d;
+  --rule: #cfd4db;
+  --navy: #1d3a5c;
+  --navy-bg: #e6edf5;
+  --oxblood: #962b20;
+  --oxblood-bg: #f6e5e1;
+  --rust: #b4561a;
+  --rust-bg: #fbeee2;
+  --grey: #6a717c;
+  --amber: #8a5a00;
+  --serif: Georgia, "Times New Roman", serif;
+  --sans: "Segoe UI", system-ui, sans-serif;
+  --mono: Consolas, "Cascadia Mono", monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 14px/1.45 var(--sans); }
+.wrap { width: 1180px; padding: 30px 34px 22px; background: var(--paper); }
+
+/* Masthead */
+.kicker { font: 700 11px/1 var(--sans); letter-spacing: .18em; text-transform: uppercase; color: var(--navy); display: flex; gap: 14px; align-items: center; }
+.kicker span + span { border-left: 1.5px solid var(--rule); padding-left: 14px; color: var(--faint); }
+h1 { font: 700 34px/1.12 var(--serif); margin: 12px 0 0; letter-spacing: -.01em; }
+.bar { width: 64px; height: 4px; background: var(--rust); margin: 12px 0 12px; }
+.dek { font: 15px/1.45 var(--serif); color: var(--soft); margin: 0 0 20px; max-width: 980px; }
+
+/* Shared parts */
+.mono { font-family: var(--mono); }
+.ev { display: inline-block; font: 700 10px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; padding: 3px 6px 3px; border: 1.3px solid; white-space: nowrap; vertical-align: 1px; }
+.ev.live { color: var(--navy); background: var(--navy-bg); }
+.ev.tmpl, .ev.cfg { color: var(--grey); background: transparent; }
+.ev.cfg { border-style: dashed; }
+.ev.local { color: var(--amber); background: #fbf3e2; }
+.ev.model { color: var(--grey); border-style: dashed; background: transparent; }
+.ev.gap { color: var(--rust); background: var(--rust-bg); }
+.chips { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
+.chips b { font: 700 10.5px/1 var(--mono); background: var(--panel-2); color: var(--ink); padding: 3px 5px; }
+.num { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; background: var(--ink); color: #fff; font: 700 12px/1 var(--mono); flex: none; }
+.deny { color: var(--oxblood); font-weight: 600; }
+.allow { color: var(--navy); font-weight: 600; }
+.quote { font: 12.5px/1.5 var(--mono); background: var(--sheet); border: 1.3px solid var(--rule); border-left: 4px solid var(--ink); padding: 8px 10px; white-space: pre-wrap; margin: 6px 0 0; }
+.quote.untrusted { border-left-color: var(--oxblood); }
+.quote .planted { color: var(--oxblood); font-weight: 700; }
+.quote .lbl { color: var(--faint); }
+.src { display: block; font: 700 9.5px/1.2 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--faint); margin-top: 8px; }
+
+/* Footer */
+.foot { margin-top: 18px; padding-top: 10px; border-top: 1.5px solid var(--rule); font-size: 11.5px; color: var(--soft); display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+.foot .legend { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }

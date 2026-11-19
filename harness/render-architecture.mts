@@ -1,5 +1,5 @@
 // Renders the submission figures from local HTML to PNG with Playwright.
-// Local files only, no network.
+// Local files only, no network. All three share docs/submission/figures.css.
 //
 //   docs/submission/architecture.html        -> screenshots/architecture.png
 //   docs/submission/timeline.html            -> screenshots/evidence-timeline.png
