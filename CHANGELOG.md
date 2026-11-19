@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-19 (published and submitted)
+
+- Builder Center project published, which on Builder Center is also the hackathon submission (approved by Keith): https://builder.aws.com/project/3MKhHw7OuyENmwH0OzMomYMlRst/chain-of-custody-the-blackwater-evidence. Verified signed in and signed out: title, 16 sections, all four figures with alt text and captions, three tables, nine repository links; listed on the hackathon Projects tab.
+- docs/submission/PUBLISHING.md records the URL and the editor limits found during publication.
+
 ## 2026-11-19 (Builder Center draft prepared)
 
 - Bare URLs in the Builder Center draft became Markdown links (Builder Center does not auto-link them): the At a glance repository line, the transcripts line and every entry under Links, plus a link to the screenshot in the repository.

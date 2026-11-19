@@ -1,4 +1,8 @@
-# Publication runbook (prepared, nothing published)
+# Publication runbook
+
+**Status, November 19, 2026:** the repository is public (step 1), and the Builder Center project is published and submitted to the hackathon (steps 2 and 3, which are one action on Builder Center: publishing a hackathon project is the submission). Public URL: https://builder.aws.com/project/3MKhHw7OuyENmwH0OzMomYMlRst/chain-of-custody-the-blackwater-evidence. The project stays editable until December 2, 11:59 PM PT.
+
+Builder Center notes for future edits: the body limit is 40,000 characters as the editor counts it. Opening the editor in rich mode re-serializes Markdown tables with padded columns (32,236 characters became 40,111), so edit in Markdown mode and publish from the editor's own Publish button. Images are `<Image url="..." alt="..." caption="..." />` tags pointing at assets uploaded through the editor's image dialog. Bare URLs are not auto-linked.
 
 Three separate steps, each needing Keith's explicit approval at the time: (1) make the repository public, (2) publish the Builder Center project, (3) submit it to the hackathon. Deadline: **December 2, 2026, 11:59 PM PT.**
 
