@@ -11,8 +11,8 @@
 // different marker ("[n lines omitted]") so nothing looks like output that
 // wasn't there. With --clip N, a kept line longer than N characters is cut at the last
 // space before N and ends in a marker giving the number of characters omitted. The bar names
-// the full transcript file. Excerpts use the narrow 600 px canvas of the article
-// figures, with type sized to stay readable on a phone.
+// the full transcript file. Excerpts use the compact 900 px canvas of the article
+// figures (shown 790 px wide on Builder Center).
 
 import { readFileSync } from 'node:fs';
 import { basename } from 'node:path';
@@ -61,17 +61,17 @@ if (spec) {
   flush();
   body = out.join('\n');
   bar = barText ?? `Excerpt of the real terminal output: npm run agent:ask on the AgentCore managed harness. Lines verbatim; omissions marked. Full transcript: docs/research/t21-evidence/${basename(input)}`;
-  fontSize = 18;
-  width = 600;
+  fontSize = 22;
+  width = 900;
 } else {
   body = escape(text);
 }
 
 const html = `<!doctype html><meta charset="utf-8"><style>
   body { margin: 0; background: #1b1d1f; }
-  .bar { background: #2b2e31; color: #b9bcbf; font: ${spec ? 14 : 13}px/1.4 system-ui, sans-serif; padding: 10px 14px; }
-  pre { margin: 0; padding: ${spec ? "16px 18px 20px" : "18px 22px 24px"}; color: #e6e6e6; font: ${fontSize}px/1.55 Consolas, "Cascadia Mono", monospace; white-space: pre-wrap; word-break: break-word; }
-  .gap { display: inline-block; color: #e3a23b; font: italic ${spec ? 15 : 13}px/1.4 system-ui, sans-serif; border: 1px dashed #6b5a35; padding: 1px 8px; margin: 2px 0; }
+  .bar { background: #2b2e31; color: #b9bcbf; font: ${spec ? 17 : 13}px/1.4 system-ui, sans-serif; padding: 10px 14px; }
+  pre { margin: 0; padding: ${spec ? "18px 24px 22px" : "18px 22px 24px"}; color: #e6e6e6; font: ${fontSize}px/1.55 Consolas, "Cascadia Mono", monospace; white-space: pre-wrap; word-break: break-word; }
+  .gap { display: inline-block; color: #e3a23b; font: italic ${spec ? 18 : 13}px/1.4 system-ui, sans-serif; border: 1px dashed #6b5a35; padding: 1px 8px; margin: 2px 0; }
 </style><div class="bar">${escape(bar)}</div><pre>${body}</pre>`;
 const browser = await chromium.launch();
 try {

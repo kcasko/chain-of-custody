@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-19 (accuracy corrections and compact article figures, draft)
+
+- Article: tool requests meet the layers in order and stop at the first denial; S2 to S6 left the downstream controls in place but unexercised; rule 5 is now "partly enforced", with the incomplete word list named and rule 4 as the containment.
+- Compact figures on a 900 px canvas (figures.css .wrap.compact, replacing the experimental 600 px canvas from 09813c1), sized for Builder Center's measured 790 px image width: a one-axis timeline (23:44, the 23:58 what-if, "just before midnight", 00:14, and the centered 16-minute gap); a "Who can change the record" overview (agent, four controls with their verification labels, the protected record, human authority); the injection in three moments (the plant, the answer, the protections). Each fits one desktop screen (604 to 645 px tall).
+- Two excerpts at 22 px: the agent run (one 1,814-character line cut at 230 characters with a marker) and S2 (prompt and reply). The Gateway probe excerpt is no longer used in the article; the unedited screenshot, full transcripts and detailed figures stay in the repository.
+- Local draft only. The published Builder Center article is unchanged.
+
 ## 2026-11-19 (approved article restructure, draft)
 
 - builder-center-project.md rewritten to the approved structure: five connected sections (The missing hour; An investigator that can't rewrite history; The invisible editor; What if the agent goes rogue?; The case remains open), about 2,700 words of body prose. The nine rules keep a one-line "Enforced by" each; the five layers are explained in text; the Gateway probe screenshot is replaced by a row in the verification table (401 and admin denial) with links to the T21 report and probe output; all failures, limitations and the unsupported accusation are kept.

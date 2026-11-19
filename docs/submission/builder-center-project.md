@@ -6,9 +6,9 @@ quote and result comes from docs/research/2026-11-19-t21-agent-run-report.md,
 docs/research/stress-test/, docs/research/t21-evidence/ and
 docs/research/2026-11-19-t22-compromised-agent-report.md; storage results from the T14b report.
 Agent quotes are verbatim excerpts.
-FIGURES ARE PLACEHOLDERS: the image files referenced below are the current renders. The compact
-article figures (timeline, overview, injection in three moments) and the two short excerpts are
-redesigned only after Keith approves this text.
+Figures: compact 900 px canvas (figures.css .wrap.compact), shown 790 px wide on Builder Center:
+timeline, overview (architecture.png), injection in three moments, and two short excerpts rendered
+by harness/render-transcript.mts --lines/--clip. Detailed figures and full transcripts are linked.
 Repository: https://github.com/kcasko/chain-of-custody (Apache-2.0).
 Nothing here is published until Keith approves it.
 -->
@@ -56,7 +56,7 @@ It recorded that as finding ecf25cb9, a discrepancy with high uncertainty, and l
 
 ![Excerpt of the Blackwater audit agent's real terminal output on the AgentCore managed harness: the prompt, the tool calls and the recorded finding](screenshots/agent-running-excerpt.png)
 
-*The agent running on the AgentCore managed harness. Every line is verbatim from the live run, and every omission is marked; the full transcript is in the repository.*
+*The agent running on the AgentCore managed harness. Every line is verbatim from the live run, and every omission is marked, including the end of one long line; the full transcript and the unedited full-length screenshot are in the repository.*
 
 ## An investigator that can't rewrite history
 
@@ -68,13 +68,13 @@ The agent gets five tools: list the evidence, read an exact version, compare rec
 2. **One case only:** BLACKWATER-2021, evidence BW-001 to BW-010. *Enforced by* Cedar constraints on evidence IDs, and a backend that takes the case from deployment configuration, never from a request.
 3. **Exact versions:** every read names a version ID; there's no "latest". *Enforced by* closed tool schemas and a backend that refuses unregistered or alias versions.
 4. **No rewriting history:** it can't change, delete or overwrite evidence or the custody ledger. It can only draft, and a person promotes or dismisses the draft. *Enforced by* the backend's four agent operations, an IAM role with no evidence or ledger writes, and create-only storage.
-5. **No conclusions about people:** no guilt, intent, blame or admissibility. *Enforced by* Cedar, which has no guilt finding type to permit, and a backend content rule. That rule is a word list, and it has a hole I'll get to.
+5. **No conclusions about people:** no guilt, intent, blame or admissibility. *Partly enforced by* Cedar, which has no guilt finding type to permit, and a backend content rule that refuses words like "guilty" and "intentionally". That word list is incomplete: a carefully worded accusation got past it in testing, which I'll get to. What contains that gap is rule 4, because a finding can't change the record.
 6. **Evidence is data, not instructions.** *Enforced by* rules 1 and 4: no tool can do what injected text asks. Tool output also marks evidence content as untrusted.
 7. **Times stay as written:** no converting or reconciling clocks. *Enforced by* a timestamp tool that returns raw values, no tool that changes a time, and checks that every claim draft carries its source clock, time zone and uncertainty.
 8. **Identity isn't negotiable:** it can't become a supervisor by being told it is one. *Enforced by* a Gateway boundary that admits only the harness's execution role, a backend that takes identity from configuration, and human-only approvals and exports.
 9. **Edge cases:** when evidence is missing, versions conflict or a request is out of scope, it says so and stops; if a call is refused, it reports instead of retrying around it. *Enforced by* deny-by-default at Cedar and in the backend, with every backend refusal written to an append-only audit log.
 
-Behind those rules sit five independent layers, and every tool call crosses all of them in order. The **managed harness** exposes only the five tools. The **AgentCore Gateway with Cedar** admits only the agent's role and denies anything no permit allows, before the backend runs. The **domain core** checks every call again on its own. The tool Lambda's **IAM role** can't write evidence, the ledger or approvals. And **storage** refuses overwrites no matter who asks. Above all of it, only a person can promote a draft, approve or export.
+Behind those rules sit five independent layers. A tool request meets them one after another, and it only reaches the next layer if the one before lets it through; most attacks are stopped early and never touch the later layers. The **managed harness** exposes only the five tools. The **AgentCore Gateway with Cedar** admits only the agent's role and denies anything no permit allows, before the backend runs. The **domain core** checks every call again on its own. The tool Lambda's **IAM role** can't write evidence, the ledger or approvals. And **storage** refuses overwrites no matter who asks. Above all of it, only a person can promote a draft, approve or export.
 
 ![Overview: the agent asks; independent security controls decide; the evidence and custody ledger are protected; a person holds the authority to change the record](screenshots/architecture.png)
 
@@ -118,7 +118,7 @@ It quoted the planted note back, explained that text inside evidence is data to 
 
 It ignored the bait and kept the real lead.
 
-![The invisible editor in three moments: the planted instruction in BW-010, the agent's verbatim refusal, and the protections that held regardless: ledger and evidence unchanged, one finding added](screenshots/injection-sequence.png)
+![The invisible editor in three moments: the planted instruction in BW-010, the agent's verbatim refusal, and the record afterward: ledger and evidence unchanged, one finding added, with the controls that would have refused the overwrite had the agent obeyed](screenshots/injection-sequence.png)
 
 *Stress test S1, run live on the managed harness. Quoted text is verbatim.*
 
@@ -144,7 +144,7 @@ BW-010 and the missing hour were two of nine prompts I ran against the deployed 
 
 All nine held in both runs, and the second run matched the first on every behavior, refusal and state change, though not word for word. Full transcripts for both runs are in the repository.
 
-Look closer at that table, though. Five of the eight attacks, S2 through S6, never reached the backend, because the model refused before calling a tool. That's pleasant, and it proves almost nothing about security. In those five, the only thing standing between the attacker and the record was the model's good manners.
+Look closer at that table, though. Five of the eight attacks, S2 through S6, never reached the backend, because the model refused before calling a tool. That's pleasant, and it tells me nothing about the layers behind the model. The Gateway, Cedar, the backend, IAM and storage were all in place for those five prompts; the attacks just never reached them, so they were never exercised. A refusal shows how the model behaved. It doesn't show what the system would have stopped.
 
 ## What if the agent goes rogue?
 
