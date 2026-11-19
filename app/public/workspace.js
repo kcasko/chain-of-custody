@@ -406,10 +406,38 @@ function download() {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+// ---- Security log ------------------------------------------------------------
+
+let auditEvents = [];
+function renderAudit() {
+  const problemsOnly = $('audit-problems').checked;
+  const shown = auditEvents.filter((e) => !problemsOnly || e.outcome === 'denied' || e.outcome === 'failed');
+  $('audit-rows').replaceChildren(...(shown.length ? shown.map((e) => el('tr', { className: `ws-audit--${e.outcome}` }, [
+    el('td', { attrs: { 'data-label': 'When' } }, [el('time', { text: new Date(e.at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'medium' }), attrs: { datetime: e.at, title: e.at } })]),
+    el('td', { text: e.principal, attrs: { 'data-label': 'Who' } }),
+    el('td', { text: e.operation.replace(/_/g, ' '), attrs: { 'data-label': 'Operation' } }),
+    el('td', { className: e.outcome === 'denied' || e.outcome === 'failed' ? 'verdict--refused' : e.outcome === 'completed' ? 'verdict--allowed' : 'verdict--na', text: e.outcome, attrs: { 'data-label': 'Outcome' } }),
+    el('td', { className: 'hash', text: e.code ?? '', attrs: { 'data-label': 'Code' } }),
+  ])) : [el('tr', {}, [el('td', { text: 'No entries match.', attrs: { colspan: '5' } })])]));
+}
+
+async function loadAudit() {
+  const r = await api('GET', '/api/audit');
+  if (!r.ok) {
+    auditEvents = [];
+    $('audit-count').textContent = '';
+    $('audit-rows').replaceChildren(el('tr', {}, [el('td', { text: `Not visible: ${r.code}`, attrs: { colspan: '5' } })]));
+    return;
+  }
+  auditEvents = r.value.events;
+  $('audit-count').textContent = r.value.truncated ? `Showing the newest ${r.value.events.length} of ${r.value.total} entries.` : `${r.value.total} entries.`;
+  renderAudit();
+}
+
 // ---- Tabs, persona, startup ------------------------------------------------------
 
-const TABS = ['evidence', 'timeline', 'findings', 'exports'];
-const LOADERS = { evidence: loadEvidence, timeline: loadTimeline, findings: () => Promise.all([loadFindings(), loadDrafts()]), exports: loadApprovals };
+const TABS = ['evidence', 'timeline', 'findings', 'exports', 'audit'];
+const LOADERS = { evidence: loadEvidence, timeline: loadTimeline, findings: () => Promise.all([loadFindings(), loadDrafts()]), exports: loadApprovals, audit: loadAudit };
 let current = 'evidence';
 
 function selectTab(name, focus = false) {
@@ -472,6 +500,7 @@ async function start() {
   $('transfer-form').addEventListener('submit', submitTransfer);
   $('finding-form').addEventListener('submit', submitFinding);
   $('claim-form').addEventListener('submit', submitClaim);
+  $('audit-problems').addEventListener('change', renderAudit);
   $('request-form').addEventListener('submit', submitRequest);
   $('agent-run').addEventListener('click', runAgent);
   $('download').addEventListener('click', download);

@@ -206,6 +206,40 @@ test('a person outside the case sees nothing but the refusal', async ({ page }) 
   await expect(page.locator('#drafts')).toHaveText('Not visible: DENIED_NOT_MEMBER');
   await openTab(page, 'Approvals & export');
   await expect(page.locator('#approvals')).toHaveText('Not visible: DENIED_NOT_MEMBER');
+  await openTab(page, 'Security log');
+  await expect(page.locator('#audit-rows')).toHaveText('Not visible: DENIED_NOT_MEMBER');
+});
+
+test('the security log: supervisors see refusals by others and their own read; other roles are refused', async ({ page }) => {
+  // An auditor tries to move evidence and is refused; then tries to open the log.
+  await actAs(page, 'auditor');
+  await page.getByRole('button', { name: 'Read BW-007 original' }).click();
+  await transferForm(page).getByLabel('From', { exact: true }).fill('a');
+  await transferForm(page).getByLabel('To', { exact: true }).fill('b');
+  await transferForm(page).getByLabel('Reason', { exact: true }).fill('c');
+  await page.getByRole('button', { name: 'Append transfer to the ledger' }).click();
+  await expectRefused(page, 'DENIED_ROLE');
+  await openTab(page, 'Security log');
+  await expect(page.locator('#audit-rows')).toHaveText('Not visible: DENIED_ROLE');
+
+  await actAs(page, 'supervisor');
+  const rows = page.locator('#audit-rows tr');
+  await expect(rows.first()).toContainText('human:elena.ward');
+  await expect(rows.first()).toContainText('read audit log');
+  await expect(rows.first()).toContainText('attempted');
+  await expect(page.locator('#audit-count')).toContainText('entries');
+  const refusedTransfer = rows.filter({ hasText: 'human:mara.voss' }).filter({ hasText: 'add custody event' });
+  await expect(refusedTransfer).toHaveCount(1);
+  await expect(refusedTransfer).toContainText('DENIED_ROLE');
+  await expect(rows.filter({ hasText: 'human:mara.voss' }).filter({ hasText: 'read audit log' })).toContainText('DENIED_ROLE');
+
+  // The filter hides everything that was allowed.
+  await page.getByLabel('Refusals and failures only').check();
+  const outcomes = await page.locator('#audit-rows td[data-label="Outcome"]').allTextContents();
+  expect(outcomes.length).toBeGreaterThanOrEqual(2);
+  expect(new Set(outcomes)).toEqual(new Set(['denied']));
+  await page.getByLabel('Refusals and failures only').uncheck();
+  await expect(rows.filter({ hasText: 'completed' }).first()).toBeVisible();
 });
 
 test('the reader shows exactly the bytes the core returned for every version', async ({ page }) => {
@@ -260,11 +294,11 @@ test('tabs work from the keyboard', async ({ page }) => {
   await expect(page.getByRole('tab', { name: 'Custody timeline' })).toBeFocused();
   await expect(page.getByRole('tabpanel', { name: 'Custody timeline' })).toBeVisible();
   await page.keyboard.press('End');
-  await expect(page.getByRole('tab', { name: 'Approvals & export' })).toBeFocused();
+  await expect(page.getByRole('tab', { name: 'Security log' })).toBeFocused();
   await page.keyboard.press('ArrowRight');
   await expect(evidence).toBeFocused();
   await page.keyboard.press('ArrowLeft');
-  await expect(page.getByRole('tab', { name: 'Approvals & export' })).toHaveAttribute('aria-selected', 'true');
+  await expect(page.getByRole('tab', { name: 'Security log' })).toHaveAttribute('aria-selected', 'true');
   await page.keyboard.press('Home');
   await expect(evidence).toHaveAttribute('aria-selected', 'true');
   await expect(page.getByRole('tabpanel', { name: 'Evidence' })).toBeVisible();
@@ -272,7 +306,7 @@ test('tabs work from the keyboard', async ({ page }) => {
 
 test('phone width: no sideways scrolling and every tab is reachable', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
-  for (const name of ['Evidence', 'Custody timeline', 'Findings & drafts', 'Approvals & export']) {
+  for (const name of ['Evidence', 'Custody timeline', 'Findings & drafts', 'Approvals & export', 'Security log']) {
     await openTab(page, name);
     const tab = page.getByRole('tab', { name });
     await expect(tab).toBeInViewport();

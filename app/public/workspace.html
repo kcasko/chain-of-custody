@@ -44,6 +44,7 @@
       <button type="button" role="tab" id="tab-timeline" aria-controls="panel-timeline" aria-selected="false" tabindex="-1">Custody timeline</button>
       <button type="button" role="tab" id="tab-findings" aria-controls="panel-findings" aria-selected="false" tabindex="-1">Findings &amp; drafts</button>
       <button type="button" role="tab" id="tab-exports" aria-controls="panel-exports" aria-selected="false" tabindex="-1">Approvals &amp; export</button>
+      <button type="button" role="tab" id="tab-audit" aria-controls="panel-audit" aria-selected="false" tabindex="-1">Security log</button>
     </div>
 
     <div class="ws-notice" id="notice" role="status" aria-live="polite"></div>
@@ -152,6 +153,23 @@
         <ul id="verify-findings"></ul>
         <button type="button" id="download" class="rerun">Download package (JSON)</button>
       </article>
+    </section>
+    <section class="ws-panel" role="tabpanel" id="panel-audit" aria-labelledby="tab-audit" hidden>
+      <div class="ws-agent">
+        <div>
+          <h2>Security log</h2>
+          <p class="ws-hint">Every attempt to read or change this case, including refusals, separate from the custody ledger. Supervisors only. Reading this log is itself recorded, so your own read is the newest entry.</p>
+        </div>
+        <label class="ws-filter"><input type="checkbox" id="audit-problems"> Refusals and failures only</label>
+      </div>
+      <p class="ws-audit-count" id="audit-count"></p>
+      <div class="table-wrap">
+        <table class="docket ws-audit">
+          <caption class="visually-hidden">Security log entries, newest first</caption>
+          <thead><tr><th scope="col">When</th><th scope="col">Who</th><th scope="col">Operation</th><th scope="col">Outcome</th><th scope="col">Code</th></tr></thead>
+          <tbody id="audit-rows"></tbody>
+        </table>
+      </div>
     </section>
   </main>
 </body>

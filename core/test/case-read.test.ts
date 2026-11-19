@@ -97,3 +97,50 @@ test('approvals list shows this case only, with status changes', async () => {
   assert.ok(r.ok);
   assert.deepEqual(r.value.map((a) => [a.requester, a.status, a.approver]), [[USERS.investigator, 'approved', USERS.supervisor]]);
 });
+
+test('audit log: supervisors only; the agent, other roles, outsiders and anonymous callers are refused', async () => {
+  const { w } = await world();
+  const cases: Array<[ReturnType<typeof human>, string]> = [
+    [human(USERS.investigator), 'DENIED_ROLE'], [human(USERS.auditor), 'DENIED_ROLE'],
+    [agent(), 'DENIED_AGENT'], [human(USERS.outsider), 'DENIED_NOT_MEMBER'], [anonymous(), 'DENIED_NO_IDENTITY'],
+  ];
+  for (const [ctx, code] of cases) {
+    const r = await w.caseRead.auditLog(ctx, CASE);
+    assert.equal(!r.ok && r.code, code, code);
+  }
+  const ok = await w.caseRead.auditLog(human(USERS.supervisor), CASE);
+  assert.ok(ok.ok, JSON.stringify(ok));
+});
+
+test('audit log: this case only, newest first, refusals included, and the read itself is the newest entry', async () => {
+  const { w } = await world();
+  await w.caseRead.timeline(human(USERS.investigator), CASE);
+  await w.caseRead.timeline(human(USERS.outsider), CASE); // denied, filed under this case
+  await w.caseRead.timeline(human(USERS.supervisor), OTHER_CASE); // denied, filed under the other case
+  await w.caseRead.auditLog(human(USERS.auditor), CASE); // denied read of the log, recorded too
+  const r = await w.caseRead.auditLog(human(USERS.supervisor), CASE);
+  assert.ok(r.ok);
+  const ev = r.value.events;
+  assert.ok(ev.every((e) => e.caseId === CASE), 'no other case and no (unknown) records');
+  assert.deepEqual([ev[0]!.operation, ev[0]!.outcome, ev[0]!.principal], ['read_audit_log', 'attempted', `human:${USERS.supervisor}`]);
+  assert.deepEqual([ev[1]!.operation, ev[1]!.outcome, ev[1]!.code, ev[1]!.principal], ['read_audit_log', 'denied', 'DENIED_ROLE', `human:${USERS.auditor}`]);
+  assert.ok(ev.some((e) => e.principal === `human:${USERS.outsider}` && e.outcome === 'denied' && e.code === 'DENIED_NOT_MEMBER'));
+  for (let i = 1; i < ev.length; i++) assert.ok(ev[i - 1]!.at >= ev[i]!.at, 'newest first');
+  assert.equal(r.value.total, w.audit.events.filter((e) => e.caseId === CASE).length - 1, 'total counted before this read completed');
+  assert.equal(r.value.truncated, r.value.total > 200);
+  assert.equal(w.audit.events.at(-1)!.operation, 'read_audit_log');
+  assert.equal(w.audit.events.at(-1)!.outcome, 'completed');
+});
+
+test('audit log: keeps the newest 200 and says it was cut; an unavailable log fails closed', async () => {
+  const { w } = await world();
+  for (let i = 0; i < 260; i++) await w.caseRead.proposals(human(USERS.auditor), CASE);
+  const r = await w.caseRead.auditLog(human(USERS.supervisor), CASE);
+  assert.ok(r.ok);
+  assert.equal(r.value.events.length, 200);
+  assert.equal(r.value.truncated, true);
+  assert.ok(r.value.total > 520);
+  w.audit.available = false;
+  const down = await w.caseRead.auditLog(human(USERS.supervisor), CASE);
+  assert.equal(!down.ok && down.code, 'DENIED_AUDIT_UNAVAILABLE');
+});

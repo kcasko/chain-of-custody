@@ -2,8 +2,10 @@
 // with a chain self-check, agent drafts, and export approvals. Every read goes
 // through `guarded` (authorized as read_metadata, audited) and is humans only:
 // these are operator views, and the agent's surface stays the five tools.
+// The security audit log is readable only by supervisors (read_audit_log), and
+// reading it is itself audited.
 
-import { guarded, type GuardDeps } from './audit.ts';
+import { guarded, type GuardDeps, type SecurityEvent } from './audit.ts';
 import type { Approval } from './approvals.ts';
 import type { CheckpointAuthority } from './checkpoint.ts';
 import { ZERO_HASH } from './crypto.ts';
@@ -19,6 +21,15 @@ export interface ChainCheck {
   readonly length: number;
   /** First problems found, in sequence order; empty when intact. */
   readonly problems: ReadonlyArray<{ sequence: number; problem: 'SEQUENCE_GAP' | 'PREV_HASH_MISMATCH' | 'EVENT_HASH_MISMATCH' | 'HEAD_MISMATCH' }>;
+}
+
+export const AUDIT_VIEW_LIMIT = 200;
+
+export interface AuditView {
+  /** Newest first. Includes the 'attempted' record of this read itself. */
+  readonly events: readonly SecurityEvent[];
+  readonly total: number;
+  readonly truncated: boolean;
 }
 
 export interface Timeline {
@@ -78,6 +89,17 @@ export class CaseReadService {
       if (d.kind !== 'human') return fail('DENIED_AGENT', 'approvals are an operator view');
       const rows = await this.#deps.store.list<Approval>(TABLES.approvals, '');
       return ok(rows.map((r) => r.item.value).filter((a) => a.caseId === caseId).sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.approvalId.localeCompare(b.approvalId)));
+    });
+  }
+
+  // Events recorded under this case ID. Records made before any case was known
+  // (anonymous calls, lookups of IDs that do not exist) are filed under
+  // '(unknown)' and are not shown here.
+  async auditLog(ctx: RequestContext, caseId: string): Promise<Result<AuditView>> {
+    return guarded(this.#deps, ctx, 'read_audit_log', caseId, async (d) => {
+      if (d.kind !== 'human') return fail('DENIED_AGENT', 'the audit log is an operator view');
+      const { events, total } = await this.#deps.audit.forCase(caseId, AUDIT_VIEW_LIMIT);
+      return ok({ events, total, truncated: total > events.length });
     });
   }
 }

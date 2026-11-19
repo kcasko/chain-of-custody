@@ -22,6 +22,8 @@ export interface SecurityEvent {
 
 export interface SecurityAuditLog {
   append(event: SecurityEvent): Promise<void>;
+  /** The newest `limit` events recorded under this case ID, newest first, and the case's total. */
+  forCase(caseId: string, limit: number): Promise<{ events: SecurityEvent[]; total: number }>;
 }
 
 export class MemoryAuditLog implements SecurityAuditLog {
@@ -30,6 +32,11 @@ export class MemoryAuditLog implements SecurityAuditLog {
   async append(event: SecurityEvent): Promise<void> {
     if (!this.available) throw new Error('audit store unavailable');
     this.events.push(Object.freeze({ ...event }));
+  }
+  async forCase(caseId: string, limit: number): Promise<{ events: SecurityEvent[]; total: number }> {
+    if (!this.available) throw new Error('audit store unavailable');
+    const all = this.events.filter((e) => e.caseId === caseId);
+    return { events: all.slice(-limit).reverse(), total: all.length };
   }
 }
 

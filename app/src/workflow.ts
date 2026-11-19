@@ -126,6 +126,7 @@ export class Workflow {
       case 'GET /api/findings': return reply(await d.findings.list(this.#ctx(userId), c));
       case 'GET /api/proposals': return reply(await d.caseRead.proposals(this.#ctx(userId), c));
       case 'GET /api/approvals': return reply(await d.caseRead.approvals(this.#ctx(userId), c));
+      case 'GET /api/audit': return reply(await d.caseRead.auditLog(this.#ctx(userId), c));
       case 'GET /api/quarantine': return reply(await d.evidence.quarantined(this.#ctx(userId), c));
 
       case 'POST /api/custody/transfer': return this.#ledgerWrite(await d.custody.recordTransfer(this.#ctx(userId), c, body));

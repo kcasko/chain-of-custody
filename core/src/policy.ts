@@ -28,6 +28,8 @@ export const HUMAN_MATRIX: Readonly<Record<Operation, readonly Role[]>> = {
   // Any case member may set aside an agent draft; a reason is required, and the
   // draft stays visible as dismissed (ADR 0009).
   dismiss_proposal: ALL,
+  // Who tried what, including refusals: a supervisor's oversight view (ADR 0009).
+  read_audit_log: ['supervisor'],
   overwrite_original: [],
   delete_history: [],
   grant_role: [], // denied until membership changes get their own policy and audit contract

@@ -16,7 +16,7 @@ const ROLE_USER: Record<Role, string> = { investigator: USERS.investigator, audi
 const EXPECTED: Record<Role, Operation[]> = {
   investigator: ['read_metadata', 'read_original', 'register_evidence', 'register_derivative', 'add_custody_event', 'record_historical_assertion', 'append_correction', 'record_finding', 'request_export', 'revoke_approval', 'promote_proposal', 'dismiss_proposal'],
   auditor: ['read_metadata', 'read_original', 'record_historical_assertion', 'append_correction', 'record_finding', 'request_export', 'revoke_approval', 'promote_proposal', 'dismiss_proposal'],
-  supervisor: ['read_metadata', 'read_original', 'register_evidence', 'register_derivative', 'add_custody_event', 'record_historical_assertion', 'append_correction', 'record_finding', 'request_export', 'approve_request', 'revoke_approval', 'promote_proposal', 'dismiss_proposal'],
+  supervisor: ['read_metadata', 'read_original', 'register_evidence', 'register_derivative', 'add_custody_event', 'record_historical_assertion', 'append_correction', 'record_finding', 'request_export', 'approve_request', 'revoke_approval', 'promote_proposal', 'dismiss_proposal', 'read_audit_log'],
 };
 
 test('every role x operation decision matches the written matrix', async () => {

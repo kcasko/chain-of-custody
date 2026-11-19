@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-18 (T18: security log view)
+
+- Core: `read_audit_log` (supervisors only) and `CaseReadService.auditLog`: the case's security events, newest 200 first, with total and truncation flag. The read is itself audited. The audit port gains `forCase`; the T16 durable adapter must implement it.
+- Workspace: fifth tab "Security log" with a refusals-only filter; other roles see the refusal. API `GET /api/audit`.
+- Tests: 3 core, 1 API, 1 browser; mutation-checked. `npm test`: 380/380; `npm run test:e2e`: 10/10; typecheck clean. All T18 items are done.
+
 ## 2026-11-18 (T18: historical claim form)
 
 - Workspace: "Record a historical claim" above the custody timeline. Times, clock, zone and uncertainty are kept as typed (no date picker, no conversion); sources are exact registered versions. Uses the existing core operation; API `POST /api/custody/assertion`. Timeline entries for claims now list their sources.

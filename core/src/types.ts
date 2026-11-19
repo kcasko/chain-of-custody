@@ -30,6 +30,7 @@ export type Operation =
   | 'create_proposal'
   | 'promote_proposal'
   | 'dismiss_proposal'
+  | 'read_audit_log'
   | 'overwrite_original'
   | 'delete_history'
   | 'grant_role';

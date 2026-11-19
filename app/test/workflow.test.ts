@@ -136,6 +136,21 @@ test('export: request, self-approval refused, independent approval, export verif
   assert.deepEqual(statuses, ['consumed']);
 });
 
+test('security log: supervisors only, newest first, includes refusals; reading it is recorded', async () => {
+  const { call } = await setup();
+  await call('POST', '/api/custody/transfer', U.auditor, { evidenceId: 'BW-007', versionId: 'v', from: 'a', to: 'b', reason: 'c' });
+  for (const [who, status] of [[U.investigator, 403], [U.auditor, 403], [U.outsider, 403]] as const) {
+    assert.equal((await call('GET', '/api/audit', who)).status, status, who);
+  }
+  const r = await call('GET', '/api/audit', U.supervisor);
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  const ev = r.body.value.events as Array<{ principal: string; operation: string; outcome: string; code: string | null }>;
+  assert.deepEqual([ev[0]!.principal, ev[0]!.operation, ev[0]!.outcome], [`human:${U.supervisor}`, 'read_audit_log', 'attempted']);
+  assert.ok(ev.some((e) => e.principal === `human:${U.auditor}` && e.operation === 'add_custody_event' && e.code === 'DENIED_ROLE'));
+  assert.ok(ev.some((e) => e.principal === `human:${U.investigator}` && e.operation === 'read_audit_log' && e.code === 'DENIED_ROLE'));
+  assert.deepEqual(Object.keys(ev[0]!).sort(), ['at', 'caseId', 'code', 'operation', 'outcome', 'principal', 'requestId']);
+});
+
 test('reset restores the seeded case; unknown endpoints are 404', async () => {
   const { call } = await setup();
   await call('POST', '/api/agent/run', U.auditor, {});
