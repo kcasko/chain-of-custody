@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-19 (approved article restructure, draft)
+
+- builder-center-project.md rewritten to the approved structure: five connected sections (The missing hour; An investigator that can't rewrite history; The invisible editor; What if the agent goes rogue?; The case remains open), about 2,700 words of body prose. The nine rules keep a one-line "Enforced by" each; the five layers are explained in text; the Gateway probe screenshot is replaced by a row in the verification table (401 and admin denial) with links to the T21 report and probe output; all failures, limitations and the unsupported accusation are kept.
+- Commit 09813c1 (mobile-first figures) is experimental; the article figures and excerpts are still placeholders until the text is approved.
+- Local draft only. The published Builder Center article is unchanged.
+
 ## 2026-11-19 (mobile-first article figures, draft)
 
 - The three article figures are redrawn on a narrow 600 px canvas (figures.css .wrap.narrow) with type sized to stay readable when Builder Center scales the image to a phone: the timeline now runs vertically, the architecture rings stack, and the injection figure is one numbered sequence with each step tagged as untrusted evidence, model behavior, enforcement or protected record. Detailed versions are unchanged.
