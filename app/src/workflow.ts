@@ -129,6 +129,7 @@ export class Workflow {
       case 'GET /api/quarantine': return reply(await d.evidence.quarantined(this.#ctx(userId), c));
 
       case 'POST /api/custody/transfer': return this.#ledgerWrite(await d.custody.recordTransfer(this.#ctx(userId), c, body));
+      case 'POST /api/custody/assertion': return this.#ledgerWrite(await d.custody.recordHistoricalAssertion(this.#ctx(userId), c, body));
       case 'POST /api/custody/correction': return this.#ledgerWrite(await d.custody.appendCorrection(this.#ctx(userId), c, body));
       case 'POST /api/proposals/promote': return this.#ledgerWrite(await d.proposals.promote(this.#ctx(userId), String(body.proposalId ?? '')));
       // Not a ledger write: a dismissed draft was never part of the record.

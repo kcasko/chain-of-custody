@@ -80,6 +80,22 @@
     <section class="ws-panel" role="tabpanel" id="panel-timeline" aria-labelledby="tab-timeline" hidden>
       <h2>Custody timeline</h2>
       <p class="ws-hint">Each entry is hashed and linked to the one before it. Mistakes are fixed by appending a correction; the original line stays.</p>
+      <details class="ws-claim" id="claim">
+        <summary>Record a historical claim</summary>
+        <form class="ws-form" id="claim-form">
+          <p class="ws-hint">A claim records what a source says happened, not what did happen. Copy times exactly as the source shows them; nothing here converts or corrects them.</p>
+          <label>About <select name="evidenceId" id="claim-subject"></select></label>
+          <fieldset><legend>Sources (the exact versions that make this claim)</legend><div class="ws-checks ws-checks--wide" id="claim-sources"></div></fieldset>
+          <label>What the source claims <textarea name="statement" rows="3" required maxlength="2000"></textarea></label>
+          <div class="ws-claim-grid">
+            <label>Claimed time, as written <input name="claimedTimeRaw" required maxlength="200" autocomplete="off" placeholder="e.g. 10/14/2021 02:40"></label>
+            <label>Source clock <input name="sourceClock" required maxlength="200" autocomplete="off" placeholder="e.g. DVR internal clock"></label>
+            <label>Time zone <input name="timezone" required maxlength="100" autocomplete="off" placeholder="e.g. not stated"></label>
+            <label>Offset uncertainty <input name="offsetUncertainty" required maxlength="500" autocomplete="off" placeholder="e.g. unknown"></label>
+          </div>
+          <button type="submit" class="rerun">Append claim to the ledger</button>
+        </form>
+      </details>
       <div id="chain-report" class="ws-chain"></div>
       <ol class="ws-timeline" id="timeline"></ol>
     </section>

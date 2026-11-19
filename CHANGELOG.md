@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-18 (T18: historical claim form)
+
+- Workspace: "Record a historical claim" above the custody timeline. Times, clock, zone and uncertainty are kept as typed (no date picker, no conversion); sources are exact registered versions. Uses the existing core operation; API `POST /api/custody/assertion`. Timeline entries for claims now list their sources.
+- Fixed: checkboxes shrank beside long labels (claim and export forms).
+- Tests: 1 API, 1 browser. `npm test`: 376/376; `npm run test:e2e`: 9/9; typecheck clean.
+
 ## 2026-11-18 (T18: dismissing agent drafts)
 
 - Core: `ProposalService.dismiss` and the `dismiss_proposal` operation (all case roles, humans only). A reason is required; the draft is kept and marked dismissed with who, when and why; it can never be promoted; the ledger does not change; the action is audited. Conditional on the version read, so a dismissal and a promotion cannot both win. ADR 0009 records the choice to let any member dismiss.

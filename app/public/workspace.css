@@ -145,7 +145,13 @@
 .ws-checks { display: flex; flex-wrap: wrap; gap: 0.35rem 1rem; }
 .ws-checks--wide { display: grid; grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); }
 .ws-checks label { display: flex; gap: 0.45rem; align-items: center; font: 0.85rem var(--mono); color: var(--ink); min-height: 2rem; }
-.ws-checks input { width: 1.1rem; height: 1.1rem; min-height: 0; accent-color: var(--allow); }
+.ws-checks input { width: 1.1rem; height: 1.1rem; min-height: 0; flex: none; accent-color: var(--allow); }
+
+/* Historical claim form: folded above the timeline */
+.ws-claim { border: 1px solid var(--rule); background: var(--paper-edge); padding: 0.6rem 1rem; margin: 0.5rem 0 1rem; }
+.ws-claim summary { cursor: pointer; font: 600 1.02rem/1.2 var(--serif); padding: 0.3rem 0; }
+.ws-claim .ws-form { margin-top: 0.6rem; }
+.ws-claim-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 0.7rem 1rem; }
 
 /* Ledger timeline: one ruled line per entry, numbered like a docket */
 .ws-chain { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin: 0.5rem 0 1rem; font-size: 0.9rem; }

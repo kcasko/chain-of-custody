@@ -145,9 +145,29 @@ function eventSummary(e) {
   switch (e.kind) {
     case 'evidence_registered': return `Registered ${b.evidenceId} (${versionLabel(b)}, ${b.size} bytes)`;
     case 'custody_transfer': return `${b.evidenceId} moved from "${b.from}" to "${b.to}". Reason: ${b.reason}`;
-    case 'historical_assertion': return `Historical claim about ${b.evidenceId}: ${b.statement ?? ''} (claimed ${b.claimedTimeRaw ?? '?'}, clock ${b.sourceClock ?? '?'}, ${b.timezone ?? '?'}, uncertainty ${b.offsetUncertainty ?? '?'})`;
+    case 'historical_assertion': return `Historical claim about ${b.evidenceId}: ${b.statement ?? ''} (claimed ${b.claimedTimeRaw ?? '?'}, clock ${b.sourceClock ?? '?'}, ${b.timezone ?? '?'}, uncertainty ${b.offsetUncertainty ?? '?'}). Sources: ${(b.sources ?? []).map(sourceLabel).join('; ')}`;
     case 'correction': return `Correction to #${b.targetSequence}: ${b.reason}`;
     default: return e.kind;
+  }
+}
+
+function sourceLabel(ref) {
+  const e = state.evidence.find((x) => x.evidenceId === ref.evidenceId && x.versionId === ref.versionId);
+  return e ? `${ref.evidenceId} ${versionLabel(e)}` : `${ref.evidenceId} ${ref.versionId}`;
+}
+
+async function submitClaim(ev) {
+  ev.preventDefault();
+  const f = new FormData(ev.target);
+  const sources = f.getAll('source').map((v) => { const [evidenceId, versionId] = String(v).split('|'); return { evidenceId, versionId }; });
+  if (sources.length === 0) return notice({ ok: false, code: 'INVALID_REQUEST', detail: 'choose at least one source version' });
+  const body = { evidenceId: f.get('evidenceId'), sources };
+  for (const k of ['statement', 'claimedTimeRaw', 'sourceClock', 'timezone', 'offsetUncertainty']) body[k] = f.get(k);
+  const r = await api('POST', '/api/custody/assertion', body);
+  notice(r, r.ok ? `Claim appended as ledger entry #${r.value.sequence}, recorded as stated.` : '');
+  if (r.ok) {
+    ev.target.reset();
+    await Promise.all([loadCase(), loadTimeline()]);
   }
 }
 
@@ -287,6 +307,11 @@ async function submitFinding(ev) {
 function renderVersionChoices() {
   const ids = [...new Set(state.evidence.map((e) => e.evidenceId))];
   $('finding-cites').replaceChildren(...ids.map((id) => el('label', {}, [el('input', { attrs: { type: 'checkbox', name: 'cite', value: id } }), el('span', { text: id })])));
+  $('claim-subject').replaceChildren(...ids.map((id) => el('option', { text: `${id}  ${state.titles[id] ?? ''}`, attrs: { value: id } })));
+  $('claim-sources').replaceChildren(...state.evidence.map((e) => el('label', {}, [
+    el('input', { attrs: { type: 'checkbox', name: 'source', value: `${e.evidenceId}|${e.versionId}` } }),
+    el('span', { text: `${e.evidenceId} ${versionLabel(e)}` }),
+  ])));
   $('request-versions').replaceChildren(...state.evidence.map((e) => el('label', {}, [
     el('input', { attrs: { type: 'checkbox', name: 'version', value: `${e.evidenceId}|${e.versionId}` } }),
     el('span', { text: `${e.evidenceId} ${versionLabel(e)}` }),
@@ -446,6 +471,7 @@ async function start() {
   wireTabs();
   $('transfer-form').addEventListener('submit', submitTransfer);
   $('finding-form').addEventListener('submit', submitFinding);
+  $('claim-form').addEventListener('submit', submitClaim);
   $('request-form').addEventListener('submit', submitRequest);
   $('agent-run').addEventListener('click', runAgent);
   $('download').addEventListener('click', download);

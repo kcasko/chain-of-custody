@@ -165,3 +165,32 @@ test('drafts: a person dismisses one with a reason; it stays listed, cannot be p
   assert.equal((await call('GET', '/api/case', U.auditor)).body.value.head.sequence, head);
   assert.equal((await call('POST', '/api/proposals/promote', U.investigator, { proposalId: target.proposalId })).status, 400);
 });
+
+test('historical claims: a person records one exactly as stated; bad sources and blank fields are refused', async () => {
+  const { call } = await setup();
+  const list = (await call('GET', '/api/evidence', U.auditor)).body.value;
+  const src = list.find((e: { evidenceId: string; derivedFrom: unknown }) => e.evidenceId === 'BW-004' && e.derivedFrom === null);
+  const claim = {
+    evidenceId: 'BW-001', sources: [{ evidenceId: 'BW-004', versionId: src.versionId }],
+    statement: 'The access log shows no badge entry for the lab B door between 21:30 and 22:00.',
+    claimedTimeRaw: '10/13/2021 9:40 PM', sourceClock: 'badge controller clock', timezone: 'not stated', offsetUncertainty: 'unknown; controller drifts',
+  };
+  const head = (await call('GET', '/api/case', U.auditor)).body.value.head.sequence;
+  const r = await call('POST', '/api/custody/assertion', U.auditor, claim);
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  assert.equal(r.body.value.sequence, head + 1);
+  assert.deepEqual(r.body.value.body, claim, 'stored exactly as entered: no time parsing or zone conversion');
+  assert.deepEqual(r.body.value.actor, { type: 'human', userId: U.auditor, role: 'auditor' });
+  assert.equal((await call('GET', '/api/case', U.auditor)).body.value.checkpoint.sequence, head + 1);
+
+  const refused: Array<[unknown, number]> = [
+    [{ ...claim, sources: [] }, 400],
+    [{ ...claim, sources: [{ evidenceId: 'BW-004', versionId: 'v-not-registered' }] }, 404],
+    [{ ...claim, evidenceId: 'BW-999' }, 404],
+    [{ ...claim, timezone: '  ' }, 400],
+    [{ ...claim, recordedAt: '2021-10-13T21:40:00Z' }, 400],
+  ];
+  for (const [body, status] of refused) assert.equal((await call('POST', '/api/custody/assertion', U.auditor, body)).status, status, JSON.stringify(body).slice(0, 80));
+  assert.equal((await call('POST', '/api/custody/assertion', U.outsider, claim)).status, 403);
+  assert.equal((await call('GET', '/api/case', U.auditor)).body.value.head.sequence, head + 1, 'refusals append nothing');
+});

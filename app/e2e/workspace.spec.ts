@@ -87,8 +87,8 @@ test('a full audit: transfer, refusal by role, draft promotion, approved export,
 
   // Export: request, self-approval refused, a different supervisor approves, export verifies.
   await openTab(page, 'Approvals & export');
-  await page.getByLabel('BW-001 original', { exact: true }).check();
-  await page.getByLabel('BW-010 original', { exact: true }).check();
+  await page.locator('#request-form').getByLabel('BW-001 original', { exact: true }).check();
+  await page.locator('#request-form').getByLabel('BW-010 original', { exact: true }).check();
   await page.getByRole('button', { name: 'Request approval' }).click();
   await expect(status(page)).toContainText('Export requested.');
   const request = page.locator('#approvals li').first();
@@ -161,6 +161,34 @@ test('a person dismisses an agent draft with a reason; it stays listed and the l
   await actAs(page, 'investigator');
   await expect(draft).toContainText('Dismissed by mara.voss');
   await expect(page.getByRole('button', { name: 'Promote to the ledger' })).toHaveCount(1);
+});
+
+test('a person records a historical claim; it lands on the ledger exactly as the source stated it', async ({ page }) => {
+  await actAs(page, 'auditor');
+  await openTab(page, 'Custody timeline');
+  await page.getByText('Record a historical claim').click();
+  const form = page.locator('#claim-form');
+  await form.getByLabel('About').selectOption('BW-001');
+  await form.getByLabel('What the source claims').fill('No badge entry for the lab B door between 21:30 and 22:00.');
+  await form.getByLabel('Claimed time, as written').fill('10/13/2021 9:40 PM');
+  await form.getByLabel('Source clock').fill('badge controller clock');
+  await form.getByLabel('Time zone').fill('not stated');
+  await form.getByLabel('Offset uncertainty').fill('unknown; controller drifts');
+
+  // No source chosen: refused on the page, nothing sent, nothing appended.
+  await form.getByRole('button', { name: 'Append claim to the ledger' }).click();
+  await expect(status(page)).toContainText('choose at least one source version');
+  await expect(page.locator('#ledger-head')).toContainText('#12');
+
+  await form.getByLabel('BW-004 original', { exact: true }).check();
+  await form.getByRole('button', { name: 'Append claim to the ledger' }).click();
+  await expect(status(page)).toContainText('Claim appended as ledger entry #13, recorded as stated.');
+  const entry = page.locator('#timeline > li', { hasText: 'No badge entry for the lab B door' });
+  await expect(entry.locator('.ws-kind')).toHaveText('historical assertion');
+  await expect(entry.locator('.ws-event-body')).toHaveText('Historical claim about BW-001: No badge entry for the lab B door between 21:30 and 22:00. (claimed 10/13/2021 9:40 PM, clock badge controller clock, not stated, uncertainty unknown; controller drifts). Sources: BW-004 original');
+  await expect(entry).toContainText('mara.voss (auditor)');
+  await expect(page.locator('#chain-report')).toContainText('All 13 entries re-hashed and linked.');
+  await expect(form.getByLabel('What the source claims')).toHaveValue('');
 });
 
 test('a person outside the case sees nothing but the refusal', async ({ page }) => {
