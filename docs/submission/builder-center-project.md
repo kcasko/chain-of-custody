@@ -57,7 +57,7 @@ A fair objection: one of my rules says times stay as written, and the agent just
 
 ![Excerpt of the Blackwater audit agent's real terminal output on the AgentCore managed harness: the prompt, six tool calls, the recorded finding and its ID](screenshots/agent-running-excerpt.png)
 
-*The agent running on the AgentCore managed harness: an excerpt of the real terminal output from the live run. Every line is verbatim and every omission is marked; the full transcript is in the repository.*
+*The agent running on the AgentCore managed harness: an excerpt of the real terminal output from the live run. Every line is verbatim, and every omission is marked, including the end of one long line; the full transcript is in the repository.*
 
 That finding didn't land on the first try. My own authorization rules refused the first two attempts, and the bug was mine. I'll get to that in the last act.
 

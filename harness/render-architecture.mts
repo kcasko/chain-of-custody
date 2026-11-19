@@ -13,10 +13,12 @@ import { join } from 'node:path';
 import { chromium } from '@playwright/test';
 
 const root = join(import.meta.dirname, '..');
+// The three figures in the article use the narrow, mobile-first canvas (figures.css .wrap.narrow).
+const NARROW = { width: 600, height: 900 };
 const figures: ReadonlyArray<readonly [string, string, { width: number; height: number }?]> = [
-  ['architecture.html', 'architecture.png'],
-  ['timeline.html', 'evidence-timeline.png'],
-  ['injection-sequence.html', 'injection-sequence.png'],
+  ['architecture.html', 'architecture.png', NARROW],
+  ['timeline.html', 'evidence-timeline.png', NARROW],
+  ['injection-sequence.html', 'injection-sequence.png', NARROW],
   ['architecture-detailed.html', 'architecture-detailed.png'],
   ['injection-sequence-detailed.html', 'injection-sequence-detailed.png'],
 ];

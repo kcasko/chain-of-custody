@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-19 (mobile-first article figures, draft)
+
+- The three article figures are redrawn on a narrow 600 px canvas (figures.css .wrap.narrow) with type sized to stay readable when Builder Center scales the image to a phone: the timeline now runs vertically, the architecture rings stack, and the injection figure is one numbered sequence with each step tagged as untrusted evidence, model behavior, enforcement or protected record. Detailed versions are unchanged.
+- Timeline: labels are centered on their true time and only pushed down to avoid overlap, with leader lines to the computed positions. This fixes the published version's red "16 minutes still unexplained" label, which was offset from the gap it describes.
+- render-transcript.mts: excerpts use the same narrow canvas, and --clip N shortens a very long line at a word boundary with a visible "[n more characters omitted]" marker. The three excerpts are re-rendered.
+- Local draft only. The published Builder Center article is unchanged.
+
 ## 2026-11-19 (five-act editorial restructure, draft)
 
 - docs/submission/builder-center-project.md rewritten as a five-act story: The missing hour; The investigator that can't rewrite history (nine rules, each with what enforces it); The invisible editor (S1, S2 and a three-column stress table); What if the agent goes rogue? (T22 in prose plus a seven-row security-results summary labeled by test type); The case remains open (failures, limitations, how it was built, lessons). About 3,200 words of body prose, down from about 5,400. All weaknesses, failed attempts and limitations kept.

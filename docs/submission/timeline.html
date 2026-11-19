@@ -3,148 +3,147 @@
 <head>
 <meta charset="utf-8">
 <title>The missing hour: BW-001 and BW-005</title>
-<!-- Source for docs/submission/screenshots/evidence-timeline.png. Rendered by
+<!-- Source for docs/submission/screenshots/evidence-timeline.png, drawn vertically on the
+     narrow (600 px) canvas so it stays readable on a phone. Rendered by
      harness/render-architecture.mts. Every time is copied from
      fixtures/evidence/BW-001/incident-report.txt and fixtures/evidence/BW-005/*.
-     Positions are computed from the source times by the script at the end
-     (axis 23:36 to 00:32, 15 px per minute), never placed by hand. The narrative
-     band stops at midnight: the source says "just before midnight" and no minute. -->
+     Dot positions are computed from the source times by the script at the end
+     (axis 23:38 to 00:30, 18 px per minute, time running down), never placed by hand.
+     Labels are centered on their true time and only pushed down to avoid overlapping; a leader
+     line joins each label to its true position. The narrative band stops at midnight:
+     the source says "just before midnight" and gives no minute. -->
 <link rel="stylesheet" href="figures.css">
 <style>
-  .tl { display: grid; grid-template-columns: 228px 840px; grid-template-rows: 40px 156px 136px 140px; column-gap: 24px; }
-  .lab { padding: 16px 14px 12px 0; border-top: 1px solid var(--line); }
-  .lab .id { font: 700 21px/1.1 var(--serif); color: #f4f0e6; }
-  .lab .what { font: 600 13px/1.3 var(--sans); color: var(--soft); margin-top: 4px; }
-  .lab .meta { font: 11.5px/1.5 var(--mono); color: var(--faint); margin-top: 9px; }
-  .lab .meta b { color: var(--red); font-weight: 700; }
-  .lab.hyp .id { color: var(--amber); }
-  .tracks { position: relative; }
-  .row { position: relative; border-top: 1px solid var(--line); }
-  .row.a { height: 156px; background: linear-gradient(180deg, rgba(22,35,58,.6), rgba(22,35,58,.3)); }
-  .row.b { height: 136px; background: repeating-linear-gradient(135deg, rgba(227,162,59,.06) 0 2px, transparent 2px 12px), rgba(227,162,59,.04); }
-  .row.c { height: 140px; background: linear-gradient(180deg, rgba(22,35,58,.3), rgba(22,35,58,.6)); }
-  .axisrow { height: 40px; position: relative; }
-  .axisrow span { position: absolute; bottom: 10px; transform: translateX(-50%); font: 700 12px/1 var(--mono); color: var(--faint); }
-  .base { position: absolute; left: 0; right: 0; height: 0; border-top: 2px solid #c9ccd2; box-shadow: 0 0 10px rgba(201,204,210,.35); }
-  .midnight { position: absolute; top: 0; bottom: 0; border-left: 1.5px dashed rgba(233,229,219,.65); z-index: 3; }
-  .midnight::before { content: "MIDNIGHT"; position: absolute; top: 8px; left: 7px; font: 700 10px/1 var(--mono); letter-spacing: .2em; color: var(--text); }
-  .dot { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; background: #f4f0e6; border-radius: 50%; box-shadow: 0 0 0 4px rgba(244,240,230,.12), 0 0 14px rgba(244,240,230,.55); z-index: 4; }
+  .key { display: grid; gap: 10px; margin-bottom: 26px; }
+  .src { margin: 0; }
+  .k { display: grid; grid-template-columns: 26px 1fr; gap: 10px; align-items: start; }
+  .k .sw { height: 26px; border-left: 4px solid; margin-left: 10px; }
+  .k b { font: 700 19px/1.2 var(--serif); color: #f4f0e6; }
+  .k b.am { color: var(--amber); }
+  .k div div { font-size: 16px; color: var(--soft); }
+  .k div div em { font-style: normal; color: var(--red); font-weight: 700; }
+  .chart { position: relative; }
+  .tick { position: absolute; left: 0; font: 700 14px/1 var(--mono); color: var(--faint); transform: translateY(-50%); }
+  .lane { position: absolute; top: 0; bottom: 0; width: 0; border-left: 2px solid; }
+  .mid { position: absolute; left: 60px; width: 120px; border-top: 1.5px dashed rgba(233,229,219,.7); }
+  .mid { left: 0; width: 180px; }
+  .midl { position: absolute; left: 0; font: 700 10.5px/1 var(--mono); letter-spacing: .06em; color: var(--text); }
+  .dot { position: absolute; width: 16px; height: 16px; margin: -8px 0 0 -8px; background: #f4f0e6; border-radius: 50%; box-shadow: 0 0 0 4px rgba(244,240,230,.12), 0 0 14px rgba(244,240,230,.55); z-index: 4; }
   .dot.grey { background: #7c8594; box-shadow: none; }
-  .dot.sq { border-radius: 0; background: var(--steel); box-shadow: 0 0 0 4px rgba(143,177,220,.14), 0 0 14px rgba(143,177,220,.5); }
-  .dot.hollow { background: var(--bg); border: 3px solid var(--amber); width: 18px; height: 18px; margin: -9px 0 0 -9px; box-shadow: 0 0 16px rgba(227,162,59,.55); }
-  .card { position: absolute; background: var(--paper); color: var(--paper-ink); padding: 5px 9px 6px; white-space: nowrap; box-shadow: 0 8px 18px rgba(0,0,0,.45); z-index: 5; }
-  .card .t { font: 700 14px/1.2 var(--mono); }
-  .card .e { font: 600 12px/1.3 var(--sans); color: var(--paper-soft); }
-  .card.amber { background: #1a1408; color: var(--amber); border: 1.5px solid var(--amber); box-shadow: 0 0 18px rgba(227,162,59,.18); }
-  .card.amber .e { color: #d9b77a; }
-  .stem { position: absolute; border-left: 1px solid #c9ccd2; z-index: 4; }
-  .what-if { position: absolute; top: 46px; border-top: 2px dashed var(--amber); }
-  .what-if::after { content: ""; position: absolute; right: -2px; top: -6px; border: 5px solid transparent; border-left: 8px solid var(--amber); }
-  .plus { position: absolute; top: 22px; font: 700 12px/1 var(--mono); color: var(--amber); white-space: nowrap; letter-spacing: .06em; }
-  .gapbar { position: absolute; top: 37px; height: 18px; background: repeating-linear-gradient(135deg, var(--red) 0 3px, transparent 3px 9px); border-left: 3px solid var(--red); border-right: 3px solid var(--red); box-shadow: 0 0 22px rgba(196,55,43,.35); }
-  .gaplab { position: absolute; top: 66px; transform: translateX(-50%); background: var(--red); color: #fff4ee; padding: 7px 14px 8px; text-align: center; white-space: nowrap; box-shadow: 0 10px 26px rgba(196,55,43,.35); z-index: 6; }
-  .gaplab .n { font: 700 24px/1 var(--serif); letter-spacing: -.01em; }
-  .gaplab small { display: block; font: 600 11px/1.3 var(--sans); opacity: .92; margin-top: 3px; }
-  .guide { position: absolute; border-left: 1.5px dotted var(--red); z-index: 2; }
-  .narr { position: absolute; top: 84px; height: 28px; background: linear-gradient(90deg, rgba(143,177,220,0) 0%, rgba(143,177,220,.22) 55%, rgba(143,177,220,.34) 100%); border-right: 3px solid var(--steel); }
-  .narr span { position: absolute; right: 10px; top: 4px; font: italic 600 15px/1.2 var(--serif); color: #dfe8f5; white-space: nowrap; }
-  .narrnote { position: absolute; top: 117px; font: 11px/1.3 var(--mono); color: var(--faint); white-space: nowrap; }
-  .notes { display: grid; grid-template-columns: 1fr 1fr 1.4fr; gap: 18px; margin-top: 28px; align-items: start; }
-  .note { padding: 14px 16px 15px; }
-  .note.slip:nth-child(1) { transform: rotate(-.7deg); }
-  .note.slip:nth-child(2) { transform: rotate(.5deg); }
-  .note h3 { margin: 0 0 5px; font: 700 15px/1.25 var(--serif); }
-  .note p { margin: 0; font-size: 13px; color: var(--paper-soft); }
+  .dot.sq { border-radius: 0; background: var(--steel); box-shadow: 0 0 14px rgba(143,177,220,.5); }
+  .dot.hollow { background: var(--bg); border: 3px solid var(--amber); width: 20px; height: 20px; margin: -10px 0 0 -10px; box-shadow: 0 0 16px rgba(227,162,59,.55); }
+  .whatif { position: absolute; width: 0; border-left: 3px dashed var(--amber); }
+  .whatif::after { content: ""; position: absolute; left: -8px; bottom: -4px; border: 6.5px solid transparent; border-top: 9px solid var(--amber); }
+  .gapbar { position: absolute; background: repeating-linear-gradient(135deg, var(--red) 0 3px, transparent 3px 9px); border-top: 3px solid var(--red); border-bottom: 3px solid var(--red); box-shadow: 0 0 22px rgba(196,55,43,.35); }
+  .narr { position: absolute; width: 14px; margin-left: -7px; background: linear-gradient(180deg, rgba(143,177,220,0), rgba(143,177,220,.6)); border-bottom: 3px solid var(--steel); }
+  svg.leads { position: absolute; inset: 0; overflow: visible; z-index: 3; }
+  .lab { position: absolute; left: 212px; right: 0; padding: 8px 12px 9px; background: var(--paper); color: var(--paper-ink); box-shadow: 0 8px 18px rgba(0,0,0,.45); z-index: 5; }
+  .lab .s { font: 700 11.5px/1 var(--mono); letter-spacing: .12em; color: var(--paper-soft); margin-bottom: 4px; }
+  .lab .t { font: 700 19px/1.25 var(--mono); }
+  .lab .e { font: 600 16px/1.3 var(--sans); color: var(--paper-soft); }
+  .lab.amber { background: #1a1408; color: var(--amber); border: 2px solid var(--amber); }
+  .lab.amber .s, .lab.amber .e { color: #d9b77a; }
+  .lab.narrl { background: var(--navy); color: #dfe8f5; border-left: 4px solid var(--steel); }
+  .lab.narrl .t { font: italic 600 20px/1.25 var(--serif); }
+  .lab.narrl .s, .lab.narrl .e { color: var(--soft); }
+  .lab.red { background: var(--red); color: #fff4ee; box-shadow: 0 10px 26px rgba(196,55,43,.35); }
+  .lab.red .t { font: 700 21px/1.15 var(--serif); }
+  .lab.red .e { color: #fff4ee; opacity: .92; }
+  .note { padding: 14px 16px 15px; margin-top: 16px; }
+  .note h3 { margin: 0 0 5px; font: 700 20px/1.25 var(--serif); }
+  .note p { margin: 0; font-size: 17px; color: var(--paper-soft); }
   .note.agent { background: var(--navy); border: 1px solid var(--navy-2); border-top: 3px solid var(--steel); }
   .note.agent h3 { color: #f4f0e6; }
   .note.agent p { color: var(--soft); }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="kicker"><span>Blackwater evidence</span><span>Case BLACKWATER-2021</span><span>Figure 1</span></div>
+<div class="wrap narrow">
+  <div class="kicker"><span>Blackwater evidence</span><span>Figure 1</span></div>
   <h1>The missing <em>hour</em></h1>
   <div class="bar"></div>
-  <p class="dek">Two exhibits, three time sources, no common clock. Every time is shown exactly as its source writes it. They share one axis here only so they can be read side by side; nothing in the record shows the clocks agree.</p>
+  <p class="dek">Three time sources, no common clock. Every time is shown exactly as its source writes it; the shared axis is only for reading them side by side.</p>
 
-  <div class="tl">
-    <div></div>
-    <div class="axisrow" id="axis"></div>
-
-    <div class="lab"><div class="id">BW-005 v1</div><div class="what">Fire alarm controller export</div>
-      <div class="meta">clock: controller RTC<br><b>no NTP sync recorded</b><br>dated 2021-10-13</div></div>
-    <div class="tracks" style="grid-row: span 3">
-      <div class="row a" id="ra"><div class="base" style="top:92px"></div></div>
-      <div class="row b" id="rb"></div>
-      <div class="row c" id="rc"><div class="base" style="top:72px"></div></div>
-      <div class="midnight" id="mid"></div>
-    </div>
-
-    <div class="lab hyp"><div class="id">BW-005 v2 <span class="ev gap" style="vertical-align:4px">what-if</span></div><div class="what">Facilities note dated 2021-11-02</div>
-      <div class="meta">RTC "about 14 minutes slow"<br><b>method not stated</b>; not known<br>whether it held on 2021-10-13</div></div>
-
-    <div class="lab"><div class="id">BW-001</div><div class="what">Fire department incident report</div>
-      <div class="meta">header clock <b>not stated</b><br>time zone and date <b>not stated</b></div></div>
+  <div class="key">
+    <div class="k"><span class="sw" style="border-color:#f4f0e6"></span><div><b>BW-005 v1</b> alarm controller export<div>controller clock, <em>no time sync recorded</em></div></div></div>
+    <div class="k"><span class="sw" style="border-color:var(--amber);border-left-style:dashed"></span><div><b class="am">BW-005 v2</b> facilities note, 2021-11-02<div>clock "about 14 minutes slow", <em>method not stated</em></div></div></div>
+    <div class="k"><span class="sw" style="border-color:var(--steel)"></span><div><b>BW-001</b> fire department incident report<div>header clock and time zone <em>not stated</em></div></div></div>
   </div>
 
-  <div class="notes">
-    <div class="note slip"><h3>Measured 20 days later</h3><p>The drift note is dated November 2, three weeks after the fire, and doesn't say how the drift was measured.</p></div>
-    <div class="note slip"><h3>The originals never change</h3><p>The what-if is labeled as one. Every recorded time stays exactly as written.</p></div>
-    <div class="note agent"><h3>What the agent recorded <span class="ev live">live, T21</span></h3><p>Finding ecf25cb9, type discrepancy, uncertainty high:</p>
-      <div class="quote">The two sources cannot be directly compared on the current record.</div></div>
-  </div>
+  <div class="chart" id="chart"></div>
+
+  <div class="note slip"><h3>Measured 20 days later</h3><p>The drift note is dated November 2, three weeks after the fire, and doesn't say how the drift was measured.</p></div>
+  <div class="note slip"><h3>The originals never change</h3><p>The what-if is labeled as one. Every recorded time stays exactly as written.</p></div>
+  <div class="note agent"><h3>What the agent recorded <span class="ev live">live, T21</span></h3><p>Finding ecf25cb9, type discrepancy, uncertainty high:</p>
+    <div class="quote">The two sources cannot be directly compared on the current record.</div></div>
 
   <div class="foot">Sources: fixtures/evidence/BW-001/incident-report.txt; fixtures/evidence/BW-005/alarm-controller-export.log and clock-drift-note.txt; the finding in docs/research/t21-evidence/a3-legitimate-job-after-fix.txt. Blackwater is fictional and all case data is synthetic.</div>
 </div>
 <script>
-  // Axis: 23:36 is x = 0, 15 px per minute. Times after midnight continue past 24:00.
-  const PX = 15, START = 23 * 60 + 36;
-  const x = (t) => {
+  // Time runs down: 23:38 is y = TOP, 15 px per minute. Times after midnight continue past 24:00.
+  const PX = 18, START = 23 * 60 + 38, END = 24 * 60 + 30, TOP = 14;
+  const y = (t) => {
     const [h, m, s = 0] = t.split(':').map(Number);
-    const mins = (h < 12 ? h + 24 : h) * 60 + m + s / 60;
-    return (mins - START) * PX;
+    return TOP + ((h < 12 ? h + 24 : h) * 60 + m + s / 60 - START) * PX;
   };
-  const el = (parent, cls, css, html = '') => {
+  const V1 = 92, WI = 128, BW1 = 164; // lane x positions
+  const chart = document.getElementById('chart');
+  const el = (cls, css, html = '') => {
     const d = document.createElement('div');
-    d.className = cls; Object.assign(d.style, css); d.innerHTML = html; parent.appendChild(d); return d;
+    d.className = cls; Object.assign(d.style, css); d.innerHTML = html; chart.appendChild(d); return d;
   };
-  const axis = document.getElementById('axis');
-  axis.innerHTML = ['23:40', '23:50', '00:00', '00:10', '00:20', '00:30'].map((t) => `<span style="left:${x(t)}px">${t}</span>`).join('');
-  document.getElementById('mid').style.left = x('00:00') + 'px';
+  ['23:40', '23:50', '00:00', '00:10', '00:20', '00:30'].forEach((t) => el('tick', { top: y(t) + 'px' }, t));
+  el('lane', { left: V1 + 'px', borderColor: 'rgba(244,240,230,.55)' });
+  el('lane', { left: WI + 'px', borderColor: 'rgba(227,162,59,.45)', borderLeftStyle: 'dashed' });
+  el('lane', { left: BW1 + 'px', borderColor: 'rgba(143,177,220,.55)' });
+  el('mid', { top: y('00:00') + 'px' });
+  el('midl', { top: (y('00:00') + 12) + 'px' }, 'MIDNIGHT');
 
-  // Row A: BW-005 v1, exactly as exported. Base line at y = 92.
-  const ra = document.getElementById('ra');
-  el(ra, 'dot grey', { left: x('23:42:31') + 'px', top: '92px' });
-  el(ra, 'dot', { left: x('23:44:08') + 'px', top: '92px' });
-  el(ra, 'dot', { left: x('23:44:09') + 'px', top: '92px' });
-  el(ra, 'dot', { left: x('23:59:50') + 'px', top: '92px' });
-  el(ra, 'stem', { left: x('23:44:08') + 'px', top: '66px', height: '26px' });
-  el(ra, 'card', { left: (x('23:44:08') - 2) + 'px', top: '14px' }, '<div class="t">23:44:08 <span class="e">ZONE4 ALARM</span></div><div class="t">23:44:09 <span class="e">GENERAL ALARM</span></div>');
-  el(ra, 'stem', { left: x('23:42:31') + 'px', top: '92px', height: '16px' });
-  el(ra, 'card', { left: (x('23:42:31') - 2) + 'px', top: '108px', padding: '3px 8px 4px' }, '<div class="t">23:42:31</div><div class="e">ZONE4 TROUBLE</div>');
-  el(ra, 'stem', { left: x('23:59:50') + 'px', top: '92px', height: '16px' });
-  el(ra, 'card', { right: (840 - x('23:59:50') - 2) + 'px', top: '108px', padding: '3px 8px 4px' }, '<div class="t">23:59:50</div><div class="e">ZONE2 ALARM</div>');
+  // BW-005 v1, exactly as exported.
+  el('dot grey', { left: V1 + 'px', top: y('23:42:31') + 'px' });
+  el('dot', { left: V1 + 'px', top: y('23:44:08') + 'px' });
+  el('dot', { left: V1 + 'px', top: y('23:44:09') + 'px' });
+  el('dot', { left: V1 + 'px', top: y('23:59:50') + 'px' });
+  // The what-if: +14 minutes from the general alarm, and the gap it leaves to the 00:14 header.
+  el('whatif', { left: WI + 'px', top: (y('23:44:09') + 4) + 'px', height: (y('23:58') - y('23:44:09') - 16) + 'px' });
+  el('dot hollow', { left: WI + 'px', top: y('23:58') + 'px' });
+  el('gapbar', { left: (WI - 6) + 'px', width: (BW1 - WI + 12) + 'px', top: (y('23:58') + 12) + 'px', height: (y('00:14') - y('23:58') - 20) + 'px' });
+  // BW-001: the narrative band ends at midnight and fades upward (no minute is given).
+  el('narr', { left: BW1 + 'px', top: y('23:47') + 'px', height: (y('00:00') - y('23:47')) + 'px' });
+  el('dot sq', { left: BW1 + 'px', top: y('00:14') + 'px' });
+  el('dot sq', { left: BW1 + 'px', top: y('00:27') + 'px' });
 
-  // Row B: the what-if (+14 minutes) and the gap it leaves to the 00:14 header.
-  const rb = document.getElementById('rb');
-  el(rb, 'what-if', { left: x('23:44:09') + 'px', width: (x('23:58') - x('23:44:09') - 12) + 'px' });
-  el(rb, 'plus', { left: (x('23:44:09') + 4) + 'px' }, '+14 MINUTES, AS A WHAT-IF');
-  el(rb, 'dot hollow', { left: x('23:58') + 'px', top: '46px' });
-  el(rb, 'card amber', { right: (840 - x('23:58') + 16) + 'px', top: '64px' }, '<div class="t">about 23:58</div><div class="e">GENERAL ALARM, hypothetical, unverified</div>');
-  el(rb, 'gapbar', { left: (x('23:58') + 10) + 'px', width: (x('00:14') - x('23:58') - 10) + 'px' });
-  el(rb, 'gaplab', { left: ((x('23:58') + x('00:14')) / 2 + 82) + 'px' }, '<div class="n">16 minutes still unexplained</div><small>between the what-if and the report header</small>');
-  el(document.querySelector('.tracks'), 'guide', { left: x('00:14') + 'px', top: (156 + 55) + 'px', height: (136 - 55 + 72) + 'px' });
-
-  // Row C: BW-001. The narrative band ends at midnight and fades out to the left: no minute is given.
-  const rc = document.getElementById('rc');
-  el(rc, 'narr', { left: x('23:47') + 'px', width: (x('00:00') - x('23:47')) + 'px' }, '<span>"just before midnight"</span>');
-  el(rc, 'narrnote', { right: (840 - x('00:00') + 4) + 'px' }, 'night staff, as reported; no clock, no minute');
-  el(rc, 'dot sq', { left: x('00:14') + 'px', top: '72px' });
-  el(rc, 'dot sq', { left: x('00:27') + 'px', top: '72px' });
-  el(rc, 'stem', { left: x('00:14') + 'px', top: '52px', height: '20px' });
-  el(rc, 'card', { right: (840 - x('00:14') - 2) + 'px', top: '10px' }, '<div class="t">00:14</div><div class="e">Header field "Time of incident"</div>');
-  el(rc, 'stem', { left: x('00:27') + 'px', top: '52px', height: '20px' });
-  el(rc, 'card', { right: (840 - x('00:27') - 2) + 'px', top: '10px' }, '<div class="t">00:27</div><div class="e">Crews on scene</div>');
+  // Labels in time order: [anchor time, anchor lane x, class, html].
+  const labels = [
+    ['23:42:31', V1, '', '<div class="s">BW-005 V1</div><div class="t">23:42:31</div><div class="e">ZONE4 TROUBLE</div>'],
+    ['23:44:08', V1, '', '<div class="s">BW-005 V1</div><div class="t">23:44:08 &nbsp;ZONE4 ALARM</div><div class="t">23:44:09 &nbsp;GENERAL ALARM</div>'],
+    ['23:58', WI, 'amber', '<div class="s">BW-005 V2, A WHAT-IF</div><div class="t">about 23:58</div><div class="e">GENERAL ALARM +14 minutes: hypothetical, unverified</div>'],
+    ['23:59:50', V1, '', '<div class="s">BW-005 V1</div><div class="t">23:59:50 &nbsp;ZONE2 ALARM</div>'],
+    ['00:00', BW1, 'narrl', '<div class="s">BW-001 NARRATIVE</div><div class="t">"just before midnight"</div><div class="e">as reported: no clock, no minute</div>'],
+    ['00:06', (WI + BW1) / 2, 'red', '<div class="t">16 minutes still unexplained</div><div class="e">between the what-if and the header</div>'],
+    ['00:14', BW1, '', '<div class="s">BW-001 HEADER</div><div class="t">00:14</div><div class="e">"Time of incident"</div>'],
+    ['00:27', BW1, '', '<div class="s">BW-001</div><div class="t">00:27</div><div class="e">Crews on scene</div>'],
+  ];
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('class', 'leads');
+  chart.appendChild(svg);
+  let next = 0;
+  for (const [t, lx, cls, html] of labels) {
+    const ay = y(t);
+    const d = el('lab ' + cls, {}, html);
+    const h = d.offsetHeight;
+    const top = Math.max(ay - h / 2, next);
+    d.style.top = top + 'px';
+    next = top + h + 12;
+    const p = document.createElementNS(svgNS, 'polyline');
+    p.setAttribute('points', `${lx},${ay} ${lx + 26},${ay} 198,${top + h / 2} 212,${top + h / 2}`);
+    p.setAttribute('fill', 'none');
+    p.setAttribute('stroke', cls === 'red' ? '#c4372b' : cls === 'amber' ? '#e3a23b' : '#a7afbb');
+    p.setAttribute('stroke-width', '1.5');
+    svg.appendChild(p);
+  }
+  chart.style.height = Math.max(y('00:30') + 16, next) + 'px';
 </script>
 </body>
 </html>

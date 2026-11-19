@@ -81,3 +81,19 @@ h1 em { font-style: normal; color: var(--amber); }
 /* Footer */
 .foot { margin-top: 22px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--faint); display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
 .foot .legend { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+
+/* Narrow, mobile-first canvas for the figures shown in the article (600 CSS px,
+   rendered at 2x). Builder Center shows one image at every screen size, so the
+   type is sized to stay readable when the image is scaled to a 360 px phone
+   (about 0.6x) and still comfortable at the 790 px desktop column (about 1.3x). */
+.wrap.narrow { width: 600px; padding: 30px 26px 22px; font-size: 18px; line-height: 1.45; }
+.wrap.narrow::before { background-size: 40px 40px; }
+.narrow .kicker { font-size: 12.5px; letter-spacing: .18em; gap: 10px; flex-wrap: wrap; }
+.narrow .kicker span + span { padding-left: 10px; }
+.narrow h1 { font-size: 42px; }
+.narrow .dek { font-size: 19px; margin-bottom: 22px; }
+.narrow .ev { font-size: 13px; padding: 4px 7px; }
+.narrow .quote { font-size: 17px; padding: 11px 13px; }
+.narrow .src { font-size: 12px; }
+.narrow .marker { width: 34px; height: 34px; font-size: 17px; }
+.narrow .foot { font-size: 14px; line-height: 1.45; display: block; }

@@ -4,84 +4,78 @@
 <meta charset="utf-8">
 <title>Chain of Custody: five rings around the record</title>
 <!-- Source for docs/submission/screenshots/architecture.png, the simplified figure in the
-     article. The full version with every claim, rule chip and verification label is
-     architecture-detailed.html (screenshots/architecture-detailed.png). Rendered by
-     harness/render-architecture.mts. Every tag below is backed by a report: T14b
-     (docs/research/2026-11-18-t14b-real-aws-report.md), T21 (docs/research/2026-11-19-t21-agent-run-report.md),
+     article, drawn on the narrow (600 px) canvas so it stays readable on a phone. The full
+     version with every claim, rule chip and verification label is architecture-detailed.html
+     (screenshots/architecture-detailed.png). Rendered by harness/render-architecture.mts.
+     Every tag below is backed by a report: T14b (docs/research/2026-11-18-t14b-real-aws-report.md),
+     T21 (docs/research/2026-11-19-t21-agent-run-report.md),
      T22 (docs/research/2026-11-19-t22-compromised-agent-report.md). -->
 <link rel="stylesheet" href="figures.css">
 <style>
-  .outside { display: flex; gap: 16px; align-items: center; border: 1.5px dashed var(--faint); padding: 13px 18px; }
-  .outside .k { font: 700 11px/1 var(--mono); letter-spacing: .16em; color: var(--soft); white-space: nowrap; }
-  .outside h2 { margin: 0; font: 700 19px/1.2 var(--serif); color: #f4f0e6; white-space: nowrap; }
-  .outside p { margin: 0; font-size: 14px; color: var(--soft); flex: 1; }
-  .entry { position: relative; height: 38px; margin-left: 42px; }
-  .entry::before { content: ""; position: absolute; left: 0; top: 0; bottom: 4px; border-left: 2.5px solid var(--red); box-shadow: 0 0 10px rgba(196,55,43,.6); }
-  .entry::after { content: ""; position: absolute; left: -6px; bottom: -2px; border: 7px solid transparent; border-top: 9px solid var(--red); }
-  .entry span { position: absolute; left: 16px; top: 12px; font: 700 11px/1 var(--mono); letter-spacing: .14em; color: var(--red); }
-  .ring { border: 1px solid var(--line-2); padding: 0 30px 18px; position: relative; }
-  .ring .tab { position: absolute; top: -1px; left: -1px; font: 700 11px/1 var(--mono); letter-spacing: .16em; padding: 6px 10px; color: #0d1016; background: var(--steel); }
-  .rh { display: flex; justify-content: space-between; align-items: baseline; gap: 18px; padding: 34px 0 16px; }
-  .rh h2 { margin: 0; font: 700 20px/1.2 var(--serif); color: #f4f0e6; white-space: nowrap; }
-  .rh p { margin: 0; font-size: 15px; color: var(--soft); flex: 1; }
+  .outside { border: 2px dashed var(--faint); padding: 14px 16px; }
+  .outside .k { font: 700 12.5px/1 var(--mono); letter-spacing: .16em; color: var(--soft); }
+  .outside h2 { margin: 7px 0 4px; font: 700 23px/1.2 var(--serif); color: #f4f0e6; }
+  .outside p { margin: 0 0 9px; color: var(--soft); }
+  .entry { position: relative; height: 54px; margin-left: 34px; }
+  .entry::before { content: ""; position: absolute; left: 0; top: 0; bottom: 5px; border-left: 3px solid var(--red); box-shadow: 0 0 10px rgba(196,55,43,.6); }
+  .entry::after { content: ""; position: absolute; left: -7px; bottom: -3px; border: 8px solid transparent; border-top: 10px solid var(--red); }
+  .entry span { position: absolute; left: 18px; top: 17px; font: 700 13px/1 var(--mono); letter-spacing: .12em; color: var(--red); }
+  .ring { border: 1.5px solid var(--line-2); padding: 0 0 12px 12px; position: relative; }
+  .ring .tab { position: absolute; top: -1px; left: -1px; font: 700 12.5px/1 var(--mono); letter-spacing: .14em; padding: 6px 9px; color: #0d1016; background: var(--steel); }
+  .rh { padding: 40px 14px 12px 4px; }
+  .rh h2 { margin: 0 0 3px; font: 700 23px/1.2 var(--serif); color: #f4f0e6; }
+  .rh p { margin: 0 0 8px; color: var(--soft); }
   .rh p b { color: var(--text); }
   .r1 { background: rgba(22,35,58,.18); } .r2 { background: rgba(22,35,58,.32); } .r3 { background: rgba(22,35,58,.48); } .r4 { background: rgba(22,35,58,.62); }
-  .core { background: rgba(10,13,18,.75); border: 1.5px solid var(--amber); padding: 0 24px 22px; position: relative; }
+  .core { background: rgba(10,13,18,.78); border: 2px solid var(--amber); padding: 0 14px 16px; position: relative; margin-right: 12px; }
   .core .tab { background: var(--amber); }
-  .core h2 { margin: 36px 0 14px; font: 700 20px/1.2 var(--serif); color: #f4f0e6; }
+  .core h2 { margin: 42px 0 12px; font: 700 23px/1.2 var(--serif); color: #f4f0e6; }
   .core h2 em { font-style: normal; color: var(--amber); }
-  .stores { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-  .store { padding: 13px 14px 14px; }
-  .store h3 { margin: 0 0 6px; font: 700 15px/1.2 var(--serif); }
-  .store p { margin: 0; font-size: 13.5px; line-height: 1.45; color: var(--paper-soft); }
+  .store { padding: 12px 14px 13px; margin-top: 12px; }
+  .store h3 { margin: 0 0 4px; font: 700 19px/1.2 var(--serif); }
+  .store p { margin: 0; font-size: 17px; line-height: 1.4; color: var(--paper-soft); }
   .store .ev.live { color: #1d3a5c; background: #d9e3ef; }
-  .store .ev.cfg { color: #5c5a55; }
-  .lower { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
-  .panel { border: 1px solid var(--line); background: var(--bg-2); padding: 14px 16px 15px; }
-  .panel .k { font: 700 11px/1.2 var(--mono); letter-spacing: .16em; }
-  .panel h2 { font: 700 18px/1.2 var(--serif); margin: 5px 0 6px; color: #f4f0e6; }
-  .panel p { margin: 0; font-size: 14px; color: var(--soft); }
+  .panel { border: 1px solid var(--line); background: var(--bg-2); padding: 14px 16px 15px; margin-top: 18px; }
+  .panel .k { font: 700 12.5px/1.2 var(--mono); letter-spacing: .16em; }
+  .panel h2 { font: 700 22px/1.2 var(--serif); margin: 6px 0 5px; color: #f4f0e6; }
+  .panel p { margin: 0; color: var(--soft); }
   .panel.human { border-top: 3px solid var(--amber); } .panel.human .k { color: var(--amber); }
-  .panel.weak { border-color: rgba(196,55,43,.55); border-left: 4px solid var(--red); background: var(--red-dim); } .panel.weak .k { color: var(--red); }
+  .panel.weak { border-color: rgba(196,55,43,.55); border-left: 5px solid var(--red); background: var(--red-dim); } .panel.weak .k { color: var(--red); }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="kicker"><span>Blackwater evidence</span><span>Enforcement</span><span>Figure 3</span></div>
+<div class="wrap narrow">
+  <div class="kicker"><span>Blackwater evidence</span><span>Figure 3</span></div>
   <h1>Five rings around <em>the record</em></h1>
   <div class="bar"></div>
-  <p class="dek">The model only asks. Every tool call has to cross five independent layers to reach the evidence, and a person decides anything that would change the record.</p>
+  <p class="dek">The model only asks. Every tool call crosses five independent layers to reach the evidence, and a person decides anything that would change the record.</p>
 
-  <div class="outside"><div class="k">OUTSIDE</div><h2>The model and its prompt</h2><p>States the nine rules; shapes behavior; not counted as a control.</p><span class="ev model">model behavior</span></div>
+  <div class="outside"><div class="k">OUTSIDE THE RINGS</div><h2>The model and its prompt</h2><p>States the nine rules and shapes behavior. Not counted as a control.</p><span class="ev model">model behavior</span></div>
   <div class="entry"><span>EVERY TOOL CALL ENTERS HERE</span></div>
 
-  <div class="ring r1"><span class="tab">LAYER 1 &nbsp;HARNESS</span>
-    <div class="rh"><h2>Managed harness</h2><p>Five evidence tools only: <b>no shell, files, web or memory</b>.</p><span class="ev live">live, T21</span></div>
-    <div class="ring r2"><span class="tab">LAYER 2 &nbsp;CEDAR</span>
-      <div class="rh"><h2>Gateway + Cedar</h2><p>Only the agent's role gets in; <b>anything no permit allows is denied</b>.</p><span class="ev live">live, T21 + T22</span></div>
-      <div class="ring r3"><span class="tab">LAYER 3 &nbsp;BACKEND</span>
-        <div class="rh"><h2>Domain core</h2><p>Re-checks every call; <b>four operations</b>; identity never from arguments.</p><span class="ev live">live, T21 + T22</span></div>
-        <div class="ring r4"><span class="tab">LAYER 4 &nbsp;IAM</span>
+  <div class="ring r1"><span class="tab">1 &nbsp;HARNESS</span>
+    <div class="rh"><h2>Managed harness</h2><p>Five evidence tools only. <b>No shell, files, web or memory.</b></p><span class="ev live">live, T21</span></div>
+    <div class="ring r2"><span class="tab">2 &nbsp;CEDAR</span>
+      <div class="rh"><h2>Gateway + Cedar</h2><p>Only the agent's role gets in. <b>Anything no permit allows is denied.</b></p><span class="ev live">live, T21 + T22</span></div>
+      <div class="ring r3"><span class="tab">3 &nbsp;BACKEND</span>
+        <div class="rh"><h2>Domain core</h2><p>Re-checks every call. <b>Four operations.</b> Identity never comes from arguments.</p><span class="ev live">live, T21 + T22</span></div>
+        <div class="ring r4"><span class="tab">4 &nbsp;IAM</span>
           <div class="rh"><h2>Tool Lambda role</h2><p><b>No evidence, ledger or approval writes.</b></p><span class="ev live">simulated, T22</span></div>
-          <div class="core"><span class="tab">LAYER 5 &nbsp;STORAGE</span>
+          <div class="core"><span class="tab">5 &nbsp;STORAGE</span>
             <h2>The <em>record</em></h2>
-            <div class="stores">
-              <div class="store slip"><h3>Evidence (S3)</h3><p>Create-only. Overwrites of the deployed BW-003 refused, even for the admin <span class="ev live">T22</span></p></div>
-              <div class="store slip"><h3>Custody ledger</h3><p>Hash-chained and append-only; a raw overwrite is caught by the chain <span class="ev live">T14b</span></p></div>
-              <div class="store slip"><h3>Audit archive</h3><p>Every ledger event and audit record copied to Object Lock storage <span class="ev live">T21</span></p></div>
-            </div>
+            <div class="store slip"><h3>Evidence (S3)</h3><p>Create-only. Overwrites of the deployed BW-003 refused, even for the admin. <span class="ev live">T22</span></p></div>
+            <div class="store slip"><h3>Custody ledger</h3><p>Hash-chained and append-only. A raw overwrite is caught by the chain. <span class="ev live">T14b</span></p></div>
+            <div class="store slip"><h3>Audit archive</h3><p>Every ledger event and audit record copied to Object Lock storage. <span class="ev live">T21</span></p></div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="lower">
-    <div class="panel human"><div class="k">HUMAN AUTHORITY</div><h2>A person decides</h2><p>Only a person promotes or dismisses an agent's draft, approves or exports. Promotion re-checks the draft against the real ledger.</p></div>
-    <div class="panel weak"><div class="k">KNOWN GAP</div><h2>The content rule is a word list</h2><p>A carefully worded accusation passed every layer in T22. It's stored only as a finding, which changes nothing in the record.</p></div>
-  </div>
+  <div class="panel human"><div class="k">HUMAN AUTHORITY</div><h2>A person decides</h2><p>Only a person promotes or dismisses an agent's draft, approves or exports. Promotion re-checks the draft against the real ledger.</p></div>
+  <div class="panel weak"><div class="k">KNOWN GAP</div><h2>The content rule is a word list</h2><p>A carefully worded accusation passed every layer in T22. It's stored only as a finding, which changes nothing in the record.</p></div>
 
-  <div class="foot"><span>Simplified. The full figure, with every rule (R1 to R9) and every verification label, is docs/submission/screenshots/architecture-detailed.png. <span class="ev live">live</span> on AWS (T14b Nov 18; T21, T22 Nov 19). Object Lock retention is configured but was never exercised.</span></div>
+  <div class="foot">Simplified. The full figure, with every rule (R1 to R9) mapped to its layer, is architecture-detailed.png in the repository. Tested on AWS: T14b Nov 18; T21 and T22 Nov 19. Object Lock retention is configured but was never exercised.</div>
 </div>
 </body>
 </html>
