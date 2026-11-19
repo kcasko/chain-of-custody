@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-19 (agent-run execution summary, draft)
+
+- The article's agent-run image is now a curated execution summary (docs/submission/agent-run-summary.html, rendered to screenshots/agent-run-summary.png) instead of the marked-up terminal excerpt: five events (registry retrieved, three exact versions read, timestamps compared, discrepancy identified by the agent's analysis, finding recorded) and the recorded result (discrepancy, high, finding_recorded, ecf25cb9, 2026-11-19 05:20:49 UTC). Each value is traced to a transcript line in the HTML source. Labeled as curated, not a terminal screenshot. A claim that the ledger and evidence were unchanged was left out: the T21 report records that check for S0 in the stress runs, not for this run.
+- Caption changed as requested, and a line under it links the unedited full-length screenshot and the complete transcript. The terminal excerpt PNG and the unedited screenshot stay in the repository.
+- Local only. The published article is unchanged.
+
 ## 2026-11-19 (article republished)
 
 - Builder Center project updated in place and republished (approved by Keith), same URL. Four new images: timeline, agent-run excerpt, overview, injection in three moments. The S2 excerpt image was rejected by Builder Center's image moderation ("flagged as inappropriate content", most likely the verbatim injection text); per Keith, it is replaced by a text blockquote of the first two sentences of the recorded S2 reply, exactly as recorded, with a link to the full run-1 transcript. The image file stays in the repository.

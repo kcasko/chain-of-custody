@@ -54,9 +54,11 @@ I gave it the missing hour. It listed the evidence, noticed BW-005 had two versi
 
 It recorded that as finding ecf25cb9, a discrepancy with high uncertainty, and listed what a person would need to chase down first: how the drift was measured, which clock produced the header, and the time zone. That's less exciting than an AI announcing who started the fire. It's also the only answer the records support. (It did add 14 minutes to a time, which brushes against one of its rules. I allow a what-if when it's labeled as unverified, as this one is, and the original timestamps never change.)
 
-![Excerpt of the Blackwater audit agent's real terminal output on the AgentCore managed harness: the prompt, the tool calls and the recorded finding](screenshots/agent-running-excerpt.png)
+![Curated execution summary of the live run, not a terminal screenshot: evidence registry retrieved, three exact versions read, timestamps compared, a discrepancy identified by the agent's analysis, and a finding recorded as a discrepancy with high uncertainty](screenshots/agent-run-summary.png)
 
-*The agent running on the AgentCore managed harness. Every line is verbatim from the live run; tool arguments and other omitted output are marked where they were cut. The full transcript and the unedited full-length screenshot are in the repository.*
+*Selected events from the live AgentCore managed-harness run. Condensed for readability; the complete unedited screenshot and transcript are available in GitHub.*
+
+The agent running, unedited: the [full-length screenshot](https://github.com/kcasko/chain-of-custody/blob/main/docs/submission/screenshots/agent-running-managed-harness.png) of its terminal output and the [complete transcript](https://github.com/kcasko/chain-of-custody/blob/main/docs/research/t21-evidence/a3-legitimate-job-after-fix.txt).
 
 ## An investigator that can't rewrite history
 

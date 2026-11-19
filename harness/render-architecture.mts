@@ -4,6 +4,7 @@
 //   docs/submission/architecture.html        -> screenshots/architecture.png
 //   docs/submission/timeline.html            -> screenshots/evidence-timeline.png
 //   docs/submission/injection-sequence.html  -> screenshots/injection-sequence.png
+//   docs/submission/agent-run-summary.html   -> screenshots/agent-run-summary.png (curated, not a screenshot)
 //   docs/submission/architecture-detailed.html, injection-sequence-detailed.html -> the full versions
 //
 // Usage: node harness/render-architecture.mts
@@ -19,6 +20,7 @@ const figures: ReadonlyArray<readonly [string, string, { width: number; height: 
   ['architecture.html', 'architecture.png', COMPACT],
   ['timeline.html', 'evidence-timeline.png', COMPACT],
   ['injection-sequence.html', 'injection-sequence.png', COMPACT],
+  ['agent-run-summary.html', 'agent-run-summary.png', COMPACT],
   ['architecture-detailed.html', 'architecture-detailed.png'],
   ['injection-sequence-detailed.html', 'injection-sequence-detailed.png'],
 ];

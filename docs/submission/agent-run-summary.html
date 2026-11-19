@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The agent at work: execution summary</title>
+<!-- Source for docs/submission/screenshots/agent-run-summary.png: a CURATED execution summary
+     of the live run, not a terminal screenshot (compact 900 px canvas, figures.css .wrap.compact).
+     Rendered by harness/render-architecture.mts. Every event and value comes from
+     docs/research/t21-evidence/a3-legitimate-job-after-fix.txt, by line:
+       1  list_evidence -> [result success], case BLACKWATER-2021 ........................ lines 8-9
+       2  read_evidence_version x3 (BW-001; BW-005 controller export; BW-005 facilities
+          note) -> 3x [result success], each "content_is_untrusted_data": true ......... lines 13-17, 20-22
+          (version names from the agent's own table, lines 37-39)
+       3  compare_timestamps BW-001, BW-005 -> [result success]; BW-001 raw times kept as
+          written, source_clock "not stated", timezone "not stated",
+          offset_uncertainty "unknown" ................................................... lines 19, 23
+       4  the agent's analysis (model output, not a tool): "cannot be directly compared
+          on the current record" ....................................................... lines 64-70
+       5  record_finding cites BW-001, BW-005, finding_type "discrepancy",
+          uncertainty "high" -> status "finding_recorded", ecf25cb9, 2026-11-19T05:20:49.661Z ... lines 27-28
+       tools used: 6 ................................................................... line 89
+     The reads and the comparison were requested together (line 11); results are shown in
+     the order the transcript records them. The recorder truncated some long result lines,
+     so nothing here relies on text past the truncation. -->
+<link rel="stylesheet" href="figures.css">
+<style>
+  .label { display: inline-block; font: 700 14px/1 var(--mono); letter-spacing: .14em; color: var(--amber); border: 1.5px solid var(--amber); padding: 6px 9px; margin: -4px 0 18px; }
+  .grid { display: grid; grid-template-columns: 1fr 292px; gap: 24px; align-items: start; }
+  .events { position: relative; padding-left: 50px; }
+  .events::before { content: ""; position: absolute; left: 17px; top: 18px; bottom: 26px; border-left: 2px solid var(--line-2); }
+  .ev-row { position: relative; margin-bottom: 15px; }
+  .ev-row > .marker { position: absolute; left: -51px; top: 0; }
+  .ev-row h2 { margin: 0 0 4px; font: 700 23px/1.2 var(--serif); color: #f4f0e6; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .tool { font: 700 16px/1 var(--mono); color: var(--amber); background: var(--amber-dim); padding: 4px 7px; letter-spacing: .02em; }
+  .ok { font: 700 13px/1 var(--mono); letter-spacing: .12em; color: var(--steel); border: 1.2px solid var(--steel); padding: 3px 6px; background: var(--steel-dim); }
+  .ai { font: 700 13px/1 var(--mono); letter-spacing: .12em; color: var(--soft); border: 1.2px dashed var(--faint); padding: 3px 6px; }
+  .ev-row p { margin: 0; font-size: 19px; line-height: 1.35; color: var(--soft); }
+  .ev-row p b { color: var(--text); font-weight: 600; }
+  .ev-row.model h2 { color: #dcd7cb; }
+  .result { background: var(--paper); color: var(--paper-ink); padding: 16px 18px 16px; box-shadow: 0 14px 30px rgba(0,0,0,.45); position: relative; transform: rotate(.4deg); }
+  .result::before { content: "RECORDED"; position: absolute; top: -13px; right: 14px; background: var(--red); color: #fff; font: 800 13px/1 var(--mono); letter-spacing: .2em; padding: 6px 9px; }
+  .result .k { font: 700 14px/1.2 var(--mono); letter-spacing: .14em; color: #8a5a00; margin-bottom: 10px; }
+  .field { border-bottom: 1px dashed #b9b2a3; padding: 8px 0 9px; }
+  .field:last-of-type { border-bottom: 0; }
+  .field span { display: block; font: 700 13px/1 var(--mono); letter-spacing: .12em; color: var(--paper-soft); margin-bottom: 5px; }
+  .field b { font: 700 26px/1.1 var(--serif); }
+  .field b.mono { font: 700 21px/1.1 var(--mono); }
+  .field b.hi { color: #9a2b21; }
+  .field i { font-style: normal; font: 17px/1.3 var(--sans); color: var(--paper-soft); }
+  .note { margin-top: 14px; font-size: 17px; line-height: 1.35; color: var(--soft); }
+</style>
+</head>
+<body>
+<div class="wrap compact">
+  <div class="kicker"><span>Blackwater evidence</span><span>Live run, T21</span></div>
+  <h1>The agent <em>at work</em></h1>
+  <div class="bar"></div>
+  <div class="label">CURATED EXECUTION SUMMARY, NOT A TERMINAL SCREENSHOT</div>
+
+  <div class="grid">
+    <div class="events">
+      <div class="ev-row"><span class="marker">1</span><h2>Evidence registry retrieved <span class="ok">SUCCESS</span></h2>
+        <p><span class="tool">list_evidence</span> for case BLACKWATER-2021.</p></div>
+      <div class="ev-row"><span class="marker">2</span><h2>Exact versions read <span class="ok">3 × SUCCESS</span></h2>
+        <p><span class="tool">read_evidence_version</span> <b>BW-001</b> report, <b>BW-005</b> controller export and drift note. Each marked as untrusted data.</p></div>
+      <div class="ev-row"><span class="marker">3</span><h2>Timestamps compared <span class="ok">SUCCESS</span></h2>
+        <p><span class="tool">compare_timestamps</span> Raw times kept as written. BW-001's clock and time zone: <b>not stated</b>.</p></div>
+      <div class="ev-row model"><span class="marker">4</span><h2>Discrepancy identified <span class="ai">AGENT ANALYSIS</span></h2>
+        <p>The two sources "cannot be directly compared on the current record."</p></div>
+      <div class="ev-row"><span class="marker">5</span><h2>Finding recorded <span class="ok">SUCCESS</span></h2>
+        <p><span class="tool">record_finding</span> citing <b>BW-001</b> and <b>BW-005</b>.</p></div>
+    </div>
+
+    <div>
+      <div class="result"><div class="k">THE RESULT</div>
+        <div class="field"><span>FINDING TYPE</span><b>discrepancy</b></div>
+        <div class="field"><span>UNCERTAINTY</span><b class="hi">high</b></div>
+        <div class="field"><span>STATUS</span><b class="mono">finding_recorded</b></div>
+        <div class="field"><span>FINDING</span><b class="mono">ecf25cb9</b><br><i>2026-11-19, 05:20:49 UTC</i></div>
+      </div>
+      <p class="note">6 tool calls, each returned success. A person decides what happens next.</p>
+    </div>
+  </div>
+
+  <div class="foot">Condensed from the recorded transcript of npm run agent:ask on the AgentCore managed harness, November 19, 2026. Unedited screenshot and full transcript: docs/research/t21-evidence/a3-legitimate-job-after-fix.txt.</div>
+</div>
+</body>
+</html>
