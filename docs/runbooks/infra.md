@@ -1,6 +1,6 @@
 # Runbook: CDK infrastructure (T12)
 
-**Nothing here has been deployed.** Synth and the template tests run locally with no AWS access. Every command that creates, changes or deletes AWS resources needs Keith's approval for that run, with a cost estimate and a teardown plan, like T09 and T14b.
+**Deployed only for approved test runs (T21, T22), each torn down the same day. Nothing is deployed now, and the production stage has never been deployed.** Synth and the template tests run locally with no AWS access. Every command that creates, changes or deletes AWS resources needs Keith's approval for that run, with a cost estimate and a teardown plan, like T09 and T14b.
 
 ## What the app contains
 
@@ -64,8 +64,8 @@ The concrete, costed plan for the first deploy of this version is [T20](../plans
 
 ## Known limits
 
-- The core-backed tool Lambda (T16) replaced the Stage B stub in the template. It has been tested locally and its bundle loads, but it has not run on AWS.
-- The seed script, the T19 runner (`harness/run-stage-b-core.mts`) and the archive round trip have not been run against AWS. The T19 runner passes 29 of 29 locally against the real Cedar policies and the real handler, and fails as it should when Cedar is bypassed, a handler leaks an attack, or attribution is wrong.
+- The core-backed tool Lambda (T16) replaced the Stage B stub in the template. It ran on AWS in T21 (behind the managed harness) and T22 (behind the `harness=true` test role).
+- The seed script ran on AWS in T21 and T22. The T19 runner (`harness/run-stage-b-core.mts`) passed 29 of 29 on AWS in T22, and the compromised-agent runner (`harness/run-compromised-agent.mts`) 22 of 22 as expected (docs/research/2026-11-19-t22-compromised-agent-report.md). Locally the T19 runner also fails as it should when Cedar is bypassed, a handler leaks an attack, or attribution is wrong.
 - `npm run harness:stage-b` (the original runner) still targets the stub Lambda; use `harness:stage-b-core` for this stack.
 - `npm audit` reports a moderate `minimatch` advisory inside `aws-cdk-lib` (dev dependency, synth time only, our own glob patterns). The suggested fix downgrades `aws-cdk-lib` to 2.239.0. Accepted; revisit when `aws-cdk-lib` updates its bundled copy.
 - Multipart uploads are blocked by the create-only bucket rule (UploadPart has no `If-None-Match`). Evidence is capped at 10 MiB and uploaded in one request, so this is intended.

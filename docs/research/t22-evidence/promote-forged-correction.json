@@ -1,0 +1,13 @@
+{
+  "ranAt": "2026-11-19",
+  "what": "A person (owen.hale, investigator) tries to promote the C1-4 draft: a correction of ledger sequence 3 with a made-up target hash, proposed by the compromised agent",
+  "drafts": 1,
+  "result": {
+    "ok": false,
+    "code": "INVALID_REQUEST",
+    "detail": "targetHash does not match the event at that sequence"
+  },
+  "ledgerHeadBefore": 12,
+  "ledgerHeadAfter": 12,
+  "headHashUnchanged": true
+}

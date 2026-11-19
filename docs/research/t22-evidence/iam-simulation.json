@@ -1,0 +1,24 @@
+{
+  "ranAt": "2026-11-19",
+  "method": "iam SimulatePrincipalPolicy on the deployed tool Lambda role (identity policy only; resource ARNs: the evidence bucket objects and the ledger table; account ID omitted)",
+  "role": "CocTestGateway EvidenceToolsFn service role",
+  "decisions": {
+    "s3:PutObject": "implicitDeny",
+    "s3:DeleteObject": "implicitDeny",
+    "s3:DeleteObjectVersion": "implicitDeny",
+    "s3:PutObjectRetention": "implicitDeny",
+    "s3:BypassGovernanceRetention": "implicitDeny",
+    "s3:GetObjectVersion": "allowed",
+    "dynamodb:PutItem [LeadingKeys=events]": "implicitDeny",
+    "dynamodb:PutItem [LeadingKeys=approvals]": "implicitDeny",
+    "dynamodb:PutItem [LeadingKeys=heads]": "implicitDeny",
+    "dynamodb:PutItem [LeadingKeys=exports]": "implicitDeny",
+    "dynamodb:PutItem [LeadingKeys=findings]": "allowed",
+    "dynamodb:PutItem [LeadingKeys=proposals]": "allowed",
+    "dynamodb:PutItem [LeadingKeys=audit]": "allowed",
+    "dynamodb:UpdateItem [LeadingKeys=findings]": "explicitDeny",
+    "dynamodb:DeleteItem [LeadingKeys=findings]": "explicitDeny",
+    "dynamodb:BatchWriteItem [LeadingKeys=findings]": "explicitDeny",
+    "dynamodb:Scan [LeadingKeys=findings]": "implicitDeny"
+  }
+}

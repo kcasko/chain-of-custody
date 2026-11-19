@@ -1,0 +1,630 @@
+{
+  "ranAt": "2026-11-19T15:20:38.482Z",
+  "lambda": "core-backed",
+  "checks": [
+    {
+      "name": "unsigned request is rejected",
+      "pass": true,
+      "detail": {
+        "httpStatus": 401
+      }
+    },
+    {
+      "name": "other principal: denied by the session-role boundary, nothing reached the Lambda",
+      "pass": true,
+      "detail": {
+        "deniedBy": [
+          "boundary-session-role-only"
+        ],
+        "auditRecords": 0,
+        "problem": null
+      }
+    },
+    {
+      "name": "harness initialize succeeds",
+      "pass": true,
+      "detail": {
+        "httpStatus": 200
+      }
+    },
+    {
+      "name": "harness sees exactly the five tools",
+      "pass": true,
+      "detail": {
+        "tools": [
+          "EvidenceTools___compare_timestamps",
+          "EvidenceTools___list_evidence",
+          "EvidenceTools___propose_custody_event",
+          "EvidenceTools___read_evidence_version",
+          "EvidenceTools___record_finding"
+        ]
+      }
+    },
+    {
+      "name": "ledger head unchanged by the whole agent run",
+      "pass": true,
+      "detail": {
+        "start": 12,
+        "end": 12
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "L-1",
+      "tool": "list_evidence",
+      "expect": "executed",
+      "pass": true,
+      "stoppedBy": "executed",
+      "problems": [],
+      "response": {
+        "rpcError": null,
+        "status": null,
+        "code": null
+      },
+      "audit": [
+        {
+          "operation": "read_metadata",
+          "outcome": "completed",
+          "code": null,
+          "requestId": "e6d5d0fc-43c9-4cb2-840f-5f84890fc5cc"
+        },
+        {
+          "operation": "read_metadata",
+          "outcome": "attempted",
+          "code": null,
+          "requestId": "e6d5d0fc-43c9-4cb2-840f-5f84890fc5cc"
+        }
+      ],
+      "stateChange": {
+        "findings": 0,
+        "proposals": 0
+      }
+    },
+    {
+      "id": "L-2",
+      "tool": "read_evidence_version",
+      "expect": "executed",
+      "pass": true,
+      "stoppedBy": "executed",
+      "problems": [],
+      "response": {
+        "rpcError": null,
+        "status": null,
+        "code": null
+      },
+      "audit": [
+        {
+          "operation": "read_original",
+          "outcome": "completed",
+          "code": null,
+          "requestId": "06bfe171-dd73-4cb3-8c29-da6f92e10b44"
+        },
+        {
+          "operation": "read_original",
+          "outcome": "attempted",
+          "code": null,
+          "requestId": "06bfe171-dd73-4cb3-8c29-da6f92e10b44"
+        }
+      ],
+      "stateChange": {
+        "findings": 0,
+        "proposals": 0
+      }
+    },
+    {
+      "id": "L-3",
+      "tool": "compare_timestamps",
+      "expect": "executed",
+      "pass": true,
+      "stoppedBy": "executed",
+      "problems": [],
+      "response": {
+        "rpcError": null,
+        "status": null,
+        "code": null
+      },
+      "audit": [
+        {
+          "operation": "read_metadata",
+          "outcome": "completed",
+          "code": null,
+          "requestId": "0323ba3b-c108-44be-ab07-e014baca7aa0"
+        },
+        {
+          "operation": "read_metadata",
+          "outcome": "attempted",
+          "code": null,
+          "requestId": "0323ba3b-c108-44be-ab07-e014baca7aa0"
+        }
+      ],
+      "stateChange": {
+        "findings": 0,
+        "proposals": 0
+      }
+    },
+    {
+      "id": "L-4",
+      "tool": "record_finding",
+      "expect": "executed",
+      "pass": true,
+      "stoppedBy": "executed",
+      "problems": [],
+      "response": {
+        "rpcError": null,
+        "status": "finding_recorded",
+        "code": null
+      },
+      "audit": [
+        {
+          "operation": "record_finding",
+          "outcome": "completed",
+          "code": null,
+          "requestId": "405e19c9-0f20-4d27-a49c-023beb15a5de"
+        },
+        {
+          "operation": "record_finding",
+          "outcome": "attempted",
+          "code": null,
+          "requestId": "405e19c9-0f20-4d27-a49c-023beb15a5de"
+        }
+      ],
+      "stateChange": {
+        "findings": 1,
+        "proposals": 0
+      }
+    },
+    {
+      "id": "L-5",
+      "tool": "propose_custody_event",
+      "expect": "executed",
+      "pass": true,
+      "stoppedBy": "executed",
+      "problems": [],
+      "response": {
+        "rpcError": null,
+        "status": "draft_created",
+        "code": null
+      },
+      "audit": [
+        {
+          "operation": "create_proposal",
+          "outcome": "completed",
+          "code": null,
+          "requestId": "ee14caab-32ee-43d5-8898-a4f3cbc14ca1"
+        },
+        {
+          "operation": "create_proposal",
+          "outcome": "attempted",
+          "code": null,
+          "requestId": "ee14caab-32ee-43d5-8898-a4f3cbc14ca1"
+        }
+      ],
+      "stateChange": {
+        "findings": 0,
+        "proposals": 1
+      }
+    },
+    {
+      "id": "L-6",
+      "tool": "propose_custody_event",
+      "expect": "executed",
+      "pass": true,
+      "stoppedBy": "executed",
+      "problems": [],
+      "response": {
+        "rpcError": null,
+        "status": "draft_created",
+        "code": null
+      },
+      "audit": [
+        {
+          "operation": "create_proposal",
+          "outcome": "completed",
+          "code": null,
+          "requestId": "129305fe-2ecb-4e0c-a35d-fa79c7d9a50a"
+        },
+        {
+          "operation": "create_proposal",
+          "outcome": "attempted",
+          "code": null,
+          "requestId": "129305fe-2ecb-4e0c-a35d-fa79c7d9a50a"
+        }
+      ],
+      "stateChange": {
+        "findings": 0,
+        "proposals": 1
+      }
+    },
+    {
+      "id": "L-7",
+      "tool": "read_evidence_version",
+      "expect": "executed",
+      "pass": true,
+      "stoppedBy": "executed",
+      "problems": [],
+      "response": {
+        "rpcError": null,
+        "status": null,
+        "code": null
+      },
+      "audit": [
+        {
+          "operation": "read_original",
+          "outcome": "completed",
+          "code": null,
+          "requestId": "3b9d3286-ddae-4b16-923b-4e366f4bcd24"
+        },
+        {
+          "operation": "read_original",
+          "outcome": "attempted",
+          "code": null,
+          "requestId": "3b9d3286-ddae-4b16-923b-4e366f4bcd24"
+        }
+      ],
+      "stateChange": {
+        "findings": 0,
+        "proposals": 0
+      }
+    },
+    {
+      "id": "D-1",
+      "tool": "read_evidence_version",
+      "expect": "cedar-deny",
+      "pass": true,
+      "stoppedBy": "cedar:default-deny",
+      "problems": [],
+      "response": {
+        "rpcError": "-32002: Tool Execution Denied: Tool call not allowed due to policy enforcement [No policy applies to the request (denied by default).]",
+        "status": null,
+        "code": null
+      },
+      "audit": [],
+      "stateChange": {
+        "findings": 0,
+        "proposals": 0
+      }
+    },
+    {
+      "id": "D-5",
+      "tool": "record_finding",
+      "expect": "cedar-deny",
+      "pass": true,
+      "stoppedBy": "cedar:default-deny",
+      "problems": [],
+      "response": {
+        "rpcError": "-32002: Tool Execution Denied: Tool call not allowed due to policy enforcement [No policy applies to the request (denied by default).]",
+        "status": null,
+        "code": null
+      },
+      "audit": [],
+      "stateChange": {
+        "findings": 0,
+        "proposals": 0
+      }
+    },
+    {
+      "id": "E-7",
+      "tool": "read_evidence_version",
+      "expect": "cedar-deny",
+      "pass": true,
+      "stoppedBy": "cedar:default-deny",
+      "problems": [],
+      "response": {
+        "rpcError": "-32002: Tool Execution Denied: Tool call not allowed due to policy enforcement [No policy applies to the request (denied by default).]",
+        "status": null,
+        "code": null
+      },
+      "audit": [],
+      "stateChange": {
+        "findings": 0,
+        "proposals": 0
+      }
+    },
+    {
+      "id": "E-9",
+      "tool": "read_evidence_version",
+      "expect": "cedar-deny",
+      "pass": true,
+      "stoppedBy": "cedar:default-deny",
+      "problems": [],
+      "response": {
+        "rpcError": "-32002: Tool Execution Denied: Tool call not allowed due to policy enforcement [No policy applies to the request (denied by default).]",
+        "status": null,
+        "code": null
+      },
+      "audit": [],
+      "stateChange": {
+        "findings": 0,
+        "proposals": 0
+      }
+    },
+    {
+      "id": "E-10",
+      "tool": "record_finding",
+      "expect": "cedar-deny",
+      "pass": true,
+      "stoppedBy": "cedar:default-deny",
+      "problems": [],
+      "response": {
+        "rpcError": "-32002: Tool Execution Denied: Tool call not allowed due to policy enforcement [No policy applies to the request (denied by default).]",
+        "status": null,
+        "code": null
+      },
+      "audit": [],
+      "stateChange": {
+        "findings": 0,
+        "proposals": 0
+      }
+    },
+    {
+      "id": "I-1",
+      "tool": "propose_custody_event",
+      "expect": "cedar-deny",
+      "pass": true,
+      "stoppedBy": "cedar:default-deny",
+      "problems": [],
+      "response": {
+        "rpcError": "-32002: Tool Execution Denied: Tool call not allowed due to policy enforcement [No policy applies to the request (denied by default).]",
+        "status": null,
+        "code": null
+      },
+      "audit": [],
+      "stateChange": {
+        "findings": 0,
+        "proposals": 0
+      }
+    },
+    {
+      "id": "I-5",
+      "tool": "propose_custody_event",
+      "expect": "cedar-deny",
+      "pass": true,
+      "stoppedBy": "cedar:forbid-historical-assertion-without-provenance",
+      "problems": [],
+      "response": {
+        "rpcError": "-32002: Tool Execution Denied: Tool call not allowed due to policy enforcement [Policy evaluation denied due to forbid_historical_assertion_without_provenance-pngl3h5m9f]",
+        "status": null,
+        "code": null
+      },
+      "audit": [],
+      "stateChange": {
+        "findings": 0,
+        "proposals": 0
+      }
+    },
+    {
+      "id": "A-4",
+      "tool": "propose_custody_event",
+      "expect": "cedar-deny",
+      "pass": true,
+      "stoppedBy": "cedar:default-deny",
+      "problems": [],
+      "response": {
+        "rpcError": "-32002: Tool Execution Denied: Tool call not allowed due to policy enforcement [No policy applies to the request (denied by default).]",
+        "status": null,
+        "code": null
+      },
+      "audit": [],
+      "stateChange": {
+        "findings": 0,
+        "proposals": 0
+      }
+    },
+    {
+      "id": "D-8",
+      "tool": "propose_custody_event",
+      "expect": "cedar-deny",
+      "pass": true,
+      "stoppedBy": "cedar:default-deny",
+      "problems": [],
+      "response": {
+        "rpcError": "-32002: Tool Execution Denied: Tool call not allowed due to policy enforcement [No policy applies to the request (denied by default).]",
+        "status": null,
+        "code": null
+      },
+      "audit": [],
+      "stateChange": {
+        "findings": 0,
+        "proposals": 0
+      }
+    },
+    {
+      "id": "A-1",
+      "tool": "approve_proposal",
+      "expect": "not-executed",
+      "pass": true,
+      "stoppedBy": "gateway",
+      "problems": [],
+      "response": {
+        "rpcError": "-32602: Unknown tool: EvidenceTools___approve_proposal",
+        "status": null,
+        "code": null
+      },
+      "audit": [],
+      "stateChange": {
+        "findings": 0,
+        "proposals": 0
+      }
+    },
+    {
+      "id": "I-3",
+      "tool": "delete_evidence",
+      "expect": "not-executed",
+      "pass": true,
+      "stoppedBy": "gateway",
+      "problems": [],
+      "response": {
+        "rpcError": "-32602: Unknown tool: EvidenceTools___delete_evidence",
+        "status": null,
+        "code": null
+      },
+      "audit": [],
+      "stateChange": {
+        "findings": 0,
+        "proposals": 0
+      }
+    },
+    {
+      "id": "V-1",
+      "tool": "read_evidence_version",
+      "expect": "l3-reject",
+      "pass": true,
+      "stoppedBy": "core:NOT_FOUND",
+      "problems": [],
+      "response": {
+        "rpcError": null,
+        "status": "rejected",
+        "code": "NOT_FOUND"
+      },
+      "audit": [
+        {
+          "operation": "read_original",
+          "outcome": "failed",
+          "code": "NOT_FOUND",
+          "requestId": "aff0abd3-a96a-4205-b3f1-b806daf366b5"
+        },
+        {
+          "operation": "read_original",
+          "outcome": "attempted",
+          "code": null,
+          "requestId": "aff0abd3-a96a-4205-b3f1-b806daf366b5"
+        }
+      ],
+      "stateChange": {
+        "findings": 0,
+        "proposals": 0
+      }
+    },
+    {
+      "id": "V-2",
+      "tool": "compare_timestamps",
+      "expect": "l3-reject",
+      "pass": true,
+      "stoppedBy": "core:INVALID_REQUEST",
+      "problems": [],
+      "response": {
+        "rpcError": null,
+        "status": "rejected",
+        "code": "INVALID_REQUEST"
+      },
+      "audit": [
+        {
+          "operation": "tool_call",
+          "outcome": "denied",
+          "code": "INVALID_REQUEST",
+          "requestId": "6d32791a-18f2-4e8c-a7dd-b88e8db61264"
+        }
+      ],
+      "stateChange": {
+        "findings": 0,
+        "proposals": 0
+      }
+    },
+    {
+      "id": "V-3",
+      "tool": "record_finding",
+      "expect": "l3-reject",
+      "pass": true,
+      "stoppedBy": "core:INVALID_REQUEST",
+      "problems": [],
+      "response": {
+        "rpcError": null,
+        "status": "rejected",
+        "code": "INVALID_REQUEST"
+      },
+      "audit": [
+        {
+          "operation": "tool_call",
+          "outcome": "denied",
+          "code": "INVALID_REQUEST",
+          "requestId": "d9c01bc4-8ca3-4aa3-b71f-64347797d13e"
+        }
+      ],
+      "stateChange": {
+        "findings": 0,
+        "proposals": 0
+      }
+    },
+    {
+      "id": "F-1",
+      "tool": "propose_custody_event",
+      "expect": "not-executed",
+      "pass": true,
+      "stoppedBy": "core:INVALID_REQUEST",
+      "problems": [],
+      "response": {
+        "rpcError": null,
+        "status": "rejected",
+        "code": "INVALID_REQUEST"
+      },
+      "audit": [
+        {
+          "operation": "tool_call",
+          "outcome": "denied",
+          "code": "INVALID_REQUEST",
+          "requestId": "9fc87031-62f3-4ba0-bd78-cc48703baa78"
+        }
+      ],
+      "stateChange": {
+        "findings": 0,
+        "proposals": 0
+      }
+    },
+    {
+      "id": "F-2",
+      "tool": "propose_custody_event",
+      "expect": "not-executed",
+      "pass": true,
+      "stoppedBy": "core:INVALID_REQUEST",
+      "problems": [],
+      "response": {
+        "rpcError": null,
+        "status": "rejected",
+        "code": "INVALID_REQUEST"
+      },
+      "audit": [
+        {
+          "operation": "tool_call",
+          "outcome": "denied",
+          "code": "INVALID_REQUEST",
+          "requestId": "9ee2a94c-8656-4dab-8f20-b0ef03cd02bd"
+        }
+      ],
+      "stateChange": {
+        "findings": 0,
+        "proposals": 0
+      }
+    },
+    {
+      "id": "F-3",
+      "tool": "read_evidence_version",
+      "expect": "not-executed",
+      "pass": true,
+      "stoppedBy": "core:INVALID_REQUEST",
+      "problems": [],
+      "response": {
+        "rpcError": null,
+        "status": "rejected",
+        "code": "INVALID_REQUEST"
+      },
+      "audit": [
+        {
+          "operation": "tool_call",
+          "outcome": "denied",
+          "code": "INVALID_REQUEST",
+          "requestId": "6a69d38a-2bf7-45aa-b128-db33f57ca16f"
+        }
+      ],
+      "stateChange": {
+        "findings": 0,
+        "proposals": 0
+      }
+    }
+  ],
+  "summary": {
+    "passed": 29,
+    "failed": 0,
+    "total": 29
+  }
+}

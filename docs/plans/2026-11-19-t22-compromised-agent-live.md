@@ -1,6 +1,6 @@
 # T22: Compromised agent on real AWS (plan, not approved)
 
-Status: **proposed November 19, 2026. Not approved, nothing created.** No model, no Bedrock inference. Same-day teardown.
+Status: **approved by Keith and run on November 19, 2026, without the optional K6 and K7; torn down the same day.** Results: [docs/research/2026-11-19-t22-compromised-agent-report.md](../research/2026-11-19-t22-compromised-agent-report.md). The plan below is kept as written before the run.
 
 ## Why
 

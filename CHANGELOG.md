@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-11-19 (T22: compromised agent on real AWS)
+
+- Approved run, no model: the 22 compromised-agent calls through the real Gateway, Cedar and core-backed Lambda on a `harness=true` test deployment. 18 refused (Gateway 4, Cedar 6, backend 8), 4 allowed (the control, a forged correction draft, a finding naming a supervisor, and an unsupported accusation). Ledger and evidence unchanged for all 22. A person's attempt to promote the forged correction was refused. Report: docs/research/2026-11-19-t22-compromised-agent-report.md.
+- The 24 T19 scenarios passed live for the first time (29 of 29 checks). IAM simulation on the tool role and two overwrite probes on the real BW-003 object matched the design (403 from the bucket policy, 412 from S3, BW-003 unchanged).
+- Weakness kept on record: an unsupported accusation without blocked words is recorded as a finding (C4-4). Contained (findings change nothing), not prevented.
+- Torn down the same day; inventory empty. Not run: delete probes and the tamper-alarm test (outside the approved scope).
+- Draft section "What if the agent ignores every rule?" updated with the live results; still not merged into the Builder Center post. Runbook status lines updated.
+
 ## 2026-11-19 (compromised-agent test, local; live plan proposed)
 
 - New: `harness/compromised-agent.cjs`, 21 attacks a fully compromised agent would send (modify BW-003, forge approval or export, impersonate the supervisor, conclude guilt or intent, read outside the case) plus one legitimate control. No model is involved.

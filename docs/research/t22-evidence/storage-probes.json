@@ -1,0 +1,26 @@
+{
+  "ranAt": "2026-11-19",
+  "caller": "operator SSO AdministratorAccess role (the break-glass principal)",
+  "target": "BW-003 original in the deployed evidence bucket (key originals/BLACKWATER-2021/BW-003/<uuid>)",
+  "probes": {
+    "put_without_if_none_match": {
+      "result": "refused",
+      "code": "AccessDenied",
+      "http": 403,
+      "by": "explicit deny in the bucket policy (CreateOnlyWithIfNoneMatch)"
+    },
+    "put_with_if_none_match": {
+      "result": "refused",
+      "code": "PreconditionFailed",
+      "http": 412,
+      "by": "S3 conditional write: the key exists"
+    }
+  },
+  "versionsBefore": 1,
+  "versionsAfter": 1,
+  "deleteMarkers": 0,
+  "registeredVersionSha256": "b23cff6fbd6b58d2b4aa1a2ab2c2907e4b5342f1ea25e0b0a89bf52bb931400a",
+  "manifestSha256": "b23cff6fbd6b58d2b4aa1a2ab2c2907e4b5342f1ea25e0b0a89bf52bb931400a",
+  "match": true,
+  "notTested": "deletes and retention changes (optional K6, not approved); Object Lock retention itself (no probe reached it)"
+}
