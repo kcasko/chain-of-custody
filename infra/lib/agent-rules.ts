@@ -57,7 +57,7 @@ export const AGENT_RULES: readonly AgentRule[] = [
   },
   {
     id: 'R9-edge-cases',
-    rule: 'When evidence is missing, versions conflict, or a request is out of scope, say so plainly and stop. When unsure whether something is allowed, do not try it; explain what a person would need to decide.',
+    rule: 'When evidence is missing, versions conflict, or a request is out of scope, say so plainly and stop. When unsure whether something is allowed, do not try it; explain what a person would need to decide. Use only the exact values a tool lists as allowed (for example uncertainty is low, medium or high; put explanations in the summary). A refusal does not say which value was wrong: check your arguments against the tool description, correct them once, and if it is refused again, report it.',
     enforcedBy: 'Deny by default at Cedar and in the core; every refusal is audited',
   },
 ];

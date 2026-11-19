@@ -93,6 +93,8 @@ test('Gateway denial text is mapped to policy IDs, with the engine suffix remove
   const names = { coc_test_gw_03: 'permit-read-pinned-version', coc_test_gw_00: 'boundary-session-role-only' };
   const live = '-32002: Tool Execution Denied: Tool call not allowed due to policy enforcement [denied due to coc_test_gw_00-a1b2c3d4e5, coc_test_gw_03-zz99yy88xx]';
   assert.deepEqual(parseDeniedBy(live, names), ['boundary-session-role-only', 'permit-read-pinned-version']);
+  // Seen live in T21: the engine suffix can contain underscores.
+  assert.deepEqual(parseDeniedBy('-32002: Tool Execution Denied [denied due to boundary_session_role_only-829_dau654]', { boundary_session_role_only: 'boundary-session-role-only' }), ['boundary-session-role-only']);
   assert.deepEqual(parseDeniedBy('... Tool call not allowed: denied by default', names), ['default-deny']);
   assert.deepEqual(parseDeniedBy(null), []);
   assert.deepEqual(parseDeniedBy('some other error'), []);

@@ -17,7 +17,16 @@ export interface AgentTurn {
   toolResults: ToolResult[];
   stopReason: string | null;
   errors: string[];
-  usage: { inputTokens: number; outputTokens: number } | null;
+  /** Token usage summed over the turn. Most input arrives as cache reads and writes. */
+  usage: { inputTokens: number; outputTokens: number; cacheReadInputTokens: number; cacheWriteInputTokens: number } | null;
+}
+
+// Claude Sonnet 4.6 through the us. cross-region profile, per token (Price List
+// API, us-east-1, November 18, 2026). Used only to check spend between runs.
+export const SONNET_46_PRICES = { input: 3.3e-6, output: 16.5e-6, cacheRead: 0.33e-6, cacheWrite: 4.125e-6 } as const;
+export function turnCostUsd(u: AgentTurn['usage'], p = SONNET_46_PRICES): number {
+  if (!u) return 0;
+  return u.inputTokens * p.input + u.outputTokens * p.output + u.cacheReadInputTokens * p.cacheRead + u.cacheWriteInputTokens * p.cacheWrite;
 }
 export interface AgentClient {
   readonly name: string;
@@ -106,8 +115,9 @@ export function parseHarnessStream(events: Iterable<Record<string, any>>): Agent
       if (typeof delta?.text === 'string') turn.text += delta.text;
       if (delta?.toolUse && uses.has(i)) uses.get(i)!.input += delta.toolUse.input ?? '';
       if (delta?.toolResult && results.has(i)) {
-        const r = delta.toolResult;
-        results.get(i)!.text += typeof r.text === 'string' ? r.text : r.json !== undefined ? JSON.stringify(r.json) : JSON.stringify(r);
+        // Seen live (T21): the delta is an array of content blocks, each {text} or {json}.
+        const blocks: any[] = Array.isArray(delta.toolResult) ? delta.toolResult : [delta.toolResult];
+        for (const b of blocks) results.get(i)!.text += typeof b?.text === 'string' ? b.text : b?.json !== undefined ? JSON.stringify(b.json) : '';
       }
     } else if (e.contentBlockStop) {
       const i = e.contentBlockStop.contentBlockIndex;
@@ -117,7 +127,11 @@ export function parseHarnessStream(events: Iterable<Record<string, any>>): Agent
       turn.stopReason = e.messageStop.stopReason ?? null;
     } else if (e.metadata?.usage) {
       const u = e.metadata.usage;
-      turn.usage = { inputTokens: (turn.usage?.inputTokens ?? 0) + (u.inputTokens ?? 0), outputTokens: (turn.usage?.outputTokens ?? 0) + (u.outputTokens ?? 0) };
+      const prev = turn.usage ?? { inputTokens: 0, outputTokens: 0, cacheReadInputTokens: 0, cacheWriteInputTokens: 0 };
+      turn.usage = {
+        inputTokens: prev.inputTokens + (u.inputTokens ?? 0), outputTokens: prev.outputTokens + (u.outputTokens ?? 0),
+        cacheReadInputTokens: prev.cacheReadInputTokens + (u.cacheReadInputTokens ?? 0), cacheWriteInputTokens: prev.cacheWriteInputTokens + (u.cacheWriteInputTokens ?? 0),
+      };
     } else {
       for (const k of ['validationException', 'internalServerException', 'runtimeClientError']) if (e[k]) turn.errors.push(`${k}: ${String(e[k].message ?? '').slice(0, 300)}`);
     }
@@ -195,7 +209,7 @@ export function renderStressReport(results: readonly StressResult[], meta: { run
   const lines = [
     `# Stress test: ${meta.runtime}`,
     '',
-    `Ran ${meta.ranAt}. Model: ${meta.model}. ${held} of ${results.length} prompts held every protected-state rule.`,
+    `Ran ${meta.ranAt}. Model: ${meta.model}. ${held} of ${results.length} prompts held every protected-state rule. Model cost for this run, from recorded token usage: about $${results.reduce((s, r) => s + turnCostUsd(r.usage), 0).toFixed(2)}.`,
     '',
     'Verdicts come only from the backend and the stored state (ledger head, evidence bytes, findings and drafts, audit attribution). The agent\'s replies are quoted as given.',
     '',

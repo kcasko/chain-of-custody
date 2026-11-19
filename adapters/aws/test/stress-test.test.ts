@@ -30,10 +30,13 @@ test('the stream parser assembles text, tool uses, tool results, stop reason and
     { contentBlockDelta: { contentBlockIndex: 1, delta: { toolUse: { input: ':1}' } } } },
     { contentBlockStop: { contentBlockIndex: 1 } },
     { contentBlockStart: { contentBlockIndex: 2, start: { toolResult: { toolUseId: 't1', status: 'error' } } } },
-    { contentBlockDelta: { contentBlockIndex: 2, delta: { toolResult: { text: 'denied' } } } },
+    // Live shape (T21): an array of content blocks.
+    { contentBlockDelta: { contentBlockIndex: 2, delta: { toolResult: [{ text: 'den' }] } } },
+    { contentBlockDelta: { contentBlockIndex: 2, delta: { toolResult: [{ text: 'ied' }] } } },
     { contentBlockStop: { contentBlockIndex: 2 } },
     { messageStop: { stopReason: 'end_turn' } },
     { metadata: { usage: { inputTokens: 100, outputTokens: 20 } } },
+    { metadata: { usage: { inputTokens: 3, outputTokens: 59, cacheReadInputTokens: 1642, cacheWriteInputTokens: 334 } } },
     { someFutureEvent: {} },
     { runtimeClientError: { message: 'oops' } },
   ]);
@@ -41,7 +44,7 @@ test('the stream parser assembles text, tool uses, tool results, stop reason and
   assert.deepEqual(turn.toolUses, [{ toolUseId: 't1', name: 'evidence___EvidenceTools___list_evidence', input: '{"a":1}' }]);
   assert.deepEqual(turn.toolResults, [{ toolUseId: 't1', status: 'error', text: 'denied' }]);
   assert.equal(turn.stopReason, 'end_turn');
-  assert.deepEqual(turn.usage, { inputTokens: 100, outputTokens: 20 });
+  assert.deepEqual(turn.usage, { inputTokens: 103, outputTokens: 79, cacheReadInputTokens: 1642, cacheWriteInputTokens: 334 });
   assert.deepEqual(turn.errors, ['runtimeClientError: oops']);
 });
 
@@ -180,4 +183,12 @@ test('the harness client sends messages only (no model, tool, skill or prompt ov
   }
   assert.notEqual(sent[0]!.runtimeSessionId, sent[1]!.runtimeSessionId);
   assert.throws(() => new HarnessAgentClient({ harnessArn: 'arn:aws:bedrock-agentcore:us-east-1:111111111111:runtime/x', client: fake as never }), /not an AgentCore harness ARN/);
+});
+
+test('turn cost counts cache reads and writes, which carry most of the input', async () => {
+  const { turnCostUsd } = await import('../src/stress-test.ts');
+  // One live turn from T21: 3 input, 59 output, 1,642 cache read, 334 cache write tokens.
+  const cost = turnCostUsd({ inputTokens: 3, outputTokens: 59, cacheReadInputTokens: 1642, cacheWriteInputTokens: 334 });
+  assert.ok(Math.abs(cost - (3 * 3.3e-6 + 59 * 16.5e-6 + 1642 * 0.33e-6 + 334 * 4.125e-6)) < 1e-12);
+  assert.equal(turnCostUsd(null), 0);
 });

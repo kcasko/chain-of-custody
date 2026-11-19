@@ -1,0 +1,7 @@
+T21 A2 probes, node harness/probe-gateway.mts, November 19, 2026 (us-east-1)
+PASS  unsigned request is refused  {"httpStatus":401}
+PASS  operator principal: denied by the session-role boundary  {"deniedBy":["boundary-session-role-only"],"toolsListed":0}
+PASS  nothing reached the tool Lambda (no new audit records)  {"auditBefore":24,"auditAfter":24}
+(First attempt reported the middle check as FAIL: the live engine names the policy
+"boundary_session_role_only-829_dau654", and the parser's suffix pattern did not allow "_".
+The denial itself was correct; the parser was fixed and tested, and the probe re-run as above.)

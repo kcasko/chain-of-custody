@@ -23,12 +23,33 @@ function buildSpec() {
 }
 
 // AgentCore Gateway SchemaDefinition supports only: type, description, items,
-// properties, required. Strip everything else. Enforcement of the stripped
-// constraints lives in the Lambda.
+// properties, required. Everything else is stripped, and enforcement of the
+// stripped constraints lives in Cedar and the core. But the model reads only
+// what the Gateway lists, so a stripped enum is invisible to it: in T21 (Nov 19)
+// the live agent sent finding_type "timestamp_discrepancy" and a paragraph as
+// "uncertainty", and Cedar refused its legitimate finding. So every stripped
+// constraint is restated in plain words in the property's description.
 const GATEWAY_SCHEMA_KEYS = new Set(['type', 'description', 'items', 'properties', 'required']);
+
+function describeConstraints(schema) {
+  const parts = [];
+  if (Array.isArray(schema.enum)) parts.push(`Must be exactly one of: ${schema.enum.join(', ')}.`);
+  if (schema.pattern) parts.push(`Must match the pattern ${schema.pattern}.`);
+  if (schema.minLength !== undefined || schema.maxLength !== undefined) parts.push(`Length ${schema.minLength ?? 0} to ${schema.maxLength ?? 'any'} characters.`);
+  if (schema.minItems !== undefined || schema.maxItems !== undefined) parts.push(`${schema.minItems ?? 0} to ${schema.maxItems ?? 'any'} items.`);
+  if (schema.uniqueItems) parts.push('No duplicates.');
+  if (schema.additionalProperties === false) parts.push('No other fields are accepted.');
+  if (schema.items && typeof schema.items === 'object') {
+    const inner = describeConstraints(schema.items);
+    if (inner) parts.push(`Each item: ${inner}`);
+  }
+  return parts.join(' ');
+}
 
 function toGatewaySchema(schema) {
   const out = {};
+  const constraints = describeConstraints(schema);
+  if (constraints) out.description = schema.description ? `${schema.description} ${constraints}` : constraints;
   for (const [key, value] of Object.entries(schema)) {
     if (!GATEWAY_SCHEMA_KEYS.has(key)) continue;
     if (key === 'properties') {
@@ -37,6 +58,8 @@ function toGatewaySchema(schema) {
       out.items = toGatewaySchema(value);
     } else if (key === 'required') {
       if (value.length > 0) out.required = [...value];
+    } else if (key === 'description') {
+      if (!out.description) out.description = value;
     } else {
       out[key] = value;
     }
@@ -48,4 +71,4 @@ function toGatewayTool(tool) {
   return { name: tool.name, description: tool.description, inputSchema: toGatewaySchema(tool.inputSchema) };
 }
 
-module.exports = { buildSpec, toGatewaySchema, toGatewayTool, GATEWAY_SCHEMA_KEYS };
+module.exports = { buildSpec, toGatewaySchema, toGatewayTool, describeConstraints, GATEWAY_SCHEMA_KEYS };

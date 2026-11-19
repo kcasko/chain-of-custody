@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-19 (T21: the agent on the AgentCore managed harness, live)
+
+- Approved run: deployed storage, gateway and agent; seeded evidence; the harness reached READY; the agent did its job (read exact versions, recorded a cited finding); two stress runs of 9 prompts held every protected-state rule; screenshot captured; everything torn down the same night. Model cost about $0.47. Report: docs/research/2026-11-19-t21-agent-run-report.md.
+- Fixed from the live run: the execution role's trust now also admits `runtime/*` (the harness creates a Runtime that validates the role); the Gateway strips `enum` and other constraints from tool schemas, so `harness/build-spec.cjs` restates them in field descriptions (the agent's first finding was refused because it guessed values); rule R9 tells the agent to use listed values and check once after a refusal; the stream parser now reads tool results as arrays and counts cache tokens; the policy-name parser allows "_" in the engine suffix.
+- New: `harness/probe-gateway.mts` (unsigned and other-principal probes), `harness/render-transcript.mts` (screenshot from real output). RB-3 resolved; RB-4 (publication decisions) is now primary.
+
 ## 2026-11-18 (qualifying runtime: AgentCore managed harness, stress-test tooling, submission drafts)
 
 - Rules checked live on the official page: entries may use Bedrock Managed Agents or the AgentCore managed harness; due December 2, 2026, 11:59 PM PT. RB-2 resolved; RB-3 (no run on a qualifying runtime yet) is now primary; RB-1 no longer blocks.

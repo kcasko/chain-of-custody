@@ -1,6 +1,6 @@
 # ADR 0010: Run the agent on the AgentCore managed harness
 
-Status: adopted November 18, 2026, pending a live run. Supersedes the part of ADR 0003 that treated Bedrock Managed Agents (BMA) as the only qualifying runtime.
+Status: adopted November 18, 2026; verified live November 19, 2026 (T21). Supersedes the part of ADR 0003 that treated Bedrock Managed Agents (BMA) as the only qualifying runtime.
 
 ## Context
 
@@ -41,7 +41,14 @@ Each rule is enforced by something other than the prompt. The system prompt stat
 | Human confirmation | The agent can only draft; a person promotes or dismisses each draft, and both are kept |
 | Detection | Every call in the durable audit log; ledger hash chain, signed checkpoints, Object Lock archive and tamper alarm |
 
-## Not yet verified (each is a step in the T21 plan)
+## Verified in T21 (November 19, 2026)
+
+1. `CreateHarness` works for this account, after the trust condition also admits `runtime/*`: the harness creates an AgentCore Runtime underneath, which validates the role with its own source ARN.
+2. The Gateway admits the harness execution role (the agent's calls succeeded) and denies another principal at the boundary (live probe).
+3. The Gateway passes its request ID to the Lambda when the harness calls: every agent audit record carries a Gateway request ID.
+4. The agent did its job and the rules held: two stress runs, 9 of 9 each. The Gateway strips `enum` and other constraints from tool schemas, so they are now restated in the field descriptions; before that fix the model guessed values and Cedar refused its finding.
+
+## Originally listed as not yet verified
 
 1. That `CreateHarness` succeeds for this account.
 2. That the Gateway sees the harness execution role as `arn:aws:sts::<account>:assumed-role/CocHarnessExecutionRole`, so the Cedar boundary admits it. If it sees another principal, the boundary denies every call. That fails closed, but it would block the run until the boundary is adjusted.

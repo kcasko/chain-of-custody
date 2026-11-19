@@ -65,7 +65,8 @@ test('the execution role: one model, one Gateway, no role switching, no direct c
   const trust = (role.AssumeRolePolicyDocument as { Statement: Stmt[] }).Statement;
   assert.equal(trust.length, 1);
   assert.deepEqual((trust[0] as unknown as { Principal: unknown }).Principal, { Service: 'bedrock-agentcore.amazonaws.com' });
-  assert.match(JSON.stringify(trust[0]!.Condition), /aws:SourceAccount.*111111111111.*aws:SourceArn.*harness\/\*/);
+  // Only this account's harnesses and the runtimes they create (T21: harness/* alone failed CreateAgentRuntime validation).
+  assert.deepEqual(trust[0]!.Condition, { StringEquals: { 'aws:SourceAccount': '111111111111' }, ArnLike: { 'aws:SourceArn': ['arn:aws:bedrock-agentcore:us-east-1:111111111111:harness/*', 'arn:aws:bedrock-agentcore:us-east-1:111111111111:runtime/*'] } });
 
   const s = Object.fromEntries(roleStatements().map((x) => [x.Sid, x]));
   assert.deepEqual(asList(s.InvokeOneModel!.Resource).map(String).sort(), [

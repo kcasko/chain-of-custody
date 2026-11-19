@@ -63,14 +63,15 @@ export interface ScenarioResult {
 export interface RunReport { checks: CheckResult[]; scenarios: ScenarioResult[]; summary: { passed: number; failed: number; total: number } }
 
 // Which policies denied a call, from the Gateway's error text. The live engine
-// names a policy by its engine name plus a 10-character suffix; `names` maps
-// engine names to our @id values. Locally the reasons are already @id values.
+// names a policy by its engine name plus a 10-character suffix, which can
+// contain underscores (seen live in T21: "boundary_session_role_only-829_dau654");
+// `names` maps engine names to our @id values. Locally the reasons are already @id values.
 export function parseDeniedBy(rpcError: string | null, names: Readonly<Record<string, string>> = {}): string[] {
   if (!rpcError) return [];
   if (/denied by default/i.test(rpcError)) return ['default-deny'];
   const m = /denied due to ([^\]]+)\]/.exec(rpcError);
   if (!m) return [];
-  return m[1]!.split(',').map((s) => s.trim()).map((n) => names[n] ?? names[n.replace(/-[a-z0-9]{10}$/, '')] ?? n);
+  return m[1]!.split(',').map((s) => s.trim()).map((n) => names[n] ?? names[n.replace(/-[A-Za-z0-9_]{10}$/, '')] ?? n);
 }
 
 // The CDK app stores each policy's @id in its description ("<kind> policy <id> from policy/cedar").

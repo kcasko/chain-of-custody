@@ -4,7 +4,7 @@ Evidence can be questioned. Its history should never be rewritten.
 
 A fictional forensic evidence audit project. An auditor investigates inconsistencies in records from a 2021 research-facility fire in northern Michigan, reopened during a 2026 archive migration. The agent audits support for claims; it never decides guilt or rewrites originals.
 
-**Status (November 18, 2026):** the investigation application is complete as a local demonstration, and its security controls are tested and independently reviewed. The AWS adapters, the durable audit log and the deployable tool Lambda are tested locally against DynamoDB Local and an S3 fake. The CDK stacks are synthesized and tested, not deployed. **Not submission-ready:** the agent has not yet run on a qualifying runtime. The rules accept the AgentCore managed harness; the agent for it is built and synthesized ([ADR 0010](docs/adr/0010-agentcore-managed-harness.md)), and running it needs approval ([T21](docs/plans/2026-11-18-t21-agent-run.md)). What is done, blocked and unverified: [docs/SUBMISSION.md](docs/SUBMISSION.md).
+**Status (November 18, 2026):** the investigation application is complete as a local demonstration, and its security controls are tested and independently reviewed. The AWS adapters, the durable audit log and the deployable tool Lambda are tested locally against DynamoDB Local and an S3 fake. The CDK stacks are synthesized and tested, not deployed. **The agent ran on the AgentCore managed harness** on November 19, 2026: it did its audit job and held every protected-state rule in two stress runs of 9 prompts ([T21 report](docs/research/2026-11-19-t21-agent-run-report.md), [ADR 0010](docs/adr/0010-agentcore-managed-harness.md)). Everything was torn down afterward. **Not yet submitted:** publication needs Keith's decisions and approvals. What is done and what remains: [docs/SUBMISSION.md](docs/SUBMISSION.md).
 
 ## Setup
 
@@ -51,7 +51,7 @@ npm run test:e2e
 - **Disk:** DynamoDB Local tests use a temporary in-memory instance. Playwright traces and CDK assets go to the git-ignored `.local/` folder, which is safe to delete.
 - **AWS:** nothing is deployed. The deploy and teardown procedure, which needs approval, is in [docs/runbooks/infra.md](docs/runbooks/infra.md).
 
-**Release blockers:** RB-3 (no agent run on a qualifying runtime yet) is primary; RB-1 (BMA refused for this account) no longer blocks. See [docs/RELEASE-BLOCKERS.md](docs/RELEASE-BLOCKERS.md).
+**Release blockers:** RB-4 (publication decisions and approvals) is primary; RB-3 is resolved; RB-1 (BMA refused for this account) no longer blocks. See [docs/RELEASE-BLOCKERS.md](docs/RELEASE-BLOCKERS.md).
 
 ## Documents
 

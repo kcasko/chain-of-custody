@@ -38,8 +38,14 @@ export class CocAgentStack extends cdk.Stack {
       roleName: HARNESS_EXECUTION_ROLE[cfg.stage],
       description: 'AgentCore managed harness for the Blackwater audit agent: one model, one Gateway',
       assumedBy: new iam.ServicePrincipal('bedrock-agentcore.amazonaws.com', {
-        // Confused-deputy protection: only harnesses in this account.
-        conditions: { StringEquals: { 'aws:SourceAccount': account }, ArnLike: { 'aws:SourceArn': `arn:aws:bedrock-agentcore:${region}:${account}:harness/*` } },
+        // Confused-deputy protection: only this account's AgentCore harnesses and
+        // the runtimes they create. A harness creates an AgentCore Runtime under
+        // it, and the runtime validates the role with its own source ARN; with
+        // harness/* alone, CreateAgentRuntime failed role validation (T21, Nov 19).
+        conditions: {
+          StringEquals: { 'aws:SourceAccount': account },
+          ArnLike: { 'aws:SourceArn': [`arn:aws:bedrock-agentcore:${region}:${account}:harness/*`, `arn:aws:bedrock-agentcore:${region}:${account}:runtime/*`] },
+        },
       }),
       maxSessionDuration: cdk.Duration.hours(1),
     });

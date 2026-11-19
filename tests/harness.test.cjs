@@ -85,6 +85,25 @@ test('Gateway tool schemas use only keys the Gateway supports', () => {
   }
 });
 
+test('every constraint the Gateway strips is restated in the description the model reads (T21 fix)', () => {
+  const g = toGatewayTool(spec.tools.find((t) => t.name === 'record_finding'));
+  const p = g.inputSchema.properties;
+  assert.match(p.finding_type.description, /Must be exactly one of: discrepancy, provenance_gap, clock_uncertainty, unresolved_question, integrity_check_result\./);
+  assert.match(p.uncertainty.description, /Must be exactly one of: low, medium, high\./);
+  assert.match(p.summary.description, /Length 1 to 2000 characters/);
+  assert.match(p.cited_evidence_ids.description, /1 to 10 items\. No duplicates\. Each item: Must match the pattern \^BW-\[0-9\]\{3\}\$/);
+  assert.match(g.inputSchema.description, /No other fields are accepted/);
+  // Nothing constrained in the source is left undescribed in the Gateway schema.
+  const walk = (src, out, at) => {
+    const keys = ['enum', 'pattern', 'minLength', 'maxLength', 'minItems', 'maxItems'].filter((k) => src[k] !== undefined);
+    if (keys.length) assert.ok(out.description && out.description.length > 0, `${at} has ${keys.join(', ')} but no description`);
+    for (const [k, v] of Object.entries(src.properties ?? {})) walk(v, out.properties[k], `${at}.${k}`);
+  };
+  for (const tool of spec.tools) walk(tool.inputSchema, toGatewayTool(tool).inputSchema, tool.name);
+  const pk = toGatewayTool(spec.tools.find((t) => t.name === 'propose_custody_event')).inputSchema.properties.event_kind;
+  assert.match(pk.description, /Must be exactly one of: transfer, historical_assertion, correction\./);
+});
+
 test('MCP responses parse from JSON and SSE bodies', () => {
   const msg = { jsonrpc: '2.0', id: 1, result: { content: [{ type: 'text', text: '{"status":"ok"}' }] } };
   assert.deepEqual(parseMcpBody(JSON.stringify(msg)), msg);
