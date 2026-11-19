@@ -1,0 +1,6 @@
+#SYNTHETIC FIXTURE - fictional case. Fire alarm controller raw export.
+#source_clock=controller RTC; last NTP sync: none recorded
+2021-10-13 23:42:31 ZONE4 TROUBLE
+2021-10-13 23:44:08 ZONE4 ALARM
+2021-10-13 23:44:09 GENERAL ALARM
+2021-10-13 23:59:50 ZONE2 ALARM

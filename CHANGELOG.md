@@ -7,6 +7,8 @@
 - README rewritten as the public front page; architecture image (`docs/submission/architecture.html` rendered by `harness/render-architecture.mts`, claims checked against what ran live); workspace and Integrity Challenge screenshots; Builder Center draft finalized with links and the image.
 - `tests/collaboration.test.cjs`: the one test that needs a local Mozaik checkout now skips with a reason on other machines instead of failing a fresh clone. It still runs on the original machine.
 - Commit history rewritten to the GitHub no-reply address (backup bundle kept locally). Commit hashes quoted earlier in this changelog refer to the pre-rewrite history.
+- Builder Center draft rewritten story-first: the fictional case (BW-001 and BW-005, "the missing hour"; BW-010, "the invisible editor") leads, and the live T21 runs drive it. Agent quotes are verbatim; every required section is kept.
+- Fixed: `fixtures/evidence/BW-005/alarm-controller-export.log` had never been committed because `.gitignore` ignored `*.log`. A fresh clone failed 101 tests and the fixture check. `.gitignore` now keeps evidence fixtures tracked, and the file is committed unchanged (its hash matches the manifest).
 - Publication runbook: docs/submission/PUBLISHING.md. Nothing pushed, published or submitted.
 
 ## 2026-11-19 (T21: the agent on the AgentCore managed harness, live)

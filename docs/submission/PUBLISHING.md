@@ -22,7 +22,7 @@ Three separate steps, each needing Keith's explicit approval at the time: (1) ma
 | Untracked or ignored material that must stay private | `docs/reviews/2026-11-16T18-57-34-488Z-b9c20f67/` is untracked and is never added; `.local/` (deploy configs, CDK assets, Playwright traces, the history backup bundle) is git-ignored |
 | Local machine paths | `collaboration/config.json` and three setup docs contain `D:/Repos/...` and `C:/Users/keith/...` paths for the local multi-agent collaboration harness. Low sensitivity (they show only a Windows user name); left as is. The one test that needs that local checkout now skips with a reason on other machines |
 | Case content | All synthetic and labeled as such |
-| Fresh-clone usability | `npm ci`, `npm test`, `npm run typecheck`, `npm run test:e2e` need no AWS or local-only paths; DynamoDB Local tests skip with a reason if Java or DynamoDB Local is missing |
+| Fresh-clone usability | Checked November 19 with a real clone. The first check failed: the BW-005 controller export was ignored by `*.log` in `.gitignore` and had never been committed (fixed). Results after the fix are in the commit that follows it. No AWS or local-only paths are needed; DynamoDB Local tests skip with a reason if Java or DynamoDB Local is missing |
 
 ## Step 1: make the repository public (needs approval)
 
