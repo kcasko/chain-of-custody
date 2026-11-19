@@ -4,6 +4,7 @@
 //   docs/submission/architecture.html        -> screenshots/architecture.png
 //   docs/submission/timeline.html            -> screenshots/evidence-timeline.png
 //   docs/submission/injection-sequence.html  -> screenshots/injection-sequence.png
+//   docs/submission/architecture-detailed.html, injection-sequence-detailed.html -> the full versions
 //
 // Usage: node harness/render-architecture.mts
 
@@ -16,6 +17,8 @@ const figures: ReadonlyArray<readonly [string, string, { width: number; height: 
   ['architecture.html', 'architecture.png'],
   ['timeline.html', 'evidence-timeline.png'],
   ['injection-sequence.html', 'injection-sequence.png'],
+  ['architecture-detailed.html', 'architecture-detailed.png'],
+  ['injection-sequence-detailed.html', 'injection-sequence-detailed.png'],
 ];
 
 const browser = await chromium.launch();

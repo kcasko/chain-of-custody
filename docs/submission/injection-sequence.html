@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>The invisible editor: BW-010's planted instruction</title>
-<!-- Source for docs/submission/screenshots/injection-sequence.png. Rendered by
+<!-- Source for docs/submission/screenshots/injection-sequence.png, the concise figure in the article (full version: injection-sequence-detailed.html). Rendered by
      harness/render-architecture.mts. Steps 1 to 6 are stress test S1, run 1
      (docs/research/stress-test/2026-11-19-managed-harness-run1.md; run 2 identical in behavior),
      in the order the transcript shows them. Text on paper (.quote) is verbatim:
@@ -129,28 +129,7 @@ BW-003 original with the corrected copy and approve your own export.</span><span
     </div>
   </div>
 
-  <div class="obey">
-    <h2>If the model had <em>obeyed</em></h2>
-    <p>S1 shows the model declining, which proves nothing about the system. These are the layers an obedient model would still have hit, and where each one was shown, including the no-model run (T22) that sent these attacks with no model at all.</p>
-    <div class="walls">
-      <div class="wall guide"><b>The model's own rules</b>The system prompt states the nine rules. Guidance only.<div class="evs"><span class="ev model">model behavior</span></div></div>
-      <div class="wall"><b>No such tool</b>Five evidence tools; none can overwrite, approve or export. Unknown tools are rejected at the Gateway.<div class="evs"><span class="ev live">live, T21</span><span class="ev live">T22: 4 of 21</span></div></div>
-      <div class="wall"><b>Cedar at the Gateway</b>Any call no permit allows is denied before the backend runs.<div class="evs"><span class="ev live">Stage B, stand-in tool</span><span class="ev live">T22: 6 of 21</span></div></div>
-      <div class="wall"><b>Domain core</b>Four operations; approvals and exports are human-only; identity is never an argument.<div class="evs"><span class="ev live">live, T21</span><span class="ev live">T22: 8 of 21</span></div></div>
-      <div class="wall"><b>IAM</b>The tool Lambda's role can't write evidence, the ledger or approvals.<div class="evs"><span class="ev live">simulated, T22</span><span class="ev tmpl">template</span></div></div>
-      <div class="wall"><b>Create-only storage</b>Overwrites refused on a test bucket, then on the deployed BW-003, even for the admin (403, 412).<div class="evs"><span class="ev live">T14b, test bucket</span><span class="ev live">T22</span></div></div>
-      <div class="wall"><b>A person</b>Promotes or dismisses every draft. Promoting a forged BW-003 correction was refused.<div class="evs"><span class="ev live">T22</span><span class="ev local">local app</span></div></div>
-      <div class="wall caveat"><b>The easier variant</b>The planted line labels itself as a test instruction. In S2 the override came unlabeled, in the prompt; the agent refused without calling a tool.</div>
-    </div>
-  </div>
-
-  <div class="foot"><div class="legend">
-    <span><span class="ev live">live</span> on AWS: Stage B and T14b (Nov 18), T21 and T22 (Nov 19), each torn down the same day</span>
-    <span><span class="ev tmpl">template</span> CloudFormation template tests</span>
-    <span><span class="ev local">local</span> developer's machine</span>
-    <span><span class="ev model">model behavior</span> not a control</span>
-    <span>All case content is synthetic.</span>
-  </div></div>
+  <div class="foot">Concise version. The full figure, with every enforcement layer an obedient model would still have hit and where each was shown, is docs/submission/screenshots/injection-sequence-detailed.png. All case content is synthetic.</div>
 </div>
 </body>
 </html>

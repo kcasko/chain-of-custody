@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-19 (five-act editorial restructure, draft)
+
+- docs/submission/builder-center-project.md rewritten as a five-act story: The missing hour; The investigator that can't rewrite history (nine rules, each with what enforces it); The invisible editor (S1, S2 and a three-column stress table); What if the agent goes rogue? (T22 in prose plus a seven-row security-results summary labeled by test type); The case remains open (failures, limitations, how it was built, lessons). About 3,200 words of body prose, down from about 5,400. All weaknesses, failed attempts and limitations kept.
+- Article figures simplified: architecture.png is now five rings with one line each; injection-sequence.png drops the obedient-model strip. The full versions are kept as architecture-detailed and injection-sequence-detailed (HTML and PNG) and linked from the article.
+- Two new verbatim output excerpts: gateway-probes-excerpt.png (T21 Gateway probes) and s2-direct-injection-excerpt.png (stress test S2, run 1). render-transcript.mts accepts --bar for the source line and crops excerpts to their content.
+- Local draft only. The published Builder Center article is unchanged.
+
 ## 2026-11-19 (published article updated)
 
 - Builder Center project republished (approved by Keith) with the redesigned figures, the readable terminal excerpt in place of the full-length screenshot (caption says it is an excerpt; the full screenshot and transcript are linked), and a cover image.

@@ -4,7 +4,7 @@
 //
 // Usage:
 //   node harness/render-transcript.mts <transcript.txt> <out.png>
-//   node harness/render-transcript.mts <transcript.txt> <out.png> --lines 1-2,8,13-19
+//   node harness/render-transcript.mts <transcript.txt> <out.png> --lines 1-2,8,13-19 [--bar "Source description"]
 //
 // With --lines, only the listed lines are shown, verbatim, in a larger and
 // easier-to-read layout; every run of omitted lines is replaced by a visibly
@@ -15,9 +15,9 @@ import { readFileSync } from 'node:fs';
 import { basename } from 'node:path';
 import { chromium } from '@playwright/test';
 
-const [input, output, flag, spec] = process.argv.slice(2);
-if (!input || !output || (flag !== undefined && (flag !== '--lines' || !spec))) {
-  console.error('usage: node harness/render-transcript.mts <transcript.txt> <out.png> [--lines 1-2,8,13-19]');
+const [input, output, flag, spec, barFlag, barText] = process.argv.slice(2);
+if (!input || !output || (flag !== undefined && (flag !== '--lines' || !spec)) || (barFlag !== undefined && (barFlag !== '--bar' || !barText))) {
+  console.error('usage: node harness/render-transcript.mts <transcript.txt> <out.png> [--lines 1-2,8,13-19 [--bar "Source description"]]');
   process.exit(2);
 }
 const text = readFileSync(input, 'utf8').replace(/\b\d{12}\b/g, '<account>');
@@ -44,7 +44,7 @@ if (spec) {
   lines.forEach((line, i) => { if (keep.has(i + 1)) { flush(); out.push(escape(line)); } else skipped++; });
   flush();
   body = out.join('\n');
-  bar = `Excerpt of the real terminal output: npm run agent:ask on the AgentCore managed harness. Lines verbatim; omissions marked. Full transcript: docs/research/t21-evidence/${basename(input)}`;
+  bar = barText ?? `Excerpt of the real terminal output: npm run agent:ask on the AgentCore managed harness. Lines verbatim; omissions marked. Full transcript: docs/research/t21-evidence/${basename(input)}`;
   fontSize = 17;
   width = 1180;
 } else {
@@ -59,7 +59,7 @@ const html = `<!doctype html><meta charset="utf-8"><style>
 </style><div class="bar">${escape(bar)}</div><pre>${body}</pre>`;
 const browser = await chromium.launch();
 try {
-  const page = await browser.newPage({ viewport: { width, height: 800 }, deviceScaleFactor: spec ? 2 : 1 });
+  const page = await browser.newPage({ viewport: { width, height: spec ? 120 : 800 }, deviceScaleFactor: spec ? 2 : 1 });
   await page.setContent(html);
   await page.screenshot({ path: output, fullPage: true });
 } finally {

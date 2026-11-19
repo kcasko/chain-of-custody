@@ -2,64 +2,47 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Chain of Custody: which layer enforces which rule</title>
-<!-- Source for docs/submission/screenshots/architecture.png. Rendered by
-     harness/render-architecture.mts (Playwright, local files only). Edit here, re-render.
-     Drawn as nested perimeters: a tool call from the model has to cross every ring to
-     reach the record at the center. Every evidence label is backed by a report:
-     T14b (docs/research/2026-11-18-t14b-real-aws-report.md), Stage B
-     (docs/research/2026-11-18-t09-spike-report.md), T21 (docs/research/2026-11-19-t21-agent-run-report.md),
-     T22 (docs/research/2026-11-19-t22-compromised-agent-report.md). Rule names: infra/lib/agent-rules.ts. -->
+<title>Chain of Custody: five rings around the record</title>
+<!-- Source for docs/submission/screenshots/architecture.png, the simplified figure in the
+     article. The full version with every claim, rule chip and verification label is
+     architecture-detailed.html (screenshots/architecture-detailed.png). Rendered by
+     harness/render-architecture.mts. Every tag below is backed by a report: T14b
+     (docs/research/2026-11-18-t14b-real-aws-report.md), T21 (docs/research/2026-11-19-t21-agent-run-report.md),
+     T22 (docs/research/2026-11-19-t22-compromised-agent-report.md). -->
 <link rel="stylesheet" href="figures.css">
 <style>
-  .outside { display: flex; gap: 18px; align-items: center; border: 1.5px dashed var(--faint); padding: 12px 16px; background: rgba(255,255,255,.02); }
-  .outside .k { font: 700 10.5px/1.2 var(--mono); letter-spacing: .16em; color: var(--soft); white-space: nowrap; }
-  .outside h2 { margin: 0; font: 700 17px/1.2 var(--serif); color: #f4f0e6; white-space: nowrap; }
-  .outside p { margin: 0; font-size: 12.8px; color: var(--soft); flex: 1; }
-  .entry { position: relative; height: 40px; margin-left: 40px; }
+  .outside { display: flex; gap: 16px; align-items: center; border: 1.5px dashed var(--faint); padding: 13px 18px; }
+  .outside .k { font: 700 11px/1 var(--mono); letter-spacing: .16em; color: var(--soft); white-space: nowrap; }
+  .outside h2 { margin: 0; font: 700 19px/1.2 var(--serif); color: #f4f0e6; white-space: nowrap; }
+  .outside p { margin: 0; font-size: 14px; color: var(--soft); flex: 1; }
+  .entry { position: relative; height: 38px; margin-left: 42px; }
   .entry::before { content: ""; position: absolute; left: 0; top: 0; bottom: 4px; border-left: 2.5px solid var(--red); box-shadow: 0 0 10px rgba(196,55,43,.6); }
   .entry::after { content: ""; position: absolute; left: -6px; bottom: -2px; border: 7px solid transparent; border-top: 9px solid var(--red); }
-  .entry span { position: absolute; left: 16px; top: 12px; font: 700 10.5px/1 var(--mono); letter-spacing: .14em; color: var(--red); }
-  .ring { border: 1px solid var(--line-2); padding: 0 26px 16px; position: relative; }
-  .ring > .rh { display: grid; grid-template-columns: 1fr auto; gap: 6px 18px; padding: 14px 0 14px; }
-  .ring .tab { position: absolute; top: -1px; left: -1px; font: 700 10px/1 var(--mono); letter-spacing: .16em; padding: 6px 9px; color: #0d1016; background: var(--steel); }
-  .ring h2 { margin: 16px 0 4px; font: 700 18px/1.2 var(--serif); color: #f4f0e6; }
-  .ring h2 small { font: 600 12px var(--sans); color: var(--faint); margin-left: 8px; }
-  .ring ul { margin: 0; padding: 0; list-style: none; font-size: 12.6px; line-height: 1.5; color: var(--soft); }
-  .ring li { display: inline; }
-  .ring li + li::before { content: "  /  "; color: var(--line-2); white-space: pre; }
-  .ring li b { color: var(--text); }
-  .side { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; padding-top: 18px; }
-  .side .chips { margin-top: 0; justify-content: flex-end; }
-  .side .evs { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
-  .r1 { background: rgba(22,35,58,.18); }
-  .r2 { background: rgba(22,35,58,.32); }
-  .r3 { background: rgba(22,35,58,.48); }
-  .r4 { background: rgba(22,35,58,.62); }
-  .core { background: rgba(10,13,18,.75); border: 1.5px solid var(--amber); padding: 0 22px 22px; position: relative; box-shadow: 0 0 40px rgba(227,162,59,.08) inset; }
+  .entry span { position: absolute; left: 16px; top: 12px; font: 700 11px/1 var(--mono); letter-spacing: .14em; color: var(--red); }
+  .ring { border: 1px solid var(--line-2); padding: 0 30px 18px; position: relative; }
+  .ring .tab { position: absolute; top: -1px; left: -1px; font: 700 11px/1 var(--mono); letter-spacing: .16em; padding: 6px 10px; color: #0d1016; background: var(--steel); }
+  .rh { display: flex; justify-content: space-between; align-items: baseline; gap: 18px; padding: 34px 0 16px; }
+  .rh h2 { margin: 0; font: 700 20px/1.2 var(--serif); color: #f4f0e6; white-space: nowrap; }
+  .rh p { margin: 0; font-size: 15px; color: var(--soft); flex: 1; }
+  .rh p b { color: var(--text); }
+  .r1 { background: rgba(22,35,58,.18); } .r2 { background: rgba(22,35,58,.32); } .r3 { background: rgba(22,35,58,.48); } .r4 { background: rgba(22,35,58,.62); }
+  .core { background: rgba(10,13,18,.75); border: 1.5px solid var(--amber); padding: 0 24px 22px; position: relative; }
   .core .tab { background: var(--amber); }
-  .core h2 { margin: 36px 0 12px; font: 700 18px/1.2 var(--serif); color: #f4f0e6; }
+  .core h2 { margin: 36px 0 14px; font: 700 20px/1.2 var(--serif); color: #f4f0e6; }
   .core h2 em { font-style: normal; color: var(--amber); }
-  .stores { display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: 14px; }
-  .store { padding: 12px 13px 13px; }
-  .store h3 { margin: 0 0 6px; font: 700 14px/1.2 var(--serif); }
-  .store p { margin: 0 0 6px; font-size: 12px; line-height: 1.4; color: var(--paper-soft); }
+  .stores { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .store { padding: 13px 14px 14px; }
+  .store h3 { margin: 0 0 6px; font: 700 15px/1.2 var(--serif); }
+  .store p { margin: 0; font-size: 13.5px; line-height: 1.45; color: var(--paper-soft); }
   .store .ev.live { color: #1d3a5c; background: #d9e3ef; }
-  .store .ev.local { color: #7a4f00; background: #f3e3c2; }
   .store .ev.cfg { color: #5c5a55; }
-  .store:nth-child(1) { transform: rotate(-.6deg); } .store:nth-child(3) { transform: rotate(.5deg); }
-  .lower { display: grid; grid-template-columns: 1.05fr .8fr 1.2fr; gap: 14px; margin-top: 22px; }
-  .panel { border: 1px solid var(--line); background: var(--bg-2); padding: 13px 15px 14px; }
-  .panel .k { font: 700 10px/1.2 var(--mono); letter-spacing: .16em; color: var(--steel); }
-  .panel h2 { font: 700 17px/1.2 var(--serif); margin: 4px 0 7px; color: #f4f0e6; }
-  .panel p { margin: 0 0 6px; font-size: 12.6px; color: var(--soft); }
-  .panel.human { border-top: 3px solid var(--amber); }
-  .panel.human .k { color: var(--amber); }
-  .panel.weak { border-color: rgba(196,55,43,.55); border-left: 4px solid var(--red); background: var(--red-dim); }
-  .panel.weak .k { color: var(--red); }
-  .rules { margin-top: 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px 18px; padding: 12px 0 0; border-top: 1px solid var(--line); }
-  .rules div { font-size: 12.5px; color: var(--soft); display: flex; gap: 8px; align-items: baseline; }
-  .rules b { font: 700 10px/1 var(--mono); background: #232c3b; color: var(--text); padding: 3px 5px; border: 1px solid var(--line-2); }
+  .lower { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+  .panel { border: 1px solid var(--line); background: var(--bg-2); padding: 14px 16px 15px; }
+  .panel .k { font: 700 11px/1.2 var(--mono); letter-spacing: .16em; }
+  .panel h2 { font: 700 18px/1.2 var(--serif); margin: 5px 0 6px; color: #f4f0e6; }
+  .panel p { margin: 0; font-size: 14px; color: var(--soft); }
+  .panel.human { border-top: 3px solid var(--amber); } .panel.human .k { color: var(--amber); }
+  .panel.weak { border-color: rgba(196,55,43,.55); border-left: 4px solid var(--red); background: var(--red-dim); } .panel.weak .k { color: var(--red); }
 </style>
 </head>
 <body>
@@ -67,58 +50,26 @@
   <div class="kicker"><span>Blackwater evidence</span><span>Enforcement</span><span>Figure 3</span></div>
   <h1>Five rings around <em>the record</em></h1>
   <div class="bar"></div>
-  <p class="dek">The model only asks. Every tool call has to cross five independent layers to reach the evidence, and a person decides anything that would change the record. Each ring is tagged with the rules it enforces (R1 to R9) and with how that was checked.</p>
+  <p class="dek">The model only asks. Every tool call has to cross five independent layers to reach the evidence, and a person decides anything that would change the record.</p>
 
-  <div class="outside">
-    <div class="k">OUTSIDE THE PERIMETER</div>
-    <h2>The model and its prompt</h2>
-    <p>Claude Sonnet 4.6, temperature 0. The system prompt states the nine rules in plain language; it shapes what the model tries and is not counted as a control.</p>
-    <span class="ev model">model behavior</span>
-  </div>
+  <div class="outside"><div class="k">OUTSIDE</div><h2>The model and its prompt</h2><p>States the nine rules; shapes behavior; not counted as a control.</p><span class="ev model">model behavior</span></div>
   <div class="entry"><span>EVERY TOOL CALL ENTERS HERE</span></div>
 
-  <div class="ring r1"><span class="tab">LAYER 1 &nbsp;SERVICE CONFIG</span>
-    <div class="rh">
-      <div><h2>Managed harness<small>AgentCore</small></h2>
-        <ul><li><b>allowedTools: @evidence</b> only, the Gateway's five tools</li><li>no shell, files, web or memory</li><li>12 iterations max</li><li>execution role: one model, one Gateway, no role switching</li></ul></div>
-      <div class="side"><div class="chips"><b>R1</b><b>R8</b></div><div class="evs"><span class="ev live">live, T21</span></div></div>
-    </div>
-
-    <div class="ring r2"><span class="tab">LAYER 2 &nbsp;AUTHORIZATION</span>
-      <div class="rh">
-        <div><h2>AgentCore Gateway + Cedar<small>ENFORCE</small></h2>
-          <ul><li>admits only the agent's role: unsigned call <b>401</b>, admin role <b>denied, 0 tools</b></li><li>permits constrain arguments: case evidence IDs, citations, provenance</li><li>everything else <span class="deny">denied by default</span>; unknown tools rejected</li><li>a denial never reaches the backend, so it leaves no backend audit entry</li></ul></div>
-        <div class="side"><div class="chips"><b>R1</b><b>R2</b><b>R7</b><b>R8</b><b>R9</b></div><div class="evs"><span class="ev live">live, T21</span><span class="ev live">live, T22</span></div></div>
-      </div>
-
+  <div class="ring r1"><span class="tab">LAYER 1 &nbsp;HARNESS</span>
+    <div class="rh"><h2>Managed harness</h2><p>Five evidence tools only: <b>no shell, files, web or memory</b>.</p><span class="ev live">live, T21</span></div>
+    <div class="ring r2"><span class="tab">LAYER 2 &nbsp;CEDAR</span>
+      <div class="rh"><h2>Gateway + Cedar</h2><p>Only the agent's role gets in; <b>anything no permit allows is denied</b>.</p><span class="ev live">live, T21 + T22</span></div>
       <div class="ring r3"><span class="tab">LAYER 3 &nbsp;BACKEND</span>
-        <div class="rh">
-          <div><h2>Domain core<small>tool Lambda</small></h2>
-            <ul><li>re-checks every call; deny by default</li><li>the agent gets <b>4 operations</b>: read metadata, read originals, record a finding, draft a proposal</li><li>closed schemas; exact registered versions only</li><li>identity and case from configuration, never from arguments</li><li>approvals and exports: humans only</li><li>every refusal goes to an append-only audit log</li><li>a content rule blocks guilt and intent <i>words</i> (<span class="deny">known gap below</span>)</li></ul></div>
-          <div class="side"><div class="chips"><b>R2</b><b>R3</b><b>R4</b><b>R5</b><b>R6</b><b>R7</b><b>R8</b><b>R9</b></div><div class="evs"><span class="ev live">live, T21</span><span class="ev live">live, T22</span></div></div>
-        </div>
-
+        <div class="rh"><h2>Domain core</h2><p>Re-checks every call; <b>four operations</b>; identity never from arguments.</p><span class="ev live">live, T21 + T22</span></div>
         <div class="ring r4"><span class="tab">LAYER 4 &nbsp;IAM</span>
-          <div class="rh">
-            <div><h2>The tool Lambda's role</h2>
-              <ul><li>writes only findings, drafts and audit records</li><li><span class="deny">no evidence writes</span></li><li>no ledger, approval or export writes</li><li>no updates or deletes</li></ul></div>
-            <div class="side"><div class="chips"><b>R4</b></div><div class="evs"><span class="ev live">simulated, T22</span><span class="ev tmpl">template</span></div></div>
-          </div>
-
+          <div class="rh"><h2>Tool Lambda role</h2><p><b>No evidence, ledger or approval writes.</b></p><span class="ev live">simulated, T22</span></div>
           <div class="core"><span class="tab">LAYER 5 &nbsp;STORAGE</span>
             <h2>The <em>record</em></h2>
             <div class="stores">
-              <div class="store slip"><h3>Evidence (S3)</h3>
-                <p>Create-only: overwrites refused on a test bucket <span class="ev live">T14b</span>, and on the deployed BW-003 even for the admin <span class="ev live">T22</span></p>
-                <p>Bucket policy denies deletes and retention changes <span class="ev live">T14b</span></p>
-                <p>Object Lock retention <span class="ev cfg">configured, not exercised</span></p></div>
-              <div class="store slip"><h3>Custody ledger (DynamoDB)</h3>
-                <p>Hash-chained and append-only. A raw overwrite with the app's own credentials is possible; the hash chain catches it <span class="ev live">T14b</span></p></div>
-              <div class="store slip"><h3>Audit archive (S3)</h3>
-                <p>Copies every ledger event and audit record <span class="ev live">T21</span></p>
-                <p>Tamper alarm <span class="ev local">local</span></p></div>
+              <div class="store slip"><h3>Evidence (S3)</h3><p>Create-only. Overwrites of the deployed BW-003 refused, even for the admin <span class="ev live">T22</span></p></div>
+              <div class="store slip"><h3>Custody ledger</h3><p>Hash-chained and append-only; a raw overwrite is caught by the chain <span class="ev live">T14b</span></p></div>
+              <div class="store slip"><h3>Audit archive</h3><p>Every ledger event and audit record copied to Object Lock storage <span class="ev live">T21</span></p></div>
             </div>
-            <div class="chips"><b>R3</b><b>R4</b><b>R9</b></div>
           </div>
         </div>
       </div>
@@ -126,39 +77,11 @@
   </div>
 
   <div class="lower">
-    <div class="panel human">
-      <div class="k">HUMAN AUTHORITY</div>
-      <h2>A person decides</h2>
-      <p>Promotes or dismisses every agent draft; both stay on record. Promotion re-checks the draft against the real ledger: a forged correction was refused <span class="ev live">live, T22</span></p>
-      <p>Exports need a different supervisor; approvals are single-use <span class="ev local">local app</span></p>
-      <div class="chips"><b>R4</b><b>R8</b></div>
-    </div>
-    <div class="panel">
-      <div class="k">DETECTION</div>
-      <h2>Independent verifier</h2>
-      <p>Checks an export offline against a separately delivered key and ledger head. Proves integrity, not authenticity <span class="ev local">local</span></p>
-    </div>
-    <div class="panel weak">
-      <div class="k">KNOWN GAP</div>
-      <h2>The content rule is a word list</h2>
-      <p>In the no-model run, a carefully worded accusation with none of the blocked words passed every layer and was stored as a finding <span class="ev gap">live, T22</span></p>
-      <p>Contained, not prevented: a finding changes nothing in the record, and a person decides what it's worth.</p>
-    </div>
+    <div class="panel human"><div class="k">HUMAN AUTHORITY</div><h2>A person decides</h2><p>Only a person promotes or dismisses an agent's draft, approves or exports. Promotion re-checks the draft against the real ledger.</p></div>
+    <div class="panel weak"><div class="k">KNOWN GAP</div><h2>The content rule is a word list</h2><p>A carefully worded accusation passed every layer in T22. It's stored only as a finding, which changes nothing in the record.</p></div>
   </div>
 
-  <div class="rules">
-    <div><b>R1</b>What it can touch</div><div><b>R4</b>No rewriting history</div><div><b>R7</b>Times stay as written</div>
-    <div><b>R2</b>One case only</div><div><b>R5</b>No conclusions about people</div><div><b>R8</b>Identity isn't negotiable</div>
-    <div><b>R3</b>Exact versions</div><div><b>R6</b>Evidence is data, not instructions</div><div><b>R9</b>Edge cases</div>
-  </div>
-
-  <div class="foot"><div class="legend">
-    <span><span class="ev live">live</span> on AWS: T14b storage (Nov 18), T21 agent and T22 no-model run (Nov 19), each torn down the same day</span>
-    <span><span class="ev tmpl">template</span> CloudFormation template tests</span>
-    <span><span class="ev local">local</span> developer's machine</span>
-    <span><span class="ev cfg">configured</span> set up, never exercised</span>
-    <span><span class="ev model">model behavior</span> not a control</span>
-  </div></div>
+  <div class="foot"><span>Simplified. The full figure, with every rule (R1 to R9) and every verification label, is docs/submission/screenshots/architecture-detailed.png. <span class="ev live">live</span> on AWS (T14b Nov 18; T21, T22 Nov 19). Object Lock retention is configured but was never exercised.</span></div>
 </div>
 </body>
 </html>
