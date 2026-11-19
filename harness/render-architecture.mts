@@ -12,7 +12,7 @@ import { join } from 'node:path';
 import { chromium } from '@playwright/test';
 
 const root = join(import.meta.dirname, '..');
-const figures: ReadonlyArray<readonly [string, string]> = [
+const figures: ReadonlyArray<readonly [string, string, { width: number; height: number }?]> = [
   ['architecture.html', 'architecture.png'],
   ['timeline.html', 'evidence-timeline.png'],
   ['injection-sequence.html', 'injection-sequence.png'],
@@ -20,11 +20,12 @@ const figures: ReadonlyArray<readonly [string, string]> = [
 
 const browser = await chromium.launch();
 try {
-  const page = await browser.newPage({ viewport: { width: 1180, height: 900 }, deviceScaleFactor: 2 });
-  for (const [source, png] of figures) {
+  for (const [source, png, size] of figures) {
+    const page = await browser.newPage({ viewport: size ?? { width: 1180, height: 900 }, deviceScaleFactor: 2 });
     await page.goto(pathToFileURL(join(root, 'docs', 'submission', source)).href);
     await page.locator('.wrap').screenshot({ path: join(root, 'docs', 'submission', 'screenshots', png) });
     console.log(`wrote docs/submission/screenshots/${png}`);
+    await page.close();
   }
 } finally {
   await browser.close();

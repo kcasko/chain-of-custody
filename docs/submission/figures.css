@@ -1,68 +1,83 @@
-/* Shared design system for the three submission figures
-   (timeline.html, injection-sequence.html, architecture.html).
+/* Blackwater visual identity for the submission figures
+   (timeline.html, injection-sequence.html, architecture.html, cover.html).
    Rendered to PNG by harness/render-architecture.mts. Local fonts only, no network.
 
-   Palette
-     ink / navy   structure, verified results
-     oxblood      refusals and denials
-     rust         uncertainty, hypotheticals, known gaps
-     grey         configured or template-only claims
-     amber text   local-only claims
+   Direction: investigative documentary meets forensic case file.
+     charcoal / deep navy   the night, the system
+     off-white paper        evidence, always shown as paper slips
+     warning red            refusals, denials, planted instructions
+     amber                  evidence markers, hypotheticals, the gap, known weaknesses
+     steel blue             verified results
    Evidence labels (.ev) say how a claim was checked: live on AWS, template, local,
-   or configured. Model behavior is always shown dashed: guidance, never a control. */
+   configured, or model behavior. Model behavior is always drawn dashed: guidance,
+   never a control. Decoration is CSS only (grain, vignette, grid); every mark that
+   carries information is placed from the source data. */
 
 :root {
-  --paper: #f7f5f0;
-  --sheet: #fffdf9;
-  --panel: #edf0f4;
-  --panel-2: #e3e8ee;
-  --ink: #18202c;
-  --soft: #4a5260;
-  --faint: #7b828d;
-  --rule: #cfd4db;
-  --navy: #1d3a5c;
-  --navy-bg: #e6edf5;
-  --oxblood: #962b20;
-  --oxblood-bg: #f6e5e1;
-  --rust: #b4561a;
-  --rust-bg: #fbeee2;
-  --grey: #6a717c;
-  --amber: #8a5a00;
+  --bg: #0d1016;
+  --bg-2: #121823;
+  --navy: #16233a;
+  --navy-2: #1d2f4d;
+  --line: #2b3546;
+  --line-2: #3a4659;
+  --text: #e9e5db;
+  --soft: #a7afbb;
+  --faint: #7f8897;
+  --paper: #ece5d6;
+  --paper-ink: #1c1e22;
+  --paper-soft: #5c5a55;
+  --red: #c4372b;
+  --red-dim: rgba(196, 55, 43, .16);
+  --amber: #e3a23b;
+  --amber-dim: rgba(227, 162, 59, .14);
+  --steel: #8fb1dc;
+  --steel-dim: rgba(143, 177, 220, .12);
   --serif: Georgia, "Times New Roman", serif;
   --sans: "Segoe UI", system-ui, sans-serif;
   --mono: Consolas, "Cascadia Mono", monospace;
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--paper); color: var(--ink); font: 14px/1.45 var(--sans); }
-.wrap { width: 1180px; padding: 30px 34px 22px; background: var(--paper); }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 var(--sans); }
+.wrap { width: 1180px; padding: 40px 44px 28px; position: relative; overflow: hidden;
+  background:
+    radial-gradient(ellipse 70% 45% at 18% 0%, rgba(29, 47, 77, .55) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 50% at 100% 100%, rgba(196, 55, 43, .07) 0%, transparent 70%),
+    var(--bg); }
+.wrap::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .5;
+  background-image: linear-gradient(rgba(255,255,255,.022) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.022) 1px, transparent 1px);
+  background-size: 44px 44px; }
+.wrap > * { position: relative; }
 
 /* Masthead */
-.kicker { font: 700 11px/1 var(--sans); letter-spacing: .18em; text-transform: uppercase; color: var(--navy); display: flex; gap: 14px; align-items: center; }
-.kicker span + span { border-left: 1.5px solid var(--rule); padding-left: 14px; color: var(--faint); }
-h1 { font: 700 34px/1.12 var(--serif); margin: 12px 0 0; letter-spacing: -.01em; }
-.bar { width: 64px; height: 4px; background: var(--rust); margin: 12px 0 12px; }
-.dek { font: 15px/1.45 var(--serif); color: var(--soft); margin: 0 0 20px; max-width: 980px; }
+.kicker { font: 700 11.5px/1 var(--mono); letter-spacing: .26em; text-transform: uppercase; color: var(--amber); display: flex; gap: 14px; align-items: center; }
+.kicker span + span { border-left: 1.5px solid var(--line-2); padding-left: 14px; color: var(--faint); }
+h1 { font: 700 46px/1.05 var(--serif); margin: 14px 0 0; letter-spacing: -.015em; color: #f4f0e6; }
+h1 em { font-style: normal; color: var(--amber); }
+.bar { width: 72px; height: 3px; background: var(--red); margin: 16px 0 14px; }
+.dek { font: 16px/1.5 var(--serif); color: var(--soft); margin: 0 0 26px; max-width: 980px; }
 
 /* Shared parts */
 .mono { font-family: var(--mono); }
-.ev { display: inline-block; font: 700 10px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; padding: 3px 6px 3px; border: 1.3px solid; white-space: nowrap; vertical-align: 1px; }
-.ev.live { color: var(--navy); background: var(--navy-bg); }
-.ev.tmpl, .ev.cfg { color: var(--grey); background: transparent; }
+.ev { display: inline-block; font: 700 10.5px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; padding: 3px 6px; border: 1.2px solid; white-space: nowrap; vertical-align: 1px; }
+.ev.live { color: var(--steel); background: var(--steel-dim); }
+.ev.tmpl, .ev.cfg { color: var(--soft); background: transparent; }
 .ev.cfg { border-style: dashed; }
-.ev.local { color: var(--amber); background: #fbf3e2; }
-.ev.model { color: var(--grey); border-style: dashed; background: transparent; }
-.ev.gap { color: var(--rust); background: var(--rust-bg); }
+.ev.local { color: var(--amber); background: var(--amber-dim); }
+.ev.model { color: var(--faint); border-style: dashed; background: transparent; }
+.ev.gap { color: var(--amber); background: var(--amber-dim); }
 .chips { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
-.chips b { font: 700 10.5px/1 var(--mono); background: var(--panel-2); color: var(--ink); padding: 3px 5px; }
-.num { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; background: var(--ink); color: #fff; font: 700 12px/1 var(--mono); flex: none; }
-.deny { color: var(--oxblood); font-weight: 600; }
-.allow { color: var(--navy); font-weight: 600; }
-.quote { font: 12.5px/1.5 var(--mono); background: var(--sheet); border: 1.3px solid var(--rule); border-left: 4px solid var(--ink); padding: 8px 10px; white-space: pre-wrap; margin: 6px 0 0; }
-.quote.untrusted { border-left-color: var(--oxblood); }
-.quote .planted { color: var(--oxblood); font-weight: 700; }
-.quote .lbl { color: var(--faint); }
-.src { display: block; font: 700 9.5px/1.2 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--faint); margin-top: 8px; }
+.chips b { font: 700 10px/1 var(--mono); background: #232c3b; color: var(--text); padding: 3px 5px; border: 1px solid var(--line-2); }
+.marker { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; background: var(--amber); color: #15120b; font: 800 13px/1 var(--mono); flex: none; clip-path: polygon(0 0, 100% 0, 100% 78%, 50% 100%, 0 78%); padding-bottom: 3px; }
+.deny { color: var(--red); font-weight: 700; }
+.allow { color: var(--steel); font-weight: 700; }
+/* Evidence is always paper. */
+.slip { background: var(--paper); color: var(--paper-ink); box-shadow: 0 14px 30px rgba(0,0,0,.45); position: relative; }
+.quote { font: 12.5px/1.5 var(--mono); background: var(--paper); color: var(--paper-ink); border-left: 4px solid var(--paper-soft); padding: 9px 11px; white-space: pre-wrap; margin: 7px 0 0; box-shadow: 0 8px 18px rgba(0,0,0,.35); }
+.quote.untrusted { border-left-color: var(--red); }
+.quote .planted { color: var(--red); font-weight: 700; }
+.quote .lbl { color: #7a776f; }
+.src { display: block; font: 700 9px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--faint); margin-top: 7px; }
 
 /* Footer */
-.foot { margin-top: 18px; padding-top: 10px; border-top: 1.5px solid var(--rule); font-size: 11.5px; color: var(--soft); display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
-.foot .legend { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.foot { margin-top: 22px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--faint); display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+.foot .legend { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }

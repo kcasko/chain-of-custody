@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-19 (Blackwater visual identity)
+
+- figures.css is now a dark investigative case-file system: charcoal and deep navy, off-white paper for every piece of evidence, warning red for refusals and the planted instruction, amber for evidence markers, hypotheticals and known gaps, steel blue for verified results. Decoration is CSS only.
+- Figure 1 (the missing hour): glowing tracks, paper evidence tags, a dominant red 16-minute callout; positions still computed from the source times. Figure 2 (the invisible editor): a reconstruction in four zones (the planted instruction on a paper exhibit, model behavior dashed, authorization in steel panels, the protected evidence as a sealed tag) with numbered evidence markers. Figure 3: redrawn as five nested perimeters around the record, the model outside; every rule chip, claim and verification label carried over (counts checked against the previous version).
+- harness/render-transcript.mts gains --lines: a larger, verbatim excerpt of the real terminal output with every omission marked. New docs/submission/screenshots/agent-running-excerpt.png; the full screenshot is unchanged.
+- Not yet applied to the published Builder Center project.
+
 ## 2026-11-19 (published and submitted)
 
 - Builder Center project published, which on Builder Center is also the hackathon submission (approved by Keith): https://builder.aws.com/project/3MKhHw7OuyENmwH0OzMomYMlRst/chain-of-custody-the-blackwater-evidence. Verified signed in and signed out: title, 16 sections, all four figures with alt text and captions, three tables, nine repository links; listed on the hackathon Projects tab.
