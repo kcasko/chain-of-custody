@@ -114,13 +114,26 @@ export class Workflow {
         return reply(t, (v) => ({ caseId: c, head: v.head, chain: v.chain, checkpoint: v.checkpoint ? { sequence: v.checkpoint.body.sequence, issuedAt: v.checkpoint.body.issuedAt, keyId: v.checkpoint.body.keyId } : null, titles }));
       }
       // Storage keys are internal; the page identifies versions by evidence and version ID.
-      case 'GET /api/evidence': return reply(await d.evidence.list(this.#ctx(userId), c), (list) => list.map(({ objectKey: _key, ...rest }) => rest));
+      // Documented provenance (source clock, zone, raw times, uncertainty) is
+      // attached only after the core has authorized the read. It is the record
+      // as stated at collection, matched by content hash; nothing here decides
+      // which clock is right.
+      case 'GET /api/evidence': {
+        const r = await d.evidence.list(this.#ctx(userId), c);
+        if (!r.ok) return reply(r);
+        const value = await Promise.all(r.value.map(async ({ objectKey: _key, ...rest }) => ({ ...rest, provenance: await d.provenance.forContent(c, rest.sha256) })));
+        return { status: 200, body: { ok: true, value } };
+      }
       case 'GET /api/evidence/read': {
         const ref = { evidenceId: req.query.get('evidenceId') ?? '', versionId: req.query.get('versionId') ?? '' };
-        return reply(await d.evidence.read(this.#ctx(userId), c, ref), (v) => ({
+        const r = await d.evidence.read(this.#ctx(userId), c, ref);
+        if (!r.ok) return reply(r);
+        const v = r.value;
+        return { status: 200, body: { ok: true, value: {
           evidenceId: v.evidenceId, versionId: v.versionId, sha256: v.sha256, size: v.size, mediaType: v.mediaType, isDerivative: v.isDerivative, derivedFrom: v.derivedFrom,
+          provenance: await d.provenance.forContent(c, v.sha256),
           text: new TextDecoder('utf-8', { fatal: false }).decode(v.bytes.subarray(0, TEXT_LIMIT)), truncated: v.bytes.length > TEXT_LIMIT,
-        }));
+        } } };
       }
       case 'GET /api/timeline': return reply(await d.caseRead.timeline(this.#ctx(userId), c));
       case 'GET /api/findings': return reply(await d.findings.list(this.#ctx(userId), c));
@@ -150,7 +163,10 @@ export class Workflow {
         };
         // Verify a copy that has been through JSON, as a recipient would receive it.
         const pkg = JSON.parse(JSON.stringify(r.value));
-        return { status: 200, body: { ok: true, value: { package: pkg, verification: verifyExport(pkg, trust) } } };
+        // The trust file is offered separately so a recipient can verify offline
+        // with `npm run verify:export`. In real use it must reach them through a
+        // channel other than the package itself.
+        return { status: 200, body: { ok: true, value: { package: pkg, trust, verification: verifyExport(pkg, trust) } } };
       }
       case 'POST /api/agent/run': return this.#scriptedAgentPass();
       case 'POST /api/reset': {

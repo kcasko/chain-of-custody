@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-18 (workflow completion: brief, provenance, compare, offline verification)
+
+- Workspace: case brief (folded cover sheet: situation, rules of the record, a path through the case); documented provenance in the reader (source clock, zone, times as written, uncertainty, matched by hash, labeled stated and unverified); Compare tab listing every claimed time exactly as written by source, plus ledger claims, never merged into one chronology; side-by-side version diff whose verdict comes only from the recorded lineage (derivative, same bytes, unexplained, different items).
+- Export: the response now includes the trust file (public checkpoint key and reference head). New offline verifier > chain-of-custody@0.1.0 verify:export
+> node core/tools/verify-export.ts package.json trust.json (exit 0 only for VERIFIED); it states that a pass is integrity, not authenticity.
+- Tests: provenance and trust API checks, CLI test (valid, edited, untrusted key, bad usage), browser test for brief/provenance/compare, and the full-audit browser test now verifies the downloaded package with the CLI. npm test 382/382, test:e2e 11/11.
+
 ## 2026-11-18 (T18: security log view)
 
 - Core: `read_audit_log` (supervisors only) and `CaseReadService.auditLog`: the case's security events, newest 200 first, with total and truncation flag. The read is itself audited. The audit port gains `forCase`; the T16 durable adapter must implement it.

@@ -5,7 +5,7 @@
 'use strict';
 
 const $ = (id) => document.getElementById(id);
-const state = { session: null, actor: null, evidence: [], titles: {}, payloads: new Map(), lastExport: null };
+const state = { session: null, actor: null, evidence: [], titles: {}, payloads: new Map(), lastExport: null, lastTrust: null };
 
 function el(tag, opts = {}, children = []) {
   const node = document.createElement(tag);
@@ -114,6 +114,7 @@ async function readVersion(e) {
     reading = null;
     $('reader-meta').replaceChildren();
     $('reader-text').textContent = '';
+    renderProvenance(null);
     notice(r);
     return;
   }
@@ -123,7 +124,17 @@ async function readVersion(e) {
   if (v.derivedFrom) rows.push(['Derived from', `${v.derivedFrom.versionId} by ${v.derivedFrom.transformation}`]);
   $('reader-meta').replaceChildren(...rows.flatMap(([k, val]) => [el('dt', { text: k }), el('dd', { text: val, className: k.startsWith('SHA') || k.endsWith('ID') ? 'hash' : '' })]));
   $('reader-text').textContent = v.text + (v.truncated ? '\n[truncated]' : '');
+  renderProvenance(v.provenance);
   reader.scrollIntoView({ block: 'nearest' });
+}
+
+function provenanceRows(p) {
+  return [['Source clock', p.sourceClock], ['Time zone', p.timezone], ['Times as written', p.rawTimes.length ? p.rawTimes.join('; ') : 'none stated'], ['Offset uncertainty', p.offsetUncertainty]];
+}
+
+function renderProvenance(p) {
+  $('reader-prov').hidden = !p;
+  $('reader-prov-meta').replaceChildren(...(p ? provenanceRows(p).flatMap(([k, val]) => [el('dt', { text: k }), el('dd', { text: val })]) : []));
 }
 
 async function submitTransfer(ev) {
@@ -136,6 +147,124 @@ async function submitTransfer(ev) {
     ev.target.reset();
     await loadCase();
   }
+}
+
+// ---- Compare ----------------------------------------------------------------
+
+const versionName = (e) => `${e.evidenceId} ${versionLabel(e)}`;
+
+function timeRow(sourceCell, raw, clock, zone, uncertainty, className = '') {
+  return el('tr', { className }, [
+    sourceCell,
+    el('td', { className: 'ws-raw', text: raw, attrs: { 'data-label': 'Time as written' } }),
+    el('td', { text: clock, attrs: { 'data-label': 'Clock' } }),
+    el('td', { text: zone, attrs: { 'data-label': 'Time zone' } }),
+    el('td', { text: uncertainty, attrs: { 'data-label': 'Uncertainty' } }),
+  ]);
+}
+
+async function loadCompare() {
+  const rows = $('times-rows');
+  renderComparePickers();
+  if (!state.evidence.length) {
+    rows.replaceChildren(el('tr', {}, [el('td', { text: 'Not visible to this person.', attrs: { colspan: '5' } })]));
+    return;
+  }
+  const out = [];
+  for (const e of state.evidence) {
+    const p = e.provenance;
+    const times = p && p.rawTimes.length ? p.rawTimes : [p ? 'none stated' : 'no documented provenance'];
+    times.forEach((t, i) => {
+      const source = el('td', { attrs: { 'data-label': 'Source' } }, i === 0
+        ? [el('span', { className: 'entry', text: versionName(e) }), el('span', { className: 'reason', text: state.titles[e.evidenceId] ?? '' })]
+        : [el('span', { className: 'reason', text: `${versionName(e)}, continued` })]);
+      out.push(timeRow(source, t, p?.sourceClock ?? '', p?.timezone ?? '', p?.offsetUncertainty ?? ''));
+    });
+  }
+  // Claims people recorded on the ledger are listed too, marked as such.
+  const tl = await api('GET', '/api/timeline');
+  if (tl.ok) {
+    for (const ev of tl.value.events.filter((x) => x.kind === 'historical_assertion')) {
+      const b = ev.body;
+      const source = el('td', { attrs: { 'data-label': 'Source' } }, [
+        el('span', { className: 'entry', text: `Ledger #${ev.sequence}: claim about ${b.evidenceId}` }),
+        el('span', { className: 'reason', text: `recorded by ${ev.actor.userId}; sources ${b.sources.map(sourceLabel).join(', ')}` }),
+      ]);
+      out.push(timeRow(source, b.claimedTimeRaw, b.sourceClock, b.timezone, b.offsetUncertainty, 'ws-times--claim'));
+    }
+  }
+  rows.replaceChildren(...out);
+}
+
+function renderComparePickers() {
+  const a = $('compare-a');
+  const b = $('compare-b');
+  const keepA = a.value;
+  const keepB = b.value;
+  const options = () => state.evidence.map((e) => el('option', { text: versionName(e), attrs: { value: `${e.evidenceId}|${e.versionId}` } }));
+  a.replaceChildren(...options());
+  b.replaceChildren(...options());
+  const has = (v) => state.evidence.some((e) => `${e.evidenceId}|${e.versionId}` === v);
+  // Default to the first item with a registered derivative: the clearest comparison.
+  const derived = state.evidence.find((e) => e.derivedFrom);
+  const parent = derived && state.evidence.find((e) => e.versionId === derived.derivedFrom.versionId);
+  if (has(keepA)) a.value = keepA; else if (parent) a.value = `${parent.evidenceId}|${parent.versionId}`;
+  if (has(keepB)) b.value = keepB; else if (derived) b.value = `${derived.evidenceId}|${derived.versionId}`;
+}
+
+// Longest common subsequence of lines; lines outside it are marked. Bounded so
+// a large file cannot freeze the page: past the bound, nothing is marked.
+const DIFF_CELLS = 4_000_000;
+function commonLines(x, y) {
+  if (x.length * y.length > DIFF_CELLS) return null;
+  const inX = new Array(x.length).fill(false);
+  const inY = new Array(y.length).fill(false);
+  const t = Array.from({ length: x.length + 1 }, () => new Uint32Array(y.length + 1));
+  for (let i = x.length - 1; i >= 0; i--) for (let j = y.length - 1; j >= 0; j--) t[i][j] = x[i] === y[j] ? t[i + 1][j + 1] + 1 : Math.max(t[i + 1][j], t[i][j + 1]);
+  let i = 0;
+  let j = 0;
+  while (i < x.length && j < y.length) {
+    if (x[i] === y[j]) { inX[i] = true; inY[j] = true; i++; j++; } else if (t[i + 1][j] >= t[i][j + 1]) i++; else j++;
+  }
+  return { inX, inY };
+}
+
+function compareVerdict(a, b) {
+  if (a.sha256 === b.sha256) return 'Identical bytes: the same SHA-256.';
+  if (b.derivedFrom?.versionId === a.versionId) return `Right is a registered derivative of left (${b.derivedFrom.transformation}). Its bytes differ by design; the marked lines show what that process changed.`;
+  if (a.derivedFrom?.versionId === b.versionId) return `Left is a registered derivative of right (${a.derivedFrom.transformation}). Its bytes differ by design; the marked lines show what that process changed.`;
+  if (a.evidenceId === b.evidenceId) return 'Two versions of the same item with no recorded lineage between them. The record does not explain the difference: that is an open question, not a finding.';
+  return 'Different items. Differences are expected; look for where their claims agree or conflict.';
+}
+
+async function submitCompare(ev) {
+  ev.preventDefault();
+  const pick = (v) => { const [evidenceId, versionId] = String(v).split('|'); return { evidenceId, versionId }; };
+  const read = (r) => api('GET', `/api/evidence/read?evidenceId=${encodeURIComponent(r.evidenceId)}&versionId=${encodeURIComponent(r.versionId)}`);
+  const [ra, rb] = await Promise.all([read(pick($('compare-a').value)), read(pick($('compare-b').value))]);
+  if (!ra.ok || !rb.ok) {
+    $('compare-out').hidden = true;
+    $('compare-verdict').textContent = '';
+    return notice(ra.ok ? rb : ra);
+  }
+  const la = ra.value.text.split('\n');
+  const lb = rb.value.text.split('\n');
+  const common = commonLines(la, lb);
+  const side = (v, lines, keep, key) => {
+    $(`cmp-${key}-title`).textContent = `${v.evidenceId} ${versionLabel(v)}`;
+    const meta = [['SHA-256', v.sha256], ['Size', `${v.size} bytes`], ...(v.provenance ? provenanceRows(v.provenance) : [])];
+    $(`cmp-${key}-meta`).replaceChildren(...meta.flatMap(([k, val]) => [el('dt', { text: k }), el('dd', { text: val, className: k === 'SHA-256' ? 'hash' : '' })]));
+    $(`cmp-${key}-lines`).replaceChildren(...lines.map((line, i) => {
+      const only = keep && !keep[i];
+      return el('li', { className: only ? 'ws-diff--only' : '', text: line === '' ? ' ' : line, attrs: only ? { title: 'Only on this side' } : {} });
+    }));
+  };
+  side(ra.value, la, common?.inX, 'a');
+  side(rb.value, lb, common?.inY, 'b');
+  const marked = common ? common.inX.filter((x) => !x).length + common.inY.filter((x) => !x).length : null;
+  const lineNote = marked === null ? 'Too large to mark line differences.' : marked === 0 ? 'No line differences.' : `${marked} lines appear on one side only (marked).`;
+  $('compare-verdict').textContent = `${compareVerdict(ra.value, rb.value)} ${lineNote}`;
+  $('compare-out').hidden = false;
 }
 
 // ---- Timeline -------------------------------------------------------------
@@ -380,6 +509,7 @@ async function doExport(approvalId) {
   notice(r, r.ok ? 'Export created and verified independently.' : '');
   if (!r.ok) return;
   state.lastExport = r.value.package;
+  state.lastTrust = r.value.trust;
   const v = r.value.verification;
   const box = $('verification');
   box.hidden = false;
@@ -395,11 +525,12 @@ async function doExport(approvalId) {
   box.scrollIntoView({ block: 'nearest' });
 }
 
-function download() {
-  if (!state.lastExport) return;
-  const blob = new Blob([JSON.stringify(state.lastExport, null, 2)], { type: 'application/json' });
+function download(what = 'package') {
+  const data = what === 'trust' ? state.lastTrust : state.lastExport;
+  if (!data) return;
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
-  const a = el('a', { attrs: { href: url, download: `blackwater-export-${Date.now()}.json` } });
+  const a = el('a', { attrs: { href: url, download: `blackwater-${what === 'trust' ? 'trust' : 'export'}-${Date.now()}.json` } });
   document.body.append(a);
   a.click();
   a.remove();
@@ -436,8 +567,8 @@ async function loadAudit() {
 
 // ---- Tabs, persona, startup ------------------------------------------------------
 
-const TABS = ['evidence', 'timeline', 'findings', 'exports', 'audit'];
-const LOADERS = { evidence: loadEvidence, timeline: loadTimeline, findings: () => Promise.all([loadFindings(), loadDrafts()]), exports: loadApprovals, audit: loadAudit };
+const TABS = ['evidence', 'compare', 'timeline', 'findings', 'exports', 'audit'];
+const LOADERS = { evidence: loadEvidence, compare: loadCompare, timeline: loadTimeline, findings: () => Promise.all([loadFindings(), loadDrafts()]), exports: loadApprovals, audit: loadAudit };
 let current = 'evidence';
 
 function selectTab(name, focus = false) {
@@ -503,7 +634,12 @@ async function start() {
   $('audit-problems').addEventListener('change', renderAudit);
   $('request-form').addEventListener('submit', submitRequest);
   $('agent-run').addEventListener('click', runAgent);
-  $('download').addEventListener('click', download);
+  $('download').addEventListener('click', () => download('package'));
+  $('download-trust').addEventListener('click', () => download('trust'));
+  $('compare-form').addEventListener('submit', submitCompare);
+  const brief = $('brief');
+  if (store('coc-brief') === 'closed') brief.open = false;
+  brief.addEventListener('toggle', () => store('coc-brief', brief.open ? 'open' : 'closed'));
   $('reset').addEventListener('click', async () => {
     const r = await api('POST', '/api/reset', {});
     notice(r, 'Demo data reset to the seeded synthetic record.');

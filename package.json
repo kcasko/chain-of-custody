@@ -12,7 +12,8 @@
     "typecheck": "tsc -p core && tsc -p app && tsc -p app/e2e && tsc -p adapters/aws && tsc -p infra",
     "cdk:synth": "cd infra && cdk synth --quiet",
     "fixtures:check": "node core/tools/fixture-manifest.ts",
-    "demo": "node app/src/main.ts"
+    "demo": "node app/src/main.ts",
+    "verify:export": "node core/tools/verify-export.ts"
   },
   "devDependencies": {
     "@cedar-policy/cedar-wasm": "4.14.0",

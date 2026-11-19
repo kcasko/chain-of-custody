@@ -131,6 +131,10 @@ test('export: request, self-approval refused, independent approval, export verif
   assert.equal(exp.body.value.verification.status, 'VERIFIED', JSON.stringify(exp.body.value.verification.findings));
   assert.equal(exp.body.value.verification.freshness, 'FRESH');
   assert.equal(exp.body.value.package.evidence.length, 2);
+  assert.equal(exp.body.value.trust.expectedCaseId, 'BLACKWATER-2021');
+  assert.equal(exp.body.value.trust.keys.length, 1);
+  assert.equal(exp.body.value.trust.reference.minSequence, exp.body.value.verification.validThrough);
+  assert.equal(JSON.stringify(exp.body.value.trust).includes('private'), false, 'only the public key leaves the server');
   assert.equal((await call('POST', '/api/exports', U.investigator, { approvalId, payload })).status, 403, 'single use');
   const statuses = (await call('GET', '/api/approvals', U.auditor)).body.value.map((a: { status: string }) => a.status);
   assert.deepEqual(statuses, ['consumed']);
@@ -208,4 +212,19 @@ test('historical claims: a person records one exactly as stated; bad sources and
   for (const [body, status] of refused) assert.equal((await call('POST', '/api/custody/assertion', U.auditor, body)).status, status, JSON.stringify(body).slice(0, 80));
   assert.equal((await call('POST', '/api/custody/assertion', U.outsider, claim)).status, 403);
   assert.equal((await call('GET', '/api/case', U.auditor)).body.value.head.sequence, head + 1, 'refusals append nothing');
+});
+
+test('evidence carries documented provenance (raw, matched by hash) only after the core authorizes the read', async () => {
+  const { call } = await setup();
+  const list = (await call('GET', '/api/evidence', U.auditor)).body.value;
+  const bw005 = list.find((e: { evidenceId: string; derivedFrom: unknown }) => e.evidenceId === 'BW-005' && e.derivedFrom === null);
+  assert.deepEqual(bw005.provenance.rawTimes, ['2021-10-13 23:44:08', '2021-10-13 23:59:50'], 'times exactly as written, no conversion');
+  assert.equal(bw005.provenance.sourceClock, 'controller RTC; no NTP sync recorded');
+  const derived = list.find((e: { derivedFrom: unknown }) => e.derivedFrom);
+  assert.equal(derived.provenance.timezone, 'UTC (by migration tool assumption)');
+  const read = await call('GET', `/api/evidence/read?evidenceId=BW-005&versionId=${bw005.versionId}`, U.auditor);
+  assert.deepEqual(read.body.value.provenance, bw005.provenance);
+  const outsider = await call('GET', `/api/evidence/read?evidenceId=BW-005&versionId=${bw005.versionId}`, U.outsider);
+  assert.equal(outsider.status, 403);
+  assert.equal(outsider.body.value, undefined, 'a refusal carries no provenance');
 });

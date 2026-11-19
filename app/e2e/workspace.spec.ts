@@ -3,6 +3,10 @@
 // the page carries those decisions through faithfully and safely.
 
 import { test, expect, type Page } from '@playwright/test';
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 const PEOPLE = {
   investigator: 'Owen Hale, investigator',
@@ -117,6 +121,19 @@ test('a full audit: transfer, refusal by role, draft promotion, approved export,
   expect(download.suggestedFilename()).toMatch(/^blackwater-export-\d+\.json$/);
   const pkg = JSON.parse(await streamText(await download.createReadStream()));
   expect(pkg.evidence.map((e: { evidenceId: string }) => e.evidenceId).sort()).toEqual(['BW-001', 'BW-010']);
+  const [trustDownload] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Download trust file' }).click()]);
+  expect(trustDownload.suggestedFilename()).toMatch(/^blackwater-trust-\d+\.json$/);
+  // Verify the two downloaded files offline, outside the browser and the server.
+  const dir = mkdtempSync(join(tmpdir(), 'coc-e2e-'));
+  try {
+    await download.saveAs(join(dir, 'package.json'));
+    await trustDownload.saveAs(join(dir, 'trust.json'));
+    const cli = spawnSync(process.execPath, ['core/tools/verify-export.ts', join(dir, 'package.json'), join(dir, 'trust.json')], { encoding: 'utf8' });
+    expect(cli.status, cli.stdout + cli.stderr).toBe(0);
+    expect(cli.stdout).toMatch(/Status:\s+VERIFIED/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 
   // Timeline: the auditor appends a correction; the original line stays as recorded.
   await actAs(page, 'auditor');
@@ -132,6 +149,40 @@ test('a full audit: transfer, refusal by role, draft promotion, approved export,
   await expect(page.locator('#chain-report')).toContainText('Intact');
   await expect(page.locator('#chain-report')).toContainText('All 15 entries re-hashed and linked.');
   await expect(page.locator('#chain-stamp')).toHaveText('Chain intact');
+});
+
+test('brief, documented provenance and comparison: times stay as written, lineage explains differences', async ({ page }) => {
+  const brief = page.locator('#brief');
+  await expect(brief).toContainText('without assuming accident or crime');
+  await expect(brief).toContainText('Everything here is fictional and synthetic');
+
+  await page.getByRole('button', { name: 'Read BW-005 original' }).click();
+  const prov = page.getByRole('region', { name: 'Documented provenance' });
+  await expect(prov).toContainText('controller RTC; no NTP sync recorded');
+  await expect(prov).toContainText('2021-10-13 23:44:08; 2021-10-13 23:59:50');
+  await expect(prov).toContainText('drift on 2021-10-13 unverified');
+
+  await openTab(page, 'Compare');
+  const times = page.locator('#times-rows');
+  // Exactly as written: the DVR time and the migration's UTC rendering are both shown, neither converted.
+  await expect(times.locator('td.ws-raw', { hasText: /^2021-10-13 23:57:40$/ })).toHaveCount(1);
+  await expect(times.locator('td.ws-raw', { hasText: /^2021-10-14T03:57:40Z$/ })).toHaveCount(1);
+  await expect(times.locator('td.ws-raw', { hasText: /^around midnight, maybe a little before$/ })).toHaveCount(1);
+
+  // Defaults to BW-002 original against its registered derivative.
+  await expect(page.getByLabel('Left')).toHaveValue(/^BW-002\|/);
+  await page.getByRole('button', { name: 'Compare', exact: true }).click();
+  await expect(page.locator('#compare-verdict')).toContainText('Right is a registered derivative of left (2026 migration transcode');
+  await expect(page.locator('#cmp-b-lines .ws-diff--only').first()).toBeVisible();
+  await expect(page.locator('#compare-out li')).not.toHaveCount(0);
+  expect(await page.locator('#compare-out ol').evaluateAll((ls) => ls.every((l) => [...l.children].every((li) => li.childElementCount === 0)))).toBe(true);
+
+  // Same item, two versions with no lineage: an open question, not a finding.
+  await page.getByLabel('Left').selectOption({ label: 'BW-005 original' });
+  await page.getByLabel('Right').selectOption({ label: 'BW-005 version 2, added later' });
+  await page.getByRole('button', { name: 'Compare', exact: true }).click();
+  await expect(page.locator('#compare-verdict')).toContainText('no recorded lineage between them');
+  await expect(page.locator('#compare-verdict')).toContainText('an open question, not a finding');
 });
 
 test('a person dismisses an agent draft with a reason; it stays listed and the ledger is unchanged', async ({ page }) => {
@@ -291,8 +342,8 @@ test('tabs work from the keyboard', async ({ page }) => {
   const evidence = page.getByRole('tab', { name: 'Evidence' });
   await evidence.focus();
   await page.keyboard.press('ArrowRight');
-  await expect(page.getByRole('tab', { name: 'Custody timeline' })).toBeFocused();
-  await expect(page.getByRole('tabpanel', { name: 'Custody timeline' })).toBeVisible();
+  await expect(page.getByRole('tab', { name: 'Compare' })).toBeFocused();
+  await expect(page.getByRole('tabpanel', { name: 'Compare' })).toBeVisible();
   await page.keyboard.press('End');
   await expect(page.getByRole('tab', { name: 'Security log' })).toBeFocused();
   await page.keyboard.press('ArrowRight');
@@ -306,7 +357,7 @@ test('tabs work from the keyboard', async ({ page }) => {
 
 test('phone width: no sideways scrolling and every tab is reachable', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
-  for (const name of ['Evidence', 'Custody timeline', 'Findings & drafts', 'Approvals & export', 'Security log']) {
+  for (const name of ['Evidence', 'Compare', 'Custody timeline', 'Findings & drafts', 'Approvals & export', 'Security log']) {
     await openTab(page, name);
     const tab = page.getByRole('tab', { name });
     await expect(tab).toBeInViewport();
@@ -318,7 +369,7 @@ test('phone width: no sideways scrolling and every tab is reachable', async ({ p
 });
 
 test('the Integrity Challenge page still reports every entry as expected', async ({ page }) => {
-  await page.getByRole('link', { name: 'Integrity Challenge' }).click();
+  await page.getByRole('navigation', { name: 'Other pages' }).getByRole('link', { name: 'Integrity Challenge' }).click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Integrity Challenge');
   await expect(page.locator('#status')).toHaveText('Challenge complete: 28 entries, all as expected.', { timeout: 20_000 });
   await expect(page.locator('#unchanged-stamp')).toHaveText('Unchanged');

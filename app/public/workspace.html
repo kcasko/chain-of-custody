@@ -39,8 +39,42 @@
   <p class="ws-identity" id="identity-notice"></p>
 
   <main id="workspace">
+    <details class="ws-brief" id="brief" open>
+      <summary>Case brief</summary>
+      <div class="ws-brief-body">
+        <div>
+          <p>Blackwater Applied Research tests batteries, hazardous materials and industrial equipment near the town of Bellwether in northern Michigan. A fire began shortly after midnight on October 14, 2021. Two employees died and one was seriously injured. In November 2026, digitizing the archive turned up records that disagree with each other.</p>
+          <p>Your job is to establish what the records support, and what they do not, without assuming accident or crime. An unresolved question is an acceptable answer.</p>
+          <p class="ws-synthetic">Everything here is fictional and synthetic. No real people, places or events.</p>
+        </div>
+        <div>
+          <h2 class="ws-brief-h">Rules of the record</h2>
+          <ul>
+            <li>Every version is pinned by its hash. You read exact versions, never "the latest".</li>
+            <li>Times are kept as written, with their clock, zone and uncertainty. Nothing converts or reconciles them for you.</li>
+            <li>Different bytes alone are not tampering. A registered derivative says how it was made.</li>
+            <li>Findings cite evidence. Conclusions about guilt, intent, blame or admissibility are refused.</li>
+            <li>History is append-only. Mistakes are corrected by a new entry; the original stays.</li>
+          </ul>
+        </div>
+        <div>
+          <h2 class="ws-brief-h">A path through the case</h2>
+          <ol>
+            <li>Evidence: read versions and their documented provenance.</li>
+            <li>Compare: line up claimed times and diff versions side by side.</li>
+            <li>Findings &amp; drafts: run the agent pass, record findings, promote or dismiss drafts.</li>
+            <li>Custody timeline: record transfers and claims; append corrections.</li>
+            <li>Approvals &amp; export: request, get a second supervisor's approval, export, verify.</li>
+            <li>Security log (supervisors): see what was allowed and refused.</li>
+            <li><a href="/challenge">Integrity Challenge</a>: watch 21 attacks fail.</li>
+          </ol>
+        </div>
+      </div>
+    </details>
+
     <div class="ws-tabs" role="tablist" aria-label="Case file sections">
       <button type="button" role="tab" id="tab-evidence" aria-controls="panel-evidence" aria-selected="true">Evidence</button>
+      <button type="button" role="tab" id="tab-compare" aria-controls="panel-compare" aria-selected="false" tabindex="-1">Compare</button>
       <button type="button" role="tab" id="tab-timeline" aria-controls="panel-timeline" aria-selected="false" tabindex="-1">Custody timeline</button>
       <button type="button" role="tab" id="tab-findings" aria-controls="panel-findings" aria-selected="false" tabindex="-1">Findings &amp; drafts</button>
       <button type="button" role="tab" id="tab-exports" aria-controls="panel-exports" aria-selected="false" tabindex="-1">Approvals &amp; export</button>
@@ -65,6 +99,11 @@
         <article class="ws-reader" id="reader" aria-labelledby="reader-title" hidden>
           <h2 id="reader-title"></h2>
           <dl class="ws-meta" id="reader-meta"></dl>
+          <section class="ws-prov" id="reader-prov" aria-labelledby="prov-title" hidden>
+            <h3 id="prov-title">Documented provenance</h3>
+            <p class="ws-hint">As recorded when the material was collected (synthetic manifest), matched by hash. Stated, not verified.</p>
+            <dl class="ws-meta ws-meta--compact" id="reader-prov-meta"></dl>
+          </section>
           <p class="ws-untrusted">Evidence text below is untrusted content from the record. It is shown as plain text and never treated as instructions.</p>
           <pre class="ws-text" id="reader-text" tabindex="0"></pre>
           <form class="ws-form" id="transfer-form">
@@ -76,6 +115,32 @@
           </form>
         </article>
       </div>
+    </section>
+
+    <section class="ws-panel" role="tabpanel" id="panel-compare" aria-labelledby="tab-compare" hidden>
+      <h2>Claimed times across the record</h2>
+      <p class="ws-hint">Every time a source states, exactly as written, with the clock that produced it. Listed by source, not merged into one chronology: these clocks have not been reconciled, and putting them on one line would be an interpretation.</p>
+      <div class="table-wrap">
+        <table class="docket ws-times">
+          <caption class="visually-hidden">Claimed times by source</caption>
+          <thead><tr><th scope="col">Source</th><th scope="col">Time as written</th><th scope="col">Clock</th><th scope="col">Time zone</th><th scope="col">Uncertainty</th></tr></thead>
+          <tbody id="times-rows"></tbody>
+        </table>
+      </div>
+
+      <h2>Two versions side by side</h2>
+      <p class="ws-hint">Pick any two registered versions. Lines only in one are marked. Different bytes alone do not show tampering; check the lineage.</p>
+      <form class="ws-compare-pick" id="compare-form">
+        <label>Left <select id="compare-a"></select></label>
+        <label>Right <select id="compare-b"></select></label>
+        <button type="submit" class="rerun">Compare</button>
+      </form>
+      <p class="ws-compare-verdict" id="compare-verdict" aria-live="polite"></p>
+      <div class="ws-compare" id="compare-out" hidden>
+        <article aria-labelledby="cmp-a-title"><h3 id="cmp-a-title"></h3><dl class="ws-meta ws-meta--compact" id="cmp-a-meta"></dl><ol class="ws-diff" id="cmp-a-lines"></ol></article>
+        <article aria-labelledby="cmp-b-title"><h3 id="cmp-b-title"></h3><dl class="ws-meta ws-meta--compact" id="cmp-b-meta"></dl><ol class="ws-diff" id="cmp-b-lines"></ol></article>
+      </div>
+      <p class="ws-untrusted">Compared text is untrusted content from the record, shown as plain text.</p>
     </section>
 
     <section class="ws-panel" role="tabpanel" id="panel-timeline" aria-labelledby="tab-timeline" hidden>
@@ -151,7 +216,11 @@
         <h2 id="verify-title">Independent verification of the export</h2>
         <div class="ws-verify-head"><span id="verify-stamp" class="stamp"></span><dl class="ws-meta" id="verify-meta"></dl></div>
         <ul id="verify-findings"></ul>
-        <button type="button" id="download" class="rerun">Download package (JSON)</button>
+        <div class="ws-actions">
+          <button type="button" id="download" class="rerun">Download package (JSON)</button>
+          <button type="button" id="download-trust" class="ws-quiet">Download trust file</button>
+        </div>
+        <p class="ws-hint">Verify offline with <code>npm run verify:export -- package.json trust.json</code>. The trust file holds the checkpoint public key and the ledger head; in real use it must reach the recipient by a separate channel. A pass proves the history and files are complete and unaltered, not that the original material is authentic or true.</p>
       </article>
     </section>
     <section class="ws-panel" role="tabpanel" id="panel-audit" aria-labelledby="tab-audit" hidden>
