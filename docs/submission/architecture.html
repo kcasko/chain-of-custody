@@ -6,7 +6,8 @@
 <!-- Source for docs/submission/screenshots/architecture.png. Rendered locally by
      harness/render-architecture.mts (Playwright, no network). Edit here, re-render.
      Every status tag is backed by a report: T21 (docs/research/2026-11-19-t21-agent-run-report.md),
-     T14b (docs/research/2026-11-18-t14b-real-aws-report.md), Stage B (docs/research/2026-11-18-t09-spike-report.md). -->
+     T14b (docs/research/2026-11-18-t14b-real-aws-report.md), Stage B (docs/research/2026-11-18-t09-spike-report.md),
+     T22 (docs/research/2026-11-19-t22-compromised-agent-report.md). -->
 <style>
   :root { --ink: #1c1d1f; --soft: #4a4d52; --rule: #b9b3a6; --paper: #f4efe4; --edge: #e9e2d3; --allow: #1f4e6e; --deny: #8c2a1f; --gold: #7f5a00; --grey: #6b6f75; }
   * { box-sizing: border-box; }
@@ -78,7 +79,7 @@
       <div class="arrow">SigV4, signed as the harness execution role</div>
       <div class="layer">
         <div class="lname">Authori-<br>zation</div>
-        <div class="box"><span class="tag live">verified live, T21</span>
+        <div class="box"><span class="tag live">verified live, T21 and T22</span>
           <h2>AgentCore Gateway + Cedar (ENFORCE)</h2>
           <ul>
             <li>Boundary: <b>only the harness role</b> (unsigned: 401; an admin role: denied, 0 tools)</li>
@@ -91,11 +92,11 @@
       <div class="arrow">tool name and request ID; arguments treated as untrusted</div>
       <div class="layer">
         <div class="lname">Backend</div>
-        <div class="box"><span class="tag live">verified live, T21</span>
+        <div class="box"><span class="tag live">verified live, T21 and T22</span>
           <h2>Tool Lambda: the domain core</h2>
           <ul>
             <li>Deny by default; the agent gets 4 operations: read metadata, read originals, record a finding, draft a proposal</li>
-            <li>Closed schemas; exact versions only; a content rule refuses guilt, intent or blame</li>
+            <li>Closed schemas; exact versions only; a content rule refuses guilt, intent or blame <i>words</i> (a carefully worded accusation passed, T22)</li>
             <li>Identity and case from deployment configuration, never arguments; approvals and exports are human-only</li>
             <li>Evidence returned with <code>content_is_untrusted_data: true</code>; times returned raw</li>
             <li>Every backend decision, refusals included, goes to a durable append-only audit log</li>
@@ -106,7 +107,7 @@
       <div class="arrow">AWS SDK calls under the Lambda's own role</div>
       <div class="layer">
         <div class="lname">IAM</div>
-        <div class="box"><span class="tag cfg">template-tested</span>
+        <div class="box"><span class="tag live">simulated on the deployed role, T22</span>
           <h2>The tool Lambda's IAM role</h2>
           <ul><li>DynamoDB writes only to 3 logical tables (audit, findings, proposals); <span class="deny">no evidence writes, no updates or deletes</span>, no custody-ledger writes</li></ul>
           <div class="rules"><b>R4</b></div>
@@ -122,7 +123,7 @@
             <li>The app's own credentials <i>can</i> overwrite a raw item; the hash chain catches it <span class="s live">live T14b</span></li>
           </ul><div class="rules"><b>R4</b></div></div>
           <div class="box"><h2>Evidence (S3)</h2><ul>
-            <li>Create-only: overwrite refused <span class="s live">live T14b</span></li>
+            <li>Create-only: overwrite refused <span class="s live">live T14b; deployed BW-003, T22</span></li>
             <li>Bucket policy denies delete and retention changes <span class="s live">live T14b</span></li>
             <li>Object Lock retention <span class="s cfg">configured, not exercised</span></li>
           </ul><div class="rules"><b>R3</b><b>R4</b></div></div>
@@ -164,7 +165,7 @@
       </div>
     </div>
   </div>
-  <p class="foot"><span class="s live">live</span> exercised on AWS: T21 (agent, Gateway, core, archive; November 19, 2026) or T14b (storage adapters; November 18), each torn down the same day. <span class="s cfg">template-tested</span> / <span class="s cfg">configured</span> checked in the CloudFormation template or set up, not attacked live. <span class="s local">local</span> runs on the developer's machine. All case data is synthetic.</p>
+  <p class="foot"><span class="s live">live</span> exercised on AWS: T21 (agent, Gateway, core, archive; November 19, 2026), T22 (compromised-agent calls with no model, IAM simulation, BW-003 overwrite probes; November 19) or T14b (storage adapters; November 18), each torn down the same day. <span class="s cfg">template-tested</span> / <span class="s cfg">configured</span> checked in the CloudFormation template or set up, not attacked live. <span class="s local">local</span> runs on the developer's machine. All case data is synthetic.</p>
 </div>
 </body>
 </html>

@@ -1,6 +1,6 @@
 # Proposed section: "What if the agent ignores every rule?"
 
-Status: **draft for Keith's review, not yet in `builder-center-project.md`.** Suggested place: right after "Then I tried to break it", which ends by saying the S2 to S6 refusals were the model's and didn't test the backend. This section answers that.
+Status: **merged into `builder-center-project.md` on November 19, 2026 (after "Then I tried to break it").** Kept as the reviewed source of that section.
 
 Updated after the live T22 run ([report](../research/2026-11-19-t22-compromised-agent-report.md)). Every result below is from that run on AWS unless it says otherwise.
 

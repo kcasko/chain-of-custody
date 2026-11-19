@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-19 (compromised-agent section merged)
+
+- "What if the agent ignores every rule?" merged into the Builder Center draft after "Then I tried to break it", with the T22 results and the unsupported-accusation weakness (C4-4). Claims made stale by T22 updated: layer evidence in "Why a polite refusal isn't enough", rules 4 and 5 in the enforcement table, the T19 status, test counts (427; a fresh clone still runs 381, re-checked), and links.
+- `architecture.png` and `injection-sequence.png` re-rendered with T22 verification labels (IAM simulated on the deployed role, the deployed BW-003 overwrite probes, the content rule's known gap).
+
 ## 2026-11-19 (T22: compromised agent on real AWS)
 
 - Approved run, no model: the 22 compromised-agent calls through the real Gateway, Cedar and core-backed Lambda on a `harness=true` test deployment. 18 refused (Gateway 4, Cedar 6, backend 8), 4 allowed (the control, a forged correction draft, a finding naming a supervisor, and an unsupported accusation). Ledger and evidence unchanged for all 22. A person's attempt to promote the forged correction was refused. Report: docs/research/2026-11-19-t22-compromised-agent-report.md.
