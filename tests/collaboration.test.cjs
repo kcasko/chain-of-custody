@@ -32,8 +32,12 @@ test('Mozaik Core serialized tool results are decoded', () => {
   assert.throws(() => parseLoopResult({ completedInstructions: [] }));
   assert.throws(() => parseLoopResult({ completedInstructions: [{ result: 'invalid' }] }));
 });
-test('installed Mozaik Core executes a tool and returns its recorded payload', async () => {
-  const core = require('D:/Repos/mozaik-learning/node_modules/@mozaik-ai/core');
+// Needs the local Mozaik checkout the collaboration harness was built against.
+// On any other machine (a fresh clone) it is skipped with the reason, not failed.
+const MOZAIK_CORE = 'D:/Repos/mozaik-learning/node_modules/@mozaik-ai/core';
+const mozaikMissing = (() => { try { require.resolve(MOZAIK_CORE); return false; } catch { return 'local Mozaik Core checkout not present (collaboration harness only)'; } })();
+test('installed Mozaik Core executes a tool and returns its recorded payload', { skip: mozaikMissing }, async () => {
+  const core = require(MOZAIK_CORE);
   core.initAgentModule();
   const m = core.resolveAgentModule();
   m.registerTool('contract_test', { invoke: () => ({ text: 'contract verified' }) });

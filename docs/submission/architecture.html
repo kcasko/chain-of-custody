@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Chain of Custody architecture</title>
+<!-- Source for docs/submission/screenshots/architecture.png. Rendered locally by
+     harness/render-architecture.mts (Playwright, no network). Edit here, re-render. -->
+<style>
+  :root { --ink: #1c1d1f; --soft: #4a4d52; --rule: #b9b3a6; --paper: #f4efe4; --edge: #e9e2d3; --allow: #1f4e6e; --deny: #8c2a1f; --gold: #7f5a00; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 15px/1.4 "Segoe UI", system-ui, sans-serif; }
+  .wrap { width: 1180px; padding: 26px 30px 22px; }
+  h1 { font: 700 24px/1.2 Georgia, serif; margin: 0 0 4px; }
+  .sub { color: var(--soft); margin: 0 0 18px; font-size: 14px; }
+  .grid { display: grid; grid-template-columns: 1fr 300px; gap: 22px; align-items: start; }
+  .lane { display: grid; gap: 0; }
+  .box { border: 2px solid var(--ink); background: #fff; padding: 10px 14px; position: relative; }
+  .box h2 { margin: 0 0 4px; font: 700 15px/1.2 Georgia, serif; }
+  .box ul { margin: 4px 0 0; padding-left: 18px; font-size: 13px; color: var(--soft); }
+  .box li { margin: 1px 0; }
+  .tag { position: absolute; top: 9px; right: 10px; font: 700 10.5px/1 Consolas, monospace; letter-spacing: .05em; text-transform: uppercase; padding: 4px 6px; border: 1.5px solid; }
+  .tag.live { color: var(--allow); }
+  .tag.local { color: var(--gold); }
+  .arrow { text-align: left; padding: 4px 0 4px 28px; font: 12.5px/1.2 Consolas, monospace; color: var(--soft); }
+  .arrow::before { content: "↓  "; color: var(--ink); font-weight: 700; }
+  .row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .row .box h2 { font-size: 14px; }
+  .side .box { margin-bottom: 14px; }
+  .deny { color: var(--deny); font-weight: 600; }
+  .layers { border: 2px dashed var(--rule); background: var(--edge); padding: 10px 14px; font-size: 13px; }
+  .layers h2 { margin: 0 0 6px; font: 700 14px/1.2 Georgia, serif; }
+  .layers ol { margin: 0; padding-left: 18px; }
+  .layers li { margin: 3px 0; }
+  .foot { margin-top: 16px; font-size: 12px; color: var(--soft); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Chain of Custody: how each rule is enforced</h1>
+  <p class="sub">The model reasons about evidence. It never holds the authority to change it. Every arrow below is a separate check.</p>
+  <div class="grid">
+    <div class="lane">
+      <div class="box"><span class="tag live">verified live</span>
+        <h2>Amazon Bedrock AgentCore managed harness</h2>
+        <ul>
+          <li>Claude Sonnet 4.6, temperature 0, 12 iterations max, memory off</li>
+          <li><b>allowedTools: @evidence only</b>: no shell, files, web or sub-agents</li>
+          <li>Execution role: one model, one Gateway, <span class="deny">no role switching, no direct commands</span></li>
+        </ul>
+      </div>
+      <div class="arrow">SigV4, signed as the harness execution role</div>
+      <div class="box"><span class="tag live">verified live</span>
+        <h2>AgentCore Gateway + policy engine (Cedar, ENFORCE)</h2>
+        <ul>
+          <li>Boundary: <b>only the harness role, only this gateway</b> (an admin role was denied live)</li>
+          <li>One permit per tool, with argument constraints: case evidence IDs, cited evidence, provenance</li>
+          <li>Anything else: <span class="deny">denied by default</span>, before the backend runs</li>
+        </ul>
+      </div>
+      <div class="arrow">tool name and Gateway request ID; arguments untrusted</div>
+      <div class="box"><span class="tag live">verified live</span>
+        <h2>Tool Lambda: the domain core</h2>
+        <ul>
+          <li>Deny-by-default policy; the agent gets 4 operations: read metadata, read originals, record a finding, draft a proposal</li>
+          <li>Closed schemas; content rule refuses conclusions of guilt or blame</li>
+          <li>Identity and case from deployment configuration, never from arguments</li>
+          <li>Every call audited: durable, append-only, attributed to the agent</li>
+          <li>IAM: DynamoDB writes limited to 3 logical tables, <span class="deny">no evidence writes, updates or deletes</span> (template-tested)</li>
+        </ul>
+      </div>
+      <div class="arrow">conditional writes, exact-version reads</div>
+      <div class="row">
+        <div class="box"><h2>DynamoDB ledger</h2><ul><li>Hash-chained, append-only events</li><li>Corrections append; originals stay</li><li>Signed checkpoints: local app</li></ul></div>
+        <div class="box"><h2>S3 evidence</h2><ul><li>Object Lock, create-only</li><li>Read by exact version only</li></ul></div>
+        <div class="box"><h2>Write-once archive</h2><ul><li>Every event and audit record (verified live)</li><li>Tamper alarm (tested locally)</li></ul></div>
+      </div>
+    </div>
+    <div class="side">
+      <div class="box"><span class="tag local">local app</span>
+        <h2>People, in the workspace</h2>
+        <ul>
+          <li>Promote or dismiss the agent's drafts (both kept)</li>
+          <li>Record custody, claims, corrections</li>
+          <li>Exports need a <b>different</b> supervisor; single use</li>
+          <li>Supervisors read the security log</li>
+        </ul>
+      </div>
+      <div class="box"><span class="tag local">offline</span>
+        <h2>Independent verifier</h2>
+        <ul>
+          <li>Checks an export against a separately delivered key and ledger head</li>
+          <li>Proves integrity, not authenticity</li>
+        </ul>
+      </div>
+      <div class="layers">
+        <h2>What an attack has to get past</h2>
+        <ol>
+          <li>The harness tool allowlist</li>
+          <li>IAM on every role</li>
+          <li>Cedar at the Gateway</li>
+          <li>The domain core's own checks</li>
+          <li>A person, for anything that changes the record</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+  <p class="foot">"Verified live": exercised on AWS on November 19, 2026, then torn down. "Local": the investigation workspace and the offline verifier run on the developer's machine. All case data is synthetic.</p>
+</div>
+</body>
+</html>

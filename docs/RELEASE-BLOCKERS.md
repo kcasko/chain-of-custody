@@ -6,15 +6,15 @@ A release blocker stops submission to the event. Do not mark the project submiss
 
 | ID | Blocker | Status | Evidence | Owner | Unblocks |
 |---|---|---|---|---|---|
-| RB-4 | **Publication not done.** The rules require a public repository under an OSI license (or a public demo), a published Builder Center project, and the submission itself. Open decisions: license, commit author e-mail, repository name, the AI-assistance line in the write-up, eligibility confirmation | **OPEN** | docs/submission/PUBLISHING.md | Keith (each decision and each publish step) | The submission |
+| RB-4 | **Publication not done.** Decisions made November 19 (Apache-2.0, `kcasko/chain-of-custody`, no-reply commit e-mail, AI disclosure included). Everything is prepared. Remaining: Keith's approval for each of the three steps (public repository, Builder Center project, hackathon submission) and his eligibility confirmation | **OPEN** | docs/submission/PUBLISHING.md | Keith (each approval) | The submission |
 | RB-3 | No agent run on a qualifying runtime | **RESOLVED** November 19, 2026: the job ran on the managed harness (finding recorded citing BW-001 and BW-005); stress test 9 of 9 held, twice; screenshot captured; everything torn down | docs/research/2026-11-19-t21-agent-run-report.md | Claude | Done |
 | RB-1 | **AWS account not entitled to Bedrock Managed Agents (preview).** `POST /openai/v1/agents/sessions` returns HTTP 401 "Bedrock Managed Agents is not available for this account." in us-east-1, us-west-2 and us-east-2 | **OPEN, no longer blocking**: the managed harness is an accepted alternative | docs/research/2026-11-18-t09-spike-report.md (G1) | Keith (access requests, optional now) | A BMA variant of the same agent (T11), not needed to qualify |
 | RB-2 | Event rules unknown | **RESOLVED** November 18: rules published and checked live (platforms, requirements, December 2 deadline, OSI license for a public repository) | docs/SUBMISSION.md, "Rules" | Claude | Done |
 
 ## RB-4 actions
 
-1. Keith decides the license, the author e-mail question, the repository name and the write-up's AI-assistance line, and confirms eligibility.
-2. Then, each with Keith's explicit approval: add the license, create and push the public repository, publish the Builder Center project, submit before December 2, 2026, 11:59 PM PT.
+1. Done November 19: license, repository name, no-reply e-mail (history rewritten), AI disclosure.
+2. Each with Keith's explicit approval: push the public repository, publish the Builder Center project, submit before December 2, 2026, 11:59 PM PT. Exact steps: docs/submission/PUBLISHING.md.
 
 ## What is not blocked
 

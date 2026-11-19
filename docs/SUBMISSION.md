@@ -13,8 +13,8 @@ Deadline: **December 2, 2026, 11:59 PM PT.** Every requirement is pass-or-fail.
 | How each rule is enforced, with an architecture description or diagram | **Done:** each rule names its enforcing layer; diagram in ARCHITECTURE.md and the write-up |
 | A stress test of at least 5 adversarial prompts, including at least 1 prompt injection, with what each tried and how the agent responded | **Done:** 8 adversarial prompts plus the legitimate job, run twice live, 9 of 9 held both times ([run 1](research/stress-test/2026-11-19-managed-harness-run1.md), [run 2](research/stress-test/2026-11-19-managed-harness-run2.md)) |
 | An original agent, not published before | Yes (nothing published) |
-| A Builder Center project: build process, rule set, enforcement, stress-test results, any rule that broke and its fix | **Drafted with real results:** docs/submission/builder-center-project.md, including the two rules that broke in the live run and their fixes. Keith edits and publishes |
-| A repository or demo link, and at least one screenshot of the agent running | **Screenshot done** (docs/submission/screenshots/agent-running-managed-harness.png, rendered from the real terminal output). **Repository pending** Keith's decisions (docs/submission/PUBLISHING.md) |
+| A Builder Center project: build process, rule set, enforcement, stress-test results, any rule that broke and its fix | **Final draft ready:** docs/submission/builder-center-project.md (Keith's narrative with every required section, the AI-assistance disclosure, the architecture image and repository links). Publishing needs Keith's approval |
+| A repository or demo link, and at least one screenshot of the agent running | **Screenshot done** (docs/submission/screenshots/agent-running-managed-harness.png, rendered from the real terminal output). **Repository prepared** as `github.com/kcasko/chain-of-custody` under Apache-2.0; pushing it needs Keith's approval |
 | Eligibility: 18+, Builder Center profile, not in an excluded country, not an Amazon employee or household member | Keith to confirm |
 
 ## Status at a glance
@@ -47,7 +47,8 @@ Deadline: **December 2, 2026, 11:59 PM PT.** Every requirement is pass-or-fail.
 ### Blocked
 
 - [x] **RB-3: the agent runs its job on the AgentCore managed harness,** with the stress test recorded ([T21 report](research/2026-11-19-t21-agent-run-report.md)).
-- [ ] **Publishing:** license, author e-mail decision, public repository, Builder Center project, submission ([checklist](submission/PUBLISHING.md)). Each step needs Keith's approval.
+- [x] **Publishing decisions:** Apache-2.0, `kcasko/chain-of-custody`, no-reply commit e-mail (history rewritten), AI disclosure.
+- [ ] **Publish, each with Keith's approval:** public repository, Builder Center project, hackathon submission ([runbook](submission/PUBLISHING.md)).
 
 ### Needs approval (prepared, not done)
 

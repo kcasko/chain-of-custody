@@ -3,6 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "description": "Chain of Custody: Blackwater Evidence. Domain core, policies, harness and planning.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kcasko/chain-of-custody.git"
+  },
   "scripts": {
     "test": "node --test tests/*.test.cjs core/test/*.test.ts app/test/*.test.ts adapters/aws/test/*.test.ts infra/test/*.test.ts",
     "test:e2e": "playwright test",

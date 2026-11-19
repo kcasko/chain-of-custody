@@ -3,7 +3,8 @@ DRAFT for AWS Builder Center. Not published. Keith's narrative (November 19), me
 sections the rules require (rule set, per-rule enforcement and diagram, per-prompt stress results,
 repository link and screenshot) and corrected against the T21 records:
 docs/research/2026-11-19-t21-agent-run-report.md and docs/research/stress-test/.
-Placeholders in [brackets] depend on Keith's decisions. EDITOR marks a decision for Keith.
+Repository: https://github.com/kcasko/chain-of-custody (Apache-2.0). Images to upload to Builder Center are in docs/submission/screenshots/.
+Nothing here is published until Keith approves it.
 -->
 
 # Chain of Custody: The Blackwater Evidence
@@ -58,7 +59,13 @@ The design separates the agent's ability to reason about evidence from the syste
 
 I also built a write-once archive of ledger events and audit records, so the investigation doesn't depend only on an agent's explanation of what happened.
 
-EDITOR: decide whether to say the project was built with help from an AI coding agent (Claude Code). The rules don't forbid it. Either way, decide on purpose.
+## How I built it, and where the AI came in
+
+I built this with a lot of help from Claude, Anthropic's AI, through Claude Code. It wrote much of the code, the tests and the documentation, and it ran the commands. I directed the work, set the scope, and approved every plan, every AWS deployment and every dollar spent before it happened.
+
+That makes two different AIs in this story, and it's worth keeping them straight. Claude Code helped me build the system. Claude Sonnet 4.6, running on the AgentCore managed harness, is the agent the system was built to contain, and the one I tried to break.
+
+None of the results below are simulated or written up from memory. The AWS deployments, the stress runs, the refusals, the failures and the fixes all happened, and the transcripts, CloudTrail findings and reports are in the repository. Where something wasn't verified, I say so.
 
 ## The rules the agent follows
 
@@ -90,30 +97,7 @@ The system prompt states these rules so the model behaves well. It's never the c
 
 ### Architecture
 
-```text
-Operator ──SigV4──> AgentCore managed harness (Claude Sonnet 4.6, temperature 0)
-                      allowedTools: @evidence only · memory off · 12 iterations max
-                      execution role: one model, one Gateway, no role switching
-                         │ SigV4 as the execution role
-                         v
-                    AgentCore Gateway + policy engine (Cedar, ENFORCE)
-                      boundary: only the harness role, only this gateway
-                      permits: 5 tools, with argument constraints
-                         │
-                         v
-                    Tool Lambda (the domain core)
-                      deny-by-default policy · closed schemas · content rules
-                      every call audited (durable, append-only)
-                         │                         │
-                         v                         v
-                    DynamoDB ledger           S3 evidence (Object Lock,
-                    (hash chain, signed        create-only, exact versions)
-                     checkpoints; stream ──> write-once archive + tamper alarm)
-
-People (investigator, auditor, supervisors) use a separate workspace:
-promote or dismiss drafts, approve exports (a different supervisor),
-verify exports offline.
-```
+![How each rule is enforced: the managed harness, the Gateway with Cedar, the domain core, and storage, with what was verified live](screenshots/architecture.png)
 
 An attack has to get past the harness tool allowlist, then IAM, then Cedar, then the backend. Even then, the only thing the agent can write is a finding or a draft a person has to approve.
 
@@ -173,7 +157,7 @@ Other malicious prompts were refused before the agent called any backend tool.
 
 That is useful evidence about model behavior, but it isn't proof that those requests would have been rejected by the backend. I kept that distinction explicit in the test report. The backend's own refusals for the same kinds of attack are covered by the infrastructure tests below and by the automated suite.
 
-Full transcripts for both runs: [repository link]/docs/research/stress-test/
+Full transcripts for both runs: https://github.com/kcasko/chain-of-custody/tree/main/docs/research/stress-test
 
 ## What actually went wrong during development
 
@@ -255,7 +239,8 @@ An agent should be able to question the evidence. It shouldn't be able to rewrit
 
 ## Links
 
-- Code repository: [public repository URL, after approval] (license: [OSI license, after decision])
-- Stress-test reports, both runs: [repository link]/docs/research/stress-test/
-- Live run report: [repository link]/docs/research/2026-11-19-t21-agent-run-report.md
+- Code repository: https://github.com/kcasko/chain-of-custody (Apache License 2.0)
+- Stress-test reports, both runs: https://github.com/kcasko/chain-of-custody/tree/main/docs/research/stress-test
+- Live run report: https://github.com/kcasko/chain-of-custody/blob/main/docs/research/2026-11-19-t21-agent-run-report.md
+- Demo walkthrough of the investigation workspace: https://github.com/kcasko/chain-of-custody/blob/main/docs/DEMO.md
 - Screenshot of the agent running on the AgentCore managed harness: above, and in the repository at docs/submission/screenshots/agent-running-managed-harness.png

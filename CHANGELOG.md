@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-11-19 (publication prepared, not published)
+
+- Apache License 2.0 (`LICENSE`, `package.json`), repository `github.com/kcasko/chain-of-custody`.
+- AI-assistance disclosure in the README and the Builder Center project: Claude Code helped build it; Claude Sonnet 4.6 on the managed harness is the agent under test; the AWS results are real.
+- README rewritten as the public front page; architecture image (`docs/submission/architecture.html` rendered by `harness/render-architecture.mts`, claims checked against what ran live); workspace and Integrity Challenge screenshots; Builder Center draft finalized with links and the image.
+- `tests/collaboration.test.cjs`: the one test that needs a local Mozaik checkout now skips with a reason on other machines instead of failing a fresh clone. It still runs on the original machine.
+- Commit history rewritten to the GitHub no-reply address (backup bundle kept locally). Commit hashes quoted earlier in this changelog refer to the pre-rewrite history.
+- Publication runbook: docs/submission/PUBLISHING.md. Nothing pushed, published or submitted.
+
 ## 2026-11-19 (T21: the agent on the AgentCore managed harness, live)
 
 - Approved run: deployed storage, gateway and agent; seeded evidence; the harness reached READY; the agent did its job (read exact versions, recorded a cited finding); two stress runs of 9 prompts held every protected-state rule; screenshot captured; everything torn down the same night. Model cost about $0.47. Report: docs/research/2026-11-19-t21-agent-run-report.md.

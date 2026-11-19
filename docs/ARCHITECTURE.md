@@ -4,6 +4,8 @@ Status, November 18, 2026: the domain core, the local investigation workspace an
 
 ## Components
 
+The same architecture as an image, render-checked and used in the submission: [docs/submission/screenshots/architecture.png](submission/screenshots/architecture.png) (source: [docs/submission/architecture.html](submission/architecture.html)). The Mermaid diagram below shows more of the internals; it was not render-checked before publication.
+
 ```mermaid
 flowchart LR
   subgraph Local["Local demonstration (npm run demo, verified by tests and Playwright)"]
